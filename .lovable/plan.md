@@ -6,7 +6,7 @@ Bring the uploaded single-file prototype (`RM-App-v2-Prototype_1.html`, ~1,700 l
 ## What's in the prototype
 - **Mode switcher**: RM App (phone mockup) vs Manager Dashboard (CTM/ZTM desktop)
 - **RM App screens**: Home (manager priorities, today/coming up, quick actions), PJP planning, training scheduling wizard (4 steps), run/report flow (check-in, attendance, evidence, submission), agents list, past trainings, directives
-- **Manager Dashboard**: sidebar + main panel with its own screen registry
+- **Manager Dashboard (CTM/ZTM portal)**: sidebar + main panel with its own screen registry
 - Shared modal/toast system, feedback sidebar, seeded sample data
 
 ## Plan
