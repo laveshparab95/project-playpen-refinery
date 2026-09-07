@@ -1,24 +1,56 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "RM App v2 Prototype" },
+      {
+        name: "description",
+        content:
+          "Clickable prototype for the RM App v2 + Manager Dashboard (CTM/ZTM portal).",
+      },
+      { property: "og:title", content: "RM App v2 Prototype" },
+      {
+        property: "og:description",
+        content:
+          "Clickable prototype for the RM App v2 + Manager Dashboard (CTM/ZTM portal).",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <main className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
+      <div className="max-w-md space-y-6">
+        <div className="inline-flex items-center rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+          Clickable prototype
+        </div>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+          RM App v2 + Manager Dashboard
+        </h1>
+        <p className="text-base text-muted-foreground">
+          Review the uploaded prototype. It includes the RM App phone flow and
+          the CTM/ZTM manager portal.
+        </p>
+        <div className="flex flex-wrap justify-center gap-3">
+          <a
+            href="/prototype.html"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            Open prototype
+          </a>
+          <Link
+            to="/prototype.html"
+            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            Router link (same)
+          </Link>
+        </div>
+      </div>
+    </main>
   );
 }
