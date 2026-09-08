@@ -801,25 +801,48 @@ reg("s1","Schedule · 1 — When & where",()=>shell({
     </div>
     <div class="card">
       <label class="label">Location <span class="req">*</span></label>
-      <input type="text" placeholder="e.g. Mamboleo Showground, Kisumu" value="${S.loc}" oninput="S.loc=this.value">
-      <button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="pickMap()">📍 Pick on Google Maps</button>
+      <input type="text" placeholder="Enter the exact venue detail" value="${S.loc}" oninput="S.loc=this.value">
+      <button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="go('mapPick')">📍 Pick on Google Maps</button>
     </div>
     <div class="card">
       <label class="label">Part of an intervention? <span class="new">NEW</span></label>
-      <select onchange="S.int=this.value">
-        <option value="">Standalone session</option>
-        ${INTS.filter(i=>i.status!=='Complete').map(i=>`<option value="${i.id}" ${S.int===i.id?'selected':''}>${i.id} — ${i.t}</option>`).join('')}
-      </select>
-      <div class="hint">Linking it means this session's attendance counts toward that intervention's coverage.</div>
+      ${S.ints&&S.ints.length?`<div style="margin-bottom:8px">${S.ints.map(i=>`<span class="chip blue">↳ ${i}</span>`).join('')}</div>`:''}
+      <button class="btn btn-outline btn-sm" style="width:100%" onclick="go('intPick')">Select interventions</button>
+      <div class="hint">Linking it means this session's attendance counts toward those interventions' coverage.</div>
     </div>`,
   foot:footBtn(`<button class="btn btn-primary" ${S.date&&S.time&&S.ahq&&S.loc.trim().length>2?'':'disabled'} onclick="s1next()">Continue</button>`)
 }));
-function pickMap(){
-  modal(`<h3>Pick training location</h3><div class="map"><div class="rad"></div><div class="pin">📍</div></div>
-    <p style="font-size:12px">Simulated map picker — stores the address and the coordinates.</p>
-    <button class="btn btn-primary" onclick="S.loc='Mamboleo Showground, Kisumu';closeModal();go('s1',false)">Use this location</button>
-    <button class="btn btn-outline" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
-}
+reg("mapPick","Pick location",()=>shell({
+  title:"Pick location",sub:"Search on Google Maps",
+  showBack:true,
+  body:`<div class="card">
+      <input type="text" placeholder="Search for a venue or address" value="${S.mapQ||''}" oninput="S.mapQ=this.value;go('mapPick',false)">
+    </div>
+    <div style="font-size:10.5px;color:var(--ink-3);font-weight:700;margin-bottom:8px">${S.mapQ?`Results for "${S.mapQ}"`:'Start typing to see results'}</div>
+    ${S.mapQ?[
+      {n:'Mamboleo Showground, Kisumu',a:'Mamboleo, Kisumu'},
+      {n:'Kakamega Social Hall',a:'Kakamega'},
+      {n:'Bungoma Town Depot',a:'Bungoma'},
+      {n:'Siaya Community Centre',a:'Siaya'},
+      {n:'Busia Municipal Hall',a:'Busia'}
+    ].filter(r=>r.n.toLowerCase().includes(S.mapQ.toLowerCase())||r.a.toLowerCase().includes(S.mapQ.toLowerCase())).map(r=>`<div class="listrow" onclick="S.loc='${r.n}';go('s1')">
+      <div class="nm">📍 ${r.n}<div class="meta">${r.a}</div></div><div style="color:var(--ink-3)">›</div></div>`).join('')
+    ||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">No results. Try a different search.</div>`
+    :`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">Type a venue, town or landmark.</div>`}`
+}));
+reg("intPick","Select interventions",()=>shell({
+  title:"Select interventions",sub:"Multi-select",
+  showBack:true,
+  body:`<div style="font-size:10.5px;color:var(--ink-3);font-weight:700;margin-bottom:8px">${S.ints?S.ints.length:0} selected</div>
+    ${INTS.filter(i=>i.status!=='Complete').map(i=>{
+      const on=S.ints&&S.ints.includes(i.id);
+      return `<div class="listrow" onclick="togInt('${i.id}')">
+        <div class="cbx ${on?'on':''}">${on?'✓':''}</div>
+        <div class="nm">${i.id} — ${i.t}<div class="meta">${i.kpi} · ${i.status}</div></div></div>`;
+    }).join('')||'<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">No open interventions.</div>'}
+    <button class="btn btn-primary" style="margin-top:10px" onclick="go('s1')">Done</button>`
+}));
+function togInt(id){if(!S.ints)S.ints=[];const i=S.ints.indexOf(id);if(i>-1)S.ints.splice(i,1);else S.ints.push(id);go('intPick',false);}
 function s1next(){
   if(S.date<=iso(TODAY)){alertBox("📅","Invalid date","Training date must be in the future.");return;}
   const c=TRAININGS.find(t=>t.status==="scheduled"&&t.date===S.date&&Math.abs(mins(t.time)-mins(S.time))<30);
@@ -903,7 +926,7 @@ reg("s4","Schedule · 4 — Review",()=>shell({
       <div class="rev"><span class="k">Time</span><span class="v">${S.time}</span></div>
       <div class="rev"><span class="k">AHQ</span><span class="v">${S.ahq}</span></div>
       <div class="rev"><span class="k">Location</span><span class="v">${S.loc}</span></div>
-      ${S.int?`<div class="rev"><span class="k">Intervention</span><span class="v">${S.int}</span></div>`:''}
+      ${S.ints&&S.ints.length?`<div class="rev"><span class="k">Intervention${S.ints.length>1?'s':''}</span><span class="v">${S.ints.map(i=>`<span class="chip blue">${i}</span>`).join('')}</span></div>`:''}
     </div>
     <div class="card">
       <div class="sec-head"><h3>Courses</h3><button class="edit" onclick="go('s2')">Edit</button></div>
@@ -919,9 +942,10 @@ reg("s4","Schedule · 4 — Review",()=>shell({
 }));
 function submitSchedule(){
   const id="TRN-"+(2500+Math.floor(Math.random()*90));
-  TRAININGS.push({id,date:S.date,time:S.time,ahq:S.ahq,loc:S.loc,int:S.int,courses:S.courses.map(c=>({c:c.c,t:c.t})),agents:[...S.agents],status:"scheduled"});
+  const ints=S.ints&&S.ints.length?S.ints:(S.int?[S.int]:[]);
+  TRAININGS.push({id,date:S.date,time:S.time,ahq:S.ahq,loc:S.loc,int:ints[0]||'',ints,courses:S.courses.map(c=>({c:c.c,t:c.t})),agents:[...S.agents],status:"scheduled"});
   modal(`<div class="ico">✅</div><h3>Training scheduled</h3>
-    <p><b>${id}</b> created. ${S.agents.length} agents notified — the session is now on their Kazi app.${S.int?`<br><br>Linked to <b>${S.int}</b>; attendance will roll up into its coverage.`:''}</p>
+    <p><b>${id}</b> created. ${S.agents.length} agents notified — the session is now on their Kazi app.${ints.length?`<br><br>Linked to <b>${ints.join(', ')}</b>; attendance will roll up into coverage.`:'}</p>
     <button class="btn btn-primary" onclick="closeModal();hist=[];go('home',false)">Back to home</button>`);
 }
 
