@@ -53,7 +53,13 @@
   .tabbar button{flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9.5px;font-weight:700;color:var(--ink-3);padding:4px 0;font-family:inherit}
   .tabbar button .ic{font-size:16px;line-height:1}
   .tabbar button.on{color:var(--sk-orange)}
-  .screen{display:flex;flex-direction:column;width:100%}
+  .screen{display:flex;flex-direction:column;width:100%;position:relative}
+  .fab-wrap{position:absolute;right:14px;bottom:70px;z-index:40;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .fab-menu{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .fab-menu button{background:#fff;border:1px solid var(--line);border-radius:22px;padding:9px 13px;font-size:12px;font-weight:700;color:var(--ink-1);box-shadow:0 6px 18px rgba(0,0,0,.13);cursor:pointer;font-family:inherit;white-space:nowrap}
+  .fab{width:52px;height:52px;border-radius:50%;border:none;background:var(--sk-orange);color:#fff;font-size:26px;line-height:1;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.22);font-family:inherit;transition:transform .18s ease}
+  .fab.open{transform:rotate(45deg)}
+  .fab-scrim{position:absolute;inset:0;background:rgba(15,18,25,.18);z-index:30}
 
   /* ---------- browser (manager) ---------- */
   .browser{background:#1C2029;border-radius:14px;padding:9px 9px 0;box-shadow:0 30px 70px rgba(0,0,0,.55);width:100%}
