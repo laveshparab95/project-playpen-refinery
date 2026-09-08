@@ -76,6 +76,48 @@ On the Home "Today" / "Coming up" cards that already show multiple intervention 
 ### 5.3 Intervention detail screen
 - Remove the "Did it work?" section completely from the intervention detail view (Baseline + 30-day read).
 
+## 6. Plan tab
+
+### 6.1 Plan home — top of page
+- Remove the blue "PJP moves into the app…" banner.
+- Metric tiles: **Approved**, **Pending**, **Unplanned days** (rename of "Gaps").
+- On and before the 5th of the month the middle tile reads "Pending". From the 6th onwards the same tile is labelled **"Plan changes"** (same underlying count of days awaiting a manager decision, label only changes).
+
+### 6.2 Rejected days
+- Add a separate alert card above the day list showing rejected plan days (e.g. "1 day rejected — replan it").
+- Tapping it opens the Plan a day flow with that day's details prefilled, so the RM edits and resubmits.
+
+### 6.3 Day rows on the Plan list
+- Show **multiple activity categories** as a wrapping row of small chips on the card.
+- Remove the detail line under the activity category (e.g. "Meet 4 agents onboarded in July, Kisumu AHQ", "Cluster leaders + low performers, Sega").
+- Remove the intervention chip from the day card.
+- Add one short meeting line per day, derived from the trainings already in the prototype for that date:
+  - future / today: "2 meetings scheduled"
+  - past days: "3 meetings completed"
+  - no meetings: line is hidden.
+
+### 6.4 Day detail becomes a full page
+- Tapping a planned day opens a new screen instead of the pop-up.
+- Top: date, status pill, location (AHQs) and travel details.
+- Middle: **one stacked card per KPI block**, each showing the KPI, its activity-category chips, and its linked intervention.
+- Bottom: a "Meetings this day" section listing simple cards for each scheduled training — AHQ/venue, time, and intervention chips.
+
+### 6.5 Plan a day flow
+- Date picker limited to the remaining days of the current month.
+- The KPI section becomes repeatable (same pattern as the course selection flow in Schedule a meeting). Each added block captures:
+  - KPI it serves — single select
+  - Activity category — multi-select
+  - Link to an intervention — single select
+  - Each saved block appears as a summary row with edit/remove; "＋ Add another KPI" adds more.
+- Location and Travelling stay single and unique at plan level (one per day, outside the KPI blocks).
+- Location becomes a dropdown of AHQs with **multi-select** (chips for the chosen AHQs).
+- Remove these helper lines:
+  - "One day chases one KPI. In the current sheet 8,959 rows are missing this — making it a required picker fixes that at source."
+  - "Working days only. Multi-day trips: add legs below."
+  - "The day points at the intervention; it doesn't copy its data. Attendance and results live on the intervention."
+- Submission still goes to the ZTM for approval; the approval record carries the first KPI plus the full activity list.
+
 ## Notes
 - All edits stay in `public/prototype.html`; the manager portal is untouched.
+- Seeded plan data gains multi-KPI / multi-activity examples and one rejected day so the new UI is visible.
 - Verified in the preview afterwards.
