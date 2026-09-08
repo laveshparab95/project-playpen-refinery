@@ -540,7 +540,10 @@ reg("home","Home",()=>{
       <div style="font-size:11px;color:var(--ink-3);margin-top:2px">${prettyIso(t.date)} · ${t.id}</div></div>
       <div style="font-size:11.5px;color:var(--ink-2);margin-top:7px">📍 ${t.loc}</div>
       <div style="font-size:11.5px;color:var(--ink-2);margin-top:3px">👥 ${t.agents.length} invited</div>
-      ${ints.length?`<div style="margin-top:6px;display:flex;flex-wrap:wrap">${ints.map(i=>`<span class="chip blue">↳ ${i}</span>`).join('')}</div>`:''}
+      ${ints.length?`<div style="margin-top:6px;display:flex;flex-wrap:wrap">${ints.map(i=>{
+        const name=intName(i);
+        return `<span class="chip blue" title="${esc(name)}">↳ ${i}${name?' · '+name:''}</span>`;
+      }).join('')}</div>`:''}
       <div class="btn-row" style="margin-top:9px">
         <button class="btn btn-primary btn-sm" onclick="tryStart('${t.id}')">Start</button>
         <button class="btn btn-outline btn-sm" onclick="openResched('${t.id}')">Reschedule</button>
