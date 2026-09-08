@@ -368,7 +368,7 @@ const SEED_INTS=[
    root:"",sessions:[{d:iso(addDays(-2)),exp:14,att:12,ahq:"Kisumu AHQ",pass:78}]},
   {id:"INT-016",t:"Reactivate bottom performers",aud:"Agents with no sale 30–60 days",scope:"Zone",zone:"Coast",
    kpi:"R1",type:"Reactive",by:"ZTM",byName:"Lilian Wambui",mode:"Field",tgtHead:18,attended:0,
-   baseline:"32% reactivation",metric:"",budget:0,date:iso(addDays(13)),status:"Planned",cascaded:true,
+   baseline:"32% reactivation",metric:"",budget:0,date:iso(addDays(13)),status:"Approval pending",cascaded:true,
    root:"Knowledge decay",sessions:[]},
   {id:"INT-017",t:"SEO certification & conversion push",aud:"July-certified agents",scope:"AHQ",zone:"Coast",
    kpi:"R4",type:"Strategic",by:"RM",byName:"Pier M.",mode:"Classroom",tgtHead:9,attended:9,
@@ -682,10 +682,14 @@ function savePJP(){
 }
 
 /* ---------- INTERVENTIONS ---------- */
+let INT_FILTER="all";
 reg("ints","My interventions",()=>{
-  const mine=INTS.filter(i=>i.cascaded||i.byName==="Pier M.");
+  const statuses={all:"All",inprogress:"In progress",pending:"Approval pending",complete:"Complete"};
+  const mine=INTS.filter(i=>i.cascaded||i.byName==="Pier M.").filter(i=>INT_FILTER==="all"||i.status===statuses[INT_FILTER]);
   return shell({title:"Interventions",sub:"Cascaded to me + ones I raised",
-    body:`<div class="banner info"><b>An intervention is the container; a training is one session inside it.</b> Several sessions roll up into one coverage number — so a programme is only complete at full coverage, not at 40%.</div>
+    body:`<div class="seg" style="margin-bottom:11px">
+        ${Object.keys(statuses).map(k=>`<button class="${INT_FILTER===k?'on':''}" onclick="INT_FILTER='${k}';go('ints',false)">${statuses[k]}</button>`).join('')}
+      </div>
       <button class="btn btn-primary" style="margin-bottom:12px" onclick="ID={t:'',aud:'',kpi:'',tgtHead:'',baseline:'',mode:'Field',root:''};go('intNew')">＋ Raise an intervention</button>
       ${mine.map(i=>{
         const pct=Math.round(i.attended/i.tgtHead*100);
@@ -694,7 +698,7 @@ reg("ints","My interventions",()=>{
           <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
             <div style="flex:1"><div style="font-size:13px;font-weight:800">${i.t}</div>
             <div style="font-size:10.5px;color:var(--ink-3);margin-top:2px">${i.id} · ${i.scope}${i.zone!=='All'?' · '+i.zone:''} · ${i.type}</div></div>
-            <span class="pill ${i.status==='Complete'?'done':i.status==='In progress'?'today':'sched'}">${i.status}</span></div>
+            <span class="pill ${i.status==='Complete'?'done':i.status==='In progress'?'today':i.status==='Approval pending'?'pend':'sched'}">${i.status}</span></div>
           <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:9px;font-weight:700">
             <span>Coverage</span><span>${i.attended} / ${i.tgtHead} agents · ${pct}%</span></div>
           <div class="bar"><i class="${cls}" style="width:${Math.min(pct,100)}%"></i></div>
@@ -722,12 +726,7 @@ reg("intDetail","Intervention detail",()=>{
         <div class="rev"><span class="k">Target date</span><span class="v">${prettyIso(i.date)}</span></div>
         ${i.root?`<div class="rev"><span class="k">Root cause (repeat)</span><span class="v">${i.root}</span></div>`:''}
       </div>
-      <div class="card">
-        <div class="sec-head"><h3>Did it work?</h3></div>
-        <div class="rev"><span class="k">Baseline</span><span class="v">${i.baseline}</span></div>
-        <div class="rev"><span class="k">30-day read</span><span class="v" style="color:${i.metric?'var(--green)':'var(--ink-3)'}">${i.metric||'Not due yet'}</span></div>
-        <div class="hint">The movement is read from the data platform 30 days after delivery — nobody types it in.</div>
-      </div>
+
       <div class="card">
         <div class="sec-head"><h3>Sessions delivered (${i.sessions.length})</h3></div>
         ${i.sessions.length?i.sessions.map(s=>`<div class="listrow" style="cursor:default">
@@ -774,7 +773,7 @@ function saveInt(){
   const id="INT-0"+(20+INTS.length);
   INTS.push({id,t:ID.t,aud:ID.aud,scope:"AHQ",zone:"Coast",kpi:ID.kpi,type:"Reactive",by:"RM",byName:"Pier M.",
     mode:ID.mode,tgtHead:+ID.tgtHead||10,attended:0,baseline:ID.baseline,metric:"",budget:0,
-    date:iso(addDays(14)),status:"Planned",cascaded:false,root:ID.root,sessions:[]});
+    date:iso(addDays(14)),status:"Approval pending",cascaded:false,root:ID.root,sessions:[]});
   alertBox("🎯","Intervention raised",`<b>${id}</b> created and sent to your ZTM for visibility. You can now schedule sessions against it.`,"Done","hist=[];go('ints',false)");
 }
 
@@ -1273,8 +1272,7 @@ reg("pastDetail","Past training detail",()=>{
 reg("kpi","My KPIs",()=>{
   const score=(KPI_LIB.reduce((s,k)=>s+(k.act>=k.target?5:3)*k.w,0)/KPI_LIB.reduce((s,k)=>s+k.w,0)).toFixed(1);
   return shell({title:"My KPIs",sub:"August 2026 · read-only",showBack:false,tab:"kpi",
-    body:`<div class="banner info">📊 <b>Nothing is entered here.</b> These come from the data platform (Looker, Litmos and sales data). The app's job is to make them visible, not to collect them.</div>
-      <div class="card" style="text-align:center;padding:18px">
+    body:`<div class="card" style="text-align:center;padding:18px">
         <div style="font-size:38px;font-weight:800;letter-spacing:-2px;line-height:1">${score}</div>
         <div style="font-size:11px;color:var(--ink-3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Weighted score out of 5</div>
       </div>
