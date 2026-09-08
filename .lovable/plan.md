@@ -16,6 +16,16 @@
 ## 4. Reschedule meeting
 - Remove the blue notification message from the reschedule pop-up; everything else stays.
 
+# RM App — End of day report edits
+
+## 1. Report header
+- Remove the green message at the top of the End of day report screen.
+- Remove the helper text "Pre-filled with your name and date. Prompted at 6pm if you haven't submitted."
+
+## 2. Submit report button
+- Make the "Submit report" button active (no longer disabled).
+- On tap, display a confirmation box stating that the report has been submitted.
+
 ## Notes
 - All edits stay in `public/prototype.html`; the manager portal is untouched.
 - Verified in the preview afterwards.
