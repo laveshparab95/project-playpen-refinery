@@ -522,7 +522,7 @@ function esc(s){return String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;');}
    ===================================================================== */
 let S={},R={},SEL=[];
 function resetDrafts(){
-  S={date:"",time:"",ahq:"",loc:"",int:"",courses:[],agents:[],curCourse:"",curTopics:[],listKey:"all",q:""};
+  S={date:"",time:"",ahq:"",loc:"",int:"",ints:[],mapQ:"",courses:[],agents:[],curCourse:"",curTopics:[],listKey:"all",listFilters:[],q:""};
   R={tid:null,checkedIn:false,drift:0,feedback:"",stamp:"",attend:[],extra:[],invited:[],photo:false,video:false,
      courses:[],comments:"",star:""};
 }
@@ -881,42 +881,51 @@ function addCourse(){S.courses.push({c:S.curCourse,t:[...S.curTopics]});S.curCou
 
 /* ---- STEP 3: smart agent selection (rebuilt from feedback) ---- */
 reg("s3","Schedule · 3 — Agents",()=>{
-  const pool=AGENTS.filter(a=>LISTS[S.listKey].f(a))
+  const filters=S.listFilters||[];
+  const pool=AGENTS.filter(a=>filters.every(k=>LISTS[k].f(a)))
     .filter(a=>!S.q||a.n.toLowerCase().includes(S.q.toLowerCase()))
     .sort((a,b)=>a.j-b.j);
   const allSel=pool.length&&pool.every(a=>S.agents.includes(a.n));
+  const anyActive=filters.length>0||S.q;
   return shell({title:"Schedule a training",sub:"Step 3 of 4 — Who's coming",
     body:`${steps(3,4)}
-      <div class="banner ok"><b>No minimum enforced.</b> You asked why an RM couldn't meet one or two agents — they can. A 1:1 coaching session is a valid training. The old floor is gone.</div>
-      <label class="label">Smart lists <span class="new">NEW</span></label>
-      <div style="margin-bottom:9px">${Object.keys(LISTS).map(k=>{
-        const n=AGENTS.filter(LISTS[k].f).length;
-        return `<span class="qtag ${S.listKey===k?'on':''}" style="display:inline-block;margin:0 4px 5px 0" onclick="S.listKey='${k}';go('s3',false)">${LISTS[k].t} (${n})</span>`;}).join('')}</div>
-      <div class="hint" style="margin-bottom:10px">${LISTS[S.listKey].d}</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <button class="btn btn-outline btn-sm" onclick="go('filterPick')">Filter ${filters.length?`(${filters.length})`:''}</button>
+        ${anyActive?`<button class="edit" onclick="S.listFilters=[];S.q='';go('s3',false)">Clear all</button>`:''}
+        <span style="font-size:11px;color:var(--ink-3);font-weight:700;margin-left:auto">${pool.length} match${pool.length===1?'':'es'}</span>
+      </div>
       <input type="text" placeholder="🔍 Search by name" value="${S.q}" oninput="S.q=this.value;go('s3',false)" style="margin-bottom:10px">
       <div style="display:flex;gap:7px;margin-bottom:10px">
         <button class="btn btn-outline btn-sm" style="flex:1" onclick="selAll(${allSel?'false':'true'})">${allSel?'Clear':'Select all'} ${pool.length} shown</button>
-        <button class="btn btn-outline btn-sm" style="flex:1" onclick="selAHQ()">Select all in ${S.ahq?S.ahq.replace(' AHQ',''):'AHQ'}</button>
       </div>
       ${pool.map(a=>`<div class="listrow" onclick="togAgent('${esc(a.n)}')">
         <div class="cbx ${S.agents.includes(a.n)?'on':''}">${S.agents.includes(a.n)?'✓':''}</div>
-        <div class="nm">${a.n}<div class="meta">${a.ahq.replace(' AHQ','')} · joined ${a.j}d ago · last sale ${a.ls}d ago · ${a.lt===null?'<b style="color:var(--red)">never trained</b>':'trained '+a.lt+'d ago'}${a.lit?'':' · <b style="color:var(--sk-orange)">no Litmos</b>'}</div></div>
-      </div>`).join('')||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">No agents match this list.</div>`}
+        <div class="nm">${a.n}<div class="meta">joined ${a.j}d ago · last sale ${a.ls}d ago · ${a.lt===null?'<b style="color:var(--red)">never trained</b>':'trained '+a.lt+'d ago'}${a.lit?'':' · <b style="color:var(--sk-orange)">no Litmos</b>'}</div></div>
+      </div>`).join('')||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">No agents match these filters.</div>`}
       ${S.agents.length?`<div class="selbar"><div class="c">${S.agents.length} selected</div>
         <button class="btn btn-outline btn-sm" onclick="S.agents=[];go('s3',false)">Clear</button></div>`:''}`,
     foot:footBtn(`<button class="btn btn-primary" ${S.agents.length?'':'disabled'} onclick="go('s4')">Review${S.agents.length?` (${S.agents.length})`:''}</button>`)});
 });
 function togAgent(n){const i=S.agents.indexOf(n);i>-1?S.agents.splice(i,1):S.agents.push(n);go('s3',false);}
 function selAll(on){
-  const pool=AGENTS.filter(a=>LISTS[S.listKey].f(a)).filter(a=>!S.q||a.n.toLowerCase().includes(S.q.toLowerCase()));
+  const pool=AGENTS.filter(a=>(S.listFilters||[]).every(k=>LISTS[k].f(a))).filter(a=>!S.q||a.n.toLowerCase().includes(S.q.toLowerCase()));
   pool.forEach(a=>{const i=S.agents.indexOf(a.n);if(on&&i<0)S.agents.push(a.n);if(!on&&i>-1)S.agents.splice(i,1);});
   go('s3',false);
 }
-function selAHQ(){
-  if(!S.ahq){toast("Pick an AHQ at step 1 first");return;}
-  AGENTS.filter(a=>a.ahq===S.ahq).forEach(a=>{if(!S.agents.includes(a.n))S.agents.push(a.n);});
-  go('s3',false);toast("Added everyone in "+S.ahq);
-}
+reg("filterPick","Filter agents",()=>shell({
+  title:"Filter agents",sub:"Match ALL selected lists",
+  showBack:true,
+  body:`<div style="font-size:10.5px;color:var(--ink-3);font-weight:700;margin-bottom:8px">Only agents matching every selected list are shown.</div>
+    ${Object.keys(LISTS).map(k=>{
+      const on=(S.listFilters||[]).includes(k);
+      const n=AGENTS.filter(LISTS[k].f).length;
+      return `<div class="listrow" onclick="togListFilter('${k}')">
+        <div class="cbx ${on?'on':''}">${on?'✓':''}</div>
+        <div class="nm">${LISTS[k].t} (${n})<div class="meta">${LISTS[k].d}</div></div></div>`;
+    }).join('')}
+    <button class="btn btn-primary" style="margin-top:10px" onclick="go('s3')">Show ${(function(){const f=S.listFilters||[];return AGENTS.filter(a=>f.every(k=>LISTS[k].f(a))).length;})()} matches</button>`
+}));
+function togListFilter(k){if(!S.listFilters)S.listFilters=[];const i=S.listFilters.indexOf(k);if(i>-1)S.listFilters.splice(i,1);else S.listFilters.push(k);go('filterPick',false);}
 reg("s4","Schedule · 4 — Review",()=>shell({
   title:"Review & submit",sub:"Step 4 of 4",
   body:`${steps(4,4)}
