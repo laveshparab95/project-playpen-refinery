@@ -141,3 +141,19 @@ On the Home "Today" / "Coming up" cards that already show multiple intervention 
 - Show multiple interventions as chips (seeded data gains a second intervention where relevant).
 - Location row gains a check-in info icon beside it showing the GPS coordinates of the check-in.
 - Rename "Evidence" to a single section containing two labelled parts: "Training photo" and "Training video".
+
+## 8. Agents module
+
+### 8.1 Agents list
+- Remove the blue message box at the top.
+- Remove the visible smart-list chips.
+- Replace with a single "Filter" button that opens a popup with two sections:
+  - Smart list (same options as today: all, R1, R2, R4, certified not converted, never trained, etc.).
+  - AHQ (multi-select).
+- The list filters by the selected smart list AND selected AHQs (intersection), with a match count and Clear all.
+
+### 8.2 Agent detail
+- Remove the "Schedule a session with <first name>" button and its helper line.
+
+## 9. KPI module
+- Remove the blue message box at the top of the KPI screen.
