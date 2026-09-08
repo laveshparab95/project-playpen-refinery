@@ -574,18 +574,7 @@ reg("home","Home",()=>{
 });
 function intName(id){const i=INTS.find(x=>x.id===id);return i?i.t:'';}
 
-/* ---------- MANAGER DIRECTIVES (read side) ---------- */
-reg("directives","Manager priorities (cascaded)",()=>shell({
-  title:"Priorities this month",sub:"Cascaded from your CTM / ZTM",
-  body:`<div class="banner info">These come down from the training managers via the dashboard. Your plan should chase them — each one names the KPI it serves.</div>
-    ${DIRECTIVES.map(d=>`<div class="card">
-      <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
-        <div style="font-size:13.5px;font-weight:800;flex:1">${d.t}</div>
-        <span class="chip grey">${d.kpi}</span></div>
-      <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.5">${d.d}</div>
-      <div style="font-size:11px;color:var(--ink-3);margin-top:8px">From ${d.by} · target date ${prettyIso(d.due)}</div>
-      <button class="btn btn-outline btn-sm" style="width:100%;margin-top:9px" onclick="planAgainst('${d.kpi}','${esc(d.t)}')">Add a plan day for this</button>
-    </div>`).join('')}`}));
+/* (Manager priorities screen removed from the RM App) */
 function planAgainst(kpi,t){PJPD={date:"",kpi,cat:catForKpi(kpi),detail:t,loc:"",travel:false,route:"",nights:0,int:"",legs:[]};go('pjpNew');}
 function catForKpi(k){const m={R1:"Inactive agent reactivation (R1)",R2:"New agent F2F training (R2)",R3:"JKQ drive & low-scorer follow-up (R3)",R4:"Certified-agent conversion coaching (R4)",R5:"Training quality audit / follow-up (R5-R6)",R7:"360 field insight capture (R7)"};return m[k]||"";}
 
