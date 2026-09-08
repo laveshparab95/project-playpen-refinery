@@ -966,7 +966,7 @@ function openResched(id){
     <p>Currently ${prettyIso(target.date)} at ${target.time}. Same record, new date and time.</p>
     <label class="label">New date</label><input type="date" id="rD" min="${iso(addDays(1))}" value="${target.date}">
     <label class="label" style="margin-top:10px">New time</label><input type="time" id="rT" value="${target.time}">
-    <div class="banner info" style="margin-top:12px">📣 <b>Yes — the same notification goes out again.</b> Every invited agent is re-notified with the new date, time and location, and their Kazi app entry updates in place. It's flagged as a change, not a new invite.</div>
+
     <button class="btn btn-primary" onclick="doResched()">Confirm reschedule</button>
     <button class="btn btn-outline" style="margin-top:8px" onclick="closeModal()">Back</button>`);
 }
@@ -1008,35 +1008,30 @@ function tryStart(id){
 function T(){return TRAININGS.find(x=>x.id===R.tid)||TRAININGS[0];}
 reg("r1","Start · 1 — Check-in",()=>{
   const t=T(),now=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  if(!R.checkedIn)doCheckIn();
   return shell({title:"Start training",sub:`${t.id} · Step 1 of 6 — Check in`,
     body:`${steps(1,6)}
       <div class="card">
         <div class="rev"><span class="k">Date</span><span class="v">${prettyIso(t.date)}</span></div>
-        <div class="rev"><span class="k">Start timestamp</span><span class="v">${R.checkedIn?R.stamp:now} <span style="color:var(--ink-3);font-weight:600">(actual)</span></span></div>
+        <div class="rev"><span class="k">Start timestamp</span><span class="v">${R.stamp} <span style="color:var(--ink-3);font-weight:600">(actual)</span></span></div>
         <div class="rev"><span class="k">Location</span><span class="v">${t.loc}</span></div>
+        <div class="rev"><span class="k">GPS</span><span class="v">${t.gps||'-0.0912, 34.7683'}</span></div>
       </div>
       <div class="map"><div class="rad"></div><div class="pin">📍</div></div>
-      ${R.checkedIn?(R.drift>100
-        ? `<div class="banner warn">⚠️ You're <b>${R.drift} m</b> from the scheduled location (100 m tolerance). Explain why — you won't be blocked.</div>
-           <div class="card"><label class="label">Why the location changed <span class="req">*</span></label>
-           <textarea placeholder="e.g. Hall was locked, moved to the chief's camp" oninput="R.feedback=this.value">${R.feedback}</textarea></div>`
-        : `<div class="banner ok">✓ Checked in at ${R.stamp} · ${R.drift} m from the venue.</div>`)
-        : `<div class="banner info">Check-in captures your GPS and the exact time. Records land in the system within the 24-hour timeliness SLA.</div>
-           <button class="btn btn-primary" onclick="doCheckIn(false)">📍 Check in here</button>
-           <button class="btn btn-outline" style="margin-top:8px" onclick="doCheckIn(true)">Simulate check-in far from venue</button>`}
-      <div class="hint" style="margin-top:11px">Agents check in separately on their own app once you submit.</div>`,
-    foot:R.checkedIn?footBtn(`<button class="btn btn-primary" onclick="r1next()">Continue</button>`):""});
+      <div class="banner warn">⚠️ You're <b>${R.drift} m</b> from the scheduled location (100 m tolerance). Explain why — you won't be blocked.</div>
+      <div class="card"><label class="label">Why the location changed <span class="req">*</span></label>
+        <textarea placeholder="e.g. Hall was locked, moved to the chief's camp" oninput="R.feedback=this.value">${R.feedback}</textarea></div>`,
+    foot:footBtn(`<button class="btn btn-primary" onclick="r1next()">Continue</button>`)});
 });
-function doCheckIn(far){
-  R.checkedIn=true;R.drift=far?640:23;R.stamp=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-  go('r1',false);
-  if(far)alertBox("⚠️","Location changed","You're <b>640 m</b> from the scheduled venue. Add a short explanation. You can still continue.");
+function doCheckIn(){
+  R.checkedIn=true;R.drift=640;R.stamp=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
 }
 function r1next(){if(R.drift>100&&!R.feedback.trim()){toast("Explain the location change first");return;}go('r2');}
 
 reg("r2","Start · 2 — Attendance",()=>{
   const t=T();
   const others=AGENTS.filter(a=>!R.invited.includes(a.n));
+  const tab=R.attTab||'invited';
   return shell({title:"Attendance",sub:`${t.id} · Step 2 of 6`,
     body:`${steps(2,6)}
       <div class="kpi">
@@ -1044,17 +1039,19 @@ reg("r2","Start · 2 — Attendance",()=>{
         <div class="k"><div class="n">${R.invited.length-R.attend.length}</div><div class="t">Absent</div></div>
         <div class="k"><div class="n">${R.extra.length}</div><div class="t">Walk-ins</div></div>
       </div>
-      <div class="sec-head"><h3>Invited (${R.invited.length})</h3><span style="font-size:10.5px;color:var(--ink-3)">Uncheck absentees</span></div>
-      ${R.invited.map(n=>`<div class="listrow" onclick="togAttend('${esc(n)}')">
-        <div class="cbx ${R.attend.includes(n)?'on':''}">${R.attend.includes(n)?'✓':''}</div>
-        <div class="nm">${n}<div class="meta">${R.attend.includes(n)?'Present':'Marked absent'}</div></div></div>`).join('')}
-      <div class="sec-head" style="margin-top:15px"><h3>Agents who turned up uninvited <span class="new">NEW</span></h3></div>
-      <div class="hint" style="margin-bottom:8px">You asked for this — walk-ins can be added here and they count toward attendance and coverage.</div>
-      <input type="text" placeholder="🔍 Search any agent" oninput="R.q=this.value;go('r2',false)" style="margin-bottom:9px">
-      ${others.filter(a=>!R.q||a.n.toLowerCase().includes((R.q||'').toLowerCase())).slice(0,8).map(a=>`
-        <div class="listrow" onclick="togExtra('${esc(a.n)}')">
-          <div class="cbx ${R.extra.includes(a.n)?'on':''}">${R.extra.includes(a.n)?'✓':''}</div>
-          <div class="nm">${a.n}<div class="meta">Not invited · ${a.ahq.replace(' AHQ','')}</div></div></div>`).join('')}`,
+      <div class="seg" style="margin-bottom:11px">
+        <button class="${tab==='invited'?'on':''}" onclick="R.attTab='invited';go('r2',false)">Invited (${R.invited.length})</button>
+        <button class="${tab==='uninvited'?'on':''}" onclick="R.attTab='uninvited';go('r2',false)">Uninvited</button>
+      </div>
+      ${tab==='invited'
+        ? R.invited.map(n=>`<div class="listrow" onclick="togAttend('${esc(n)}')">
+            <div class="cbx ${R.attend.includes(n)?'on':''}">${R.attend.includes(n)?'✓':''}</div>
+            <div class="nm">${n}<div class="meta">${R.attend.includes(n)?'Present':'Marked absent'}</div></div></div>`).join('')
+        : `<input type="text" placeholder="🔍 Search any agent" oninput="R.q=this.value;go('r2',false)" style="margin-bottom:9px">
+          ${others.filter(a=>!R.q||a.n.toLowerCase().includes((R.q||'').toLowerCase())).slice(0,8).map(a=>`
+            <div class="listrow" onclick="togExtra('${esc(a.n)}')">
+              <div class="cbx ${R.extra.includes(a.n)?'on':''}">${R.extra.includes(a.n)?'✓':''}</div>
+              <div class="nm">${a.n}<div class="meta">Not invited · ${a.ahq.replace(' AHQ','')}</div></div></div>`).join('')}`}`,
     foot:footBtn(`<button class="btn btn-primary" onclick="go('r3')">Continue</button>`)});
 });
 function togAttend(n){const i=R.attend.indexOf(n);i>-1?R.attend.splice(i,1):R.attend.push(n);go('r2',false);}
@@ -1139,7 +1136,7 @@ reg("r6","Start · 6 — Review & submit",()=>{
         <div style="margin-top:4px">${c.t.map(x=>`<span class="chip">${x}</span>`).join('')||'<span style="font-size:11px;color:var(--ink-3)">No topics</span>'}</div></div>`).join('')}</div>
       <div class="card"><div class="sec-head"><h3>Comments</h3><button class="edit" onclick="go('r5')">Edit</button></div>
         <div style="font-size:12.5px;color:var(--ink-2);line-height:1.5">${R.comments||'<span style="color:var(--ink-3)">None</span>'}</div></div>
-      ${t.int?`<div class="banner pur">↳ Rolls up into <b>${t.int}</b> — coverage will move from ${INTS.find(i=>i.id===t.int).attended} to ${INTS.find(i=>i.id===t.int).attended+R.attend.length+R.extra.length} of ${INTS.find(i=>i.id===t.int).tgtHead}.</div>`:''}`,
+`,
     foot:footBtn(`<button class="btn btn-primary" onclick="submitRun()">Submit training</button>`)});
 });
 function submitRun(){
