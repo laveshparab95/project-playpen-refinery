@@ -1147,12 +1147,29 @@ function submitRun(){
 }
 function finishRun(){
   const t=T(),n=R.attend.length+R.extra.length;
-  PAST.unshift({id:t.id,date:t.date,time:R.stamp,ahq:t.ahq,loc:t.loc,inv:R.invited.length,att:n,int:t.int,
-    courses:R.courses,star:R.star,cm:R.comments,read:null});
-  if(t.int){const i=INTS.find(x=>x.id===t.int);if(i){i.attended+=n;i.sessions.push({d:t.date,exp:R.invited.length,att:n,ahq:t.ahq,pass:0});
-    if(i.attended>=i.tgtHead)i.status="Complete";else i.status="In progress";}}
+  const ints=t.ints&&t.ints.length?t.ints:(t.int?[t.int]:[]);
+  const approved=[...R.attend,...R.extra].map((nm,idx)=>({
+    n:nm,diff:(idx%3===0?'+0m':idx%3===1?'+1m':'+3m'),dist:(idx%4===0?'12m':idx%4===1?'45m':idx%4===2?'22m':'88m'),
+    status:(idx%5===0?'rejected':'approved')
+  }));
+  PAST.unshift({id:t.id,date:t.date,time:R.stamp,ahq:t.ahq,loc:t.loc,gps:t.gps||'-0.0912, 34.7683',inv:R.invited.length,att:n,int:t.int,ints,
+    courses:R.courses,star:R.star,cm:R.comments,approved});
+  ints.forEach(intId=>{const i=INTS.find(x=>x.id===intId);if(i){i.attended+=n;i.sessions.push({d:t.date,exp:R.invited.length,att:n,ahq:t.ahq,pass:0});
+    if(i.attended>=i.tgtHead)i.status="Complete";else i.status="In progress";}});
   [...R.attend,...R.extra].forEach(nm=>{const a=AGENTS.find(x=>x.n===nm);if(a)a.lt=0;});
   t.status="completed";closeModal();hist=[];go('past',false);
+}
+function showApproved(id){
+  const p=PAST.find(x=>x.id===id)||PAST[0];
+  const rows=p.approved||[];
+  modal(`<h3>Attendance approval</h3>
+    <div style="max-height:320px;overflow:auto">
+      ${rows.length?rows.map(r=>`<div class="listrow" style="align-items:center">
+        <div class="nm">${r.n}<div class="meta">Check-in ${r.diff} · ${r.dist} from venue</div></div>
+        <span class="pill ${r.status==='approved'?'done':'warn'}">${r.status}</span>
+      </div>`).join(''):'<div class="hint">No approval data yet.</div>'}
+    </div>
+    <button class="btn btn-primary" style="margin-top:10px" onclick="closeModal()">Close</button>`);
 }
 
 /* ---------- AGENTS (worklists) ---------- */
