@@ -1156,16 +1156,19 @@ function finishRun(){
 }
 
 /* ---------- AGENTS (worklists) ---------- */
-let AG={key:"all",q:"",sel:[],sort:"lt"};
+let AG={key:"all",q:"",sel:[],sort:"lt",filters:[],ahq:[]};
 reg("agents","Agents",()=>{
-  let pool=AGENTS.filter(a=>LISTS[AG.key].f(a)).filter(a=>!AG.q||a.n.toLowerCase().includes(AG.q.toLowerCase()));
+  let pool=AGENTS.filter(a=>(AG.filters||[]).every(k=>LISTS[k].f(a)))
+    .filter(a=>!AG.ahq.length||AG.ahq.includes(a.ahq))
+    .filter(a=>!AG.q||a.n.toLowerCase().includes(AG.q.toLowerCase()));
   pool.sort((a,b)=>AG.sort==="lt"?((b.lt===null?9999:b.lt)-(a.lt===null?9999:a.lt)):(b.ls-a.ls));
+  const anyActive=(AG.filters||[]).length||AG.ahq.length||AG.q;
   return shell({title:"My agents",sub:"31 agents · Western Region",showBack:false,tab:"agents",
-    body:`<div class="banner info"><b>The app hands you the target list.</b> These are the worklists behind R1, R2 and R4 — no need to remember who's due.</div>
-      <div style="margin-bottom:10px">${Object.keys(LISTS).map(k=>{
-        const n=AGENTS.filter(LISTS[k].f).length;
-        return `<span class="qtag ${AG.key===k?'on':''}" style="display:inline-block;margin:0 4px 5px 0" onclick="AG.key='${k}';AG.sel=[];go('agents',false)">${LISTS[k].t} (${n})</span>`;}).join('')}</div>
-      <div class="hint" style="margin-bottom:10px">${LISTS[AG.key].d}</div>
+    body:`<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <button class="btn btn-outline btn-sm" onclick="go('agFilterPick')">Filter ${(AG.filters||[]).length+AG.ahq.length?`(${(AG.filters||[]).length+AG.ahq.length})`:''}</button>
+        ${anyActive?`<button class="edit" onclick="AG.filters=[];AG.ahq=[];AG.q='';go('agents',false)">Clear all</button>`:''}
+        <span style="font-size:11px;color:var(--ink-3);font-weight:700;margin-left:auto">${pool.length} match${pool.length===1?'':'es'}</span>
+      </div>
       <input type="text" placeholder="🔍 Search" value="${AG.q}" oninput="AG.q=this.value;go('agents',false)" style="margin-bottom:9px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <button class="edit" onclick="agSelAll()">Select all ${pool.length}</button>
@@ -1174,16 +1177,16 @@ reg("agents","Agents",()=>{
       ${pool.map(a=>`<div class="listrow" style="align-items:flex-start">
         <div class="cbx ${AG.sel.includes(a.n)?'on':''}" onclick="event.stopPropagation();agTog('${esc(a.n)}')">${AG.sel.includes(a.n)?'✓':''}</div>
         <div class="nm" onclick="AGSEL='${esc(a.n)}';go('agentDetail')">${a.n}
-          <div class="meta">${a.ahq.replace(' AHQ','')} · joined ${a.j}d · last sale ${a.ls}d ago<br>
+          <div class="meta">joined ${a.j}d · last sale ${a.ls}d ago<br>
           ${a.lt===null?'<b style="color:var(--red)">Never trained</b>':'Trained '+a.lt+'d ago'} · Litmos ${a.lit?a.litp+'%':'<b style="color:var(--sk-orange)">never logged in</b>'}${a.cert?' · <b style="color:var(--green)">certified</b>'+(a.conv?'':' (not converted)'):''}</div></div>
-        <div style="color:var(--ink-3)">›</div></div>`).join('')||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">Nobody on this list — good news.</div>`}
+        <div style="color:var(--ink-3)">›</div></div>`).join('')||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">Nobody matches these filters.</div>`}
       ${AG.sel.length?`<div class="selbar"><div class="c">${AG.sel.length} selected</div>
         <button class="btn btn-primary btn-sm" onclick="inviteSelected()">Invite to a training</button>
         <button class="btn btn-outline btn-sm" onclick="AG.sel=[];go('agents',false)">Clear</button></div>`:''}`});
 });
 function agTog(n){const i=AG.sel.indexOf(n);i>-1?AG.sel.splice(i,1):AG.sel.push(n);go('agents',false);}
 function agSelAll(){
-  const pool=AGENTS.filter(a=>LISTS[AG.key].f(a)).filter(a=>!AG.q||a.n.toLowerCase().includes(AG.q.toLowerCase()));
+  const pool=AGENTS.filter(a=>(AG.filters||[]).every(k=>LISTS[k].f(a))).filter(a=>!AG.ahq.length||AG.ahq.includes(a.ahq)).filter(a=>!AG.q||a.n.toLowerCase().includes(AG.q.toLowerCase()));
   AG.sel=pool.map(a=>a.n);go('agents',false);
 }
 function inviteSelected(){
@@ -1191,6 +1194,29 @@ function inviteSelected(){
   const ah=AGENTS.find(a=>a.n===picked[0]);if(ah)S.ahq=ah.ahq;
   AG.sel=[];go('s1');toast(picked.length+" agents carried into a new training");
 }
+reg("agFilterPick","Filter agents",()=>shell({
+  title:"Filter agents",sub:"Match ALL selected lists and AHQs",
+  showBack:true,
+  body:`<div style="font-size:11px;font-weight:800;color:var(--ink-2);margin:10px 0 6px">Smart lists</div>
+    ${Object.keys(LISTS).map(k=>{
+      const on=(AG.filters||[]).includes(k);
+      const n=AGENTS.filter(LISTS[k].f).length;
+      return `<div class="listrow" onclick="togAgFilter('${k}')">
+        <div class="cbx ${on?'on':''}">${on?'✓':''}</div>
+        <div class="nm">${LISTS[k].t} (${n})<div class="meta">${LISTS[k].d}</div></div></div>`;
+    }).join('')}
+    <div style="font-size:11px;font-weight:800;color:var(--ink-2);margin:18px 0 6px">AHQ</div>
+    ${AHQS.map(a=>{
+      const on=(AG.ahq||[]).includes(a);
+      const n=AGENTS.filter(x=>x.ahq===a).length;
+      return `<div class="listrow" onclick="togAgAHQ('${a}')">
+        <div class="cbx ${on?'on':''}">${on?'✓':''}</div>
+        <div class="nm">${a.replace(' AHQ','')} (${n})</div></div>`;
+    }).join('')}
+    <button class="btn btn-primary" style="margin-top:10px" onclick="go('agents')">Show ${(function(){const f=AG.filters||[];return AGENTS.filter(a=>f.every(k=>LISTS[k].f(a))).filter(a=>!AG.ahq.length||AG.ahq.includes(a.ahq)).length;})()} matches</button>`
+}));
+function togAgFilter(k){if(!AG.filters)AG.filters=[];const i=AG.filters.indexOf(k);if(i>-1)AG.filters.splice(i,1);else AG.filters.push(k);go('agFilterPick',false);}
+function togAgAHQ(a){if(!AG.ahq)AG.ahq=[];const i=AG.ahq.indexOf(a);if(i>-1)AG.ahq.splice(i,1);else AG.ahq.push(a);go('agFilterPick',false);}
 let AGSEL=null;
 reg("agentDetail","Agent detail",()=>{
   const a=AGENTS.find(x=>x.n===AGSEL)||AGENTS[0];
@@ -1210,53 +1236,62 @@ reg("agentDetail","Agent detail",()=>{
       <div class="card"><div class="sec-head"><h3>Why they're on a list</h3></div>
         ${Object.keys(LISTS).filter(k=>k!=='all'&&LISTS[k].f(a)).map(k=>`<span class="chip">${LISTS[k].t}</span>`).join('')||'<div class="hint">Not flagged on any worklist.</div>'}
       </div>
-      <button class="btn btn-primary" onclick="resetDrafts();S.agents=['${esc(a.n)}'];S.ahq='${a.ahq}';go('s1')">Schedule a session with ${a.n.split(' ')[0]}</button>
-      <div class="hint" style="margin-top:8px;text-align:center">A one-person session is fine — no minimum.</div>`});
+`});
 });
 
 /* ---------- TRAININGS (past) ---------- */
-let F={ahq:[],from:"",to:""};
+let F={ahq:[],from:"",to:"",open:false};
 reg("past","Past trainings",()=>{
   const rows=PAST.filter(p=>(!F.ahq.length||F.ahq.includes(p.ahq))&&(!F.from||p.date>=F.from)&&(!F.to||p.date<=F.to))
     .sort((a,b)=>b.date.localeCompare(a.date));
   return shell({title:"Trainings",sub:"Completed only — cancelled excluded",showBack:false,tab:"past",
-    body:`<div class="card">
-        <label class="label">AHQ</label>
-        <div>${AHQS.map(a=>`<span class="qtag ${F.ahq.includes(a)?'on':''}" style="display:inline-block;margin:0 4px 5px 0" onclick="togF('${a}')">${a.replace(' AHQ','')}</span>`).join('')}</div>
-        <label class="label" style="margin-top:10px">Date range</label>
-        <div style="display:flex;gap:7px">
-          <input type="date" value="${F.from}" onchange="F.from=this.value;go('past',false)">
-          <input type="date" value="${F.to}" onchange="F.to=this.value;go('past',false)"></div>
-        ${(F.ahq.length||F.from||F.to)?`<button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="F={ahq:[],from:'',to:''};go('past',false)">Clear filters</button>`:''}
+    body:`<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <button class="btn btn-outline btn-sm" onclick="go('trainFilterPick')">Filter ${(F.ahq.length||(F.from?1:0)+(F.to?1:0))?`(${(F.ahq.length+(F.from?1:0)+(F.to?1:0))})`:''}</button>
+        ${(F.ahq.length||F.from||F.to)?`<button class="edit" onclick="F={ahq:[],from:'',to:''};go('past',false)">Clear all</button>`:''}
+        <span style="font-size:11px;color:var(--ink-3);font-weight:700;margin-left:auto">${rows.length} training${rows.length===1?'':'s'}</span>
       </div>
-      <div style="font-size:10.5px;color:var(--ink-3);font-weight:700;margin-bottom:8px">${rows.length} training${rows.length===1?'':'s'} · newest first</div>
       ${rows.map(p=>`<div class="card tight" style="cursor:pointer" onclick="PSEL='${p.id}';go('pastDetail')">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
           <div><div style="font-size:13px;font-weight:800">${p.ahq.replace(' AHQ','')} · ${p.time}</div>
           <div style="font-size:10.5px;color:var(--ink-3);margin-top:2px">${prettyIso(p.date)} · ${p.id}</div></div>
-          <span class="pill done">Completed</span></div>
+        </div>
         <div style="font-size:11.5px;color:var(--ink-2);margin-top:7px">👥 ${p.att}/${p.inv} attended${p.star?` · ⭐ ${p.star}`:''}</div>
-        ${p.read?`<div style="font-size:11.5px;color:var(--ink-2);margin-top:3px">📈 ${p.read.sold} of ${p.read.of} sold within 30 days</div>`:''}
+        ${p.ints&&p.ints.length?`<div style="margin-top:6px;display:flex;flex-wrap:wrap">${p.ints.map(i=>`<span class="chip blue">↳ ${i}</span>`).join('')}</div>`:''}
       </div>`).join('')||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">No trainings match these filters.</div>`}`});
 });
 function togF(a){const i=F.ahq.indexOf(a);i>-1?F.ahq.splice(i,1):F.ahq.push(a);go('past',false);}
+reg("trainFilterPick","Filter trainings",()=>shell({
+  title:"Filter trainings",sub:"AHQ and date range",
+  showBack:true,
+  body:`<div style="font-size:11px;font-weight:800;color:var(--ink-2);margin:10px 0 6px">AHQ</div>
+    ${AHQS.map(a=>{
+      const on=(F.ahq||[]).includes(a);
+      const n=PAST.filter(p=>p.ahq===a).length;
+      return `<div class="listrow" onclick="togF('${a}')">
+        <div class="cbx ${on?'on':''}">${on?'✓':''}</div>
+        <div class="nm">${a.replace(' AHQ','')} (${n})</div></div>`;
+    }).join('')}
+    <div style="font-size:11px;font-weight:800;color:var(--ink-2);margin:18px 0 6px">Date range</div>
+    <div style="display:flex;gap:7px">
+      <input type="date" value="${F.from}" onchange="F.from=this.value;go('trainFilterPick',false)" placeholder="From">
+      <input type="date" value="${F.to}" onchange="F.to=this.value;go('trainFilterPick',false)" placeholder="To"></div>
+    <button class="btn btn-primary" style="margin-top:10px" onclick="go('past')">Show ${(function(){return PAST.filter(p=>(!F.ahq.length||F.ahq.includes(p.ahq))&&(!F.from||p.date>=F.from)&&(!F.to||p.date<=F.to)).length;})()} matches</button>`
+}));
 let PSEL=null;
 reg("pastDetail","Past training detail",()=>{
   const p=PAST.find(x=>x.id===PSEL)||PAST[0];
   return shell({title:p.id,sub:`${prettyIso(p.date)} · ${p.ahq}`,
     body:`<div class="card">
         <div class="rev"><span class="k">Started</span><span class="v">${p.time}</span></div>
-        <div class="rev"><span class="k">Location</span><span class="v">${p.loc}</span></div>
+        <div class="rev"><span class="k">Location</span><span class="v">${p.loc} <span title="GPS: ${p.gps||'-0.0912, 34.7683'}" style="cursor:pointer">📍</span></span></div>
         <div class="rev"><span class="k">Attendance</span><span class="v">${p.att} of ${p.inv}</span></div>
         ${p.star?`<div class="rev"><span class="k">⭐ Star of training</span><span class="v">${p.star}</span></div>`:''}
-        ${p.int?`<div class="rev"><span class="k">Intervention</span><span class="v">${p.int}</span></div>`:''}
+        ${p.ints&&p.ints.length?`<div class="rev"><span class="k">Intervention${p.ints.length>1?'s':''}</span><span class="v">${p.ints.map(i=>`<span class="chip blue">${i}</span>`).join('')}</span></div>`:''}
       </div>
-      ${p.read?`<div class="card"><div class="sec-head"><h3>Did it work? <span class="new">NEW</span></h3></div>
-        <div style="font-size:25px;font-weight:800;letter-spacing:-1px">${Math.round(p.read.sold/p.read.of*100)}%</div>
-        <div style="font-size:11.5px;color:var(--ink-3);margin-top:3px">${p.read.sold} of ${p.read.of} agents made a sale within 30 days</div>
-        <div class="bar" style="margin-top:8px"><i class="${p.read.sold/p.read.of>=.5?'':'amber'}" style="width:${p.read.sold/p.read.of*100}%"></i></div>
-        <div class="hint">Read automatically from sales data ${p.read.days} days after delivery. Nobody enters this.</div></div>`
-        :`<div class="banner info">📈 The 30-day outcome read isn't due yet — it appears automatically once 30 days have passed.</div>`}
+      <div class="card"><div class="sec-head"><h3>Attendance</h3></div>
+        <div class="rev"><span class="k">Submitted</span><span class="v">${p.att} of ${p.inv}</span></div>
+        <div class="rev" style="cursor:pointer" onclick="showApproved('${p.id}')"><span class="k">Approved</span><span class="v">${p.approved?p.approved.length+' of '+p.att:'—'} ›</span></div>
+      </div>
       <div class="card"><div class="sec-head"><h3>Courses</h3></div>
         ${p.courses.map(c=>`<div style="padding:5px 0"><div style="font-size:12.5px;font-weight:800">${c.c}</div>
         <div style="margin-top:4px">${c.t.map(t=>`<span class="chip">${t}</span>`).join('')}</div></div>`).join('')}</div>
