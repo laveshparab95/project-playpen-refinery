@@ -53,7 +53,13 @@
   .tabbar button{flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9.5px;font-weight:700;color:var(--ink-3);padding:4px 0;font-family:inherit}
   .tabbar button .ic{font-size:16px;line-height:1}
   .tabbar button.on{color:var(--sk-orange)}
-  .screen{display:flex;flex-direction:column;width:100%}
+  .screen{display:flex;flex-direction:column;width:100%;position:relative}
+  .fab-wrap{position:absolute;right:14px;bottom:70px;z-index:40;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .fab-menu{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .fab-menu button{background:#fff;border:1px solid var(--line);border-radius:22px;padding:9px 13px;font-size:12px;font-weight:700;color:var(--ink-1);box-shadow:0 6px 18px rgba(0,0,0,.13);cursor:pointer;font-family:inherit;white-space:nowrap}
+  .fab{width:52px;height:52px;border-radius:50%;border:none;background:var(--sk-orange);color:#fff;font-size:26px;line-height:1;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.22);font-family:inherit;transition:transform .18s ease}
+  .fab.open{transform:rotate(45deg)}
+  .fab-scrim{position:absolute;inset:0;background:rgba(15,18,25,.18);z-index:30}
 
   /* ---------- browser (manager) ---------- */
   .browser{background:#1C2029;border-radius:14px;padding:9px 9px 0;box-shadow:0 30px 70px rgba(0,0,0,.55);width:100%}
@@ -372,7 +378,7 @@ const SEED_INTS=[
 
 /* ---- trainings ---- */
 const SEED_TRAININGS=[
-  {id:"TRN-2481",date:iso(TODAY),time:"11:00",ahq:"Kisumu AHQ",loc:"Mamboleo Showground, Kisumu",int:"INT-014",
+  {id:"TRN-2481",date:iso(TODAY),time:"11:00",ahq:"Kisumu AHQ",loc:"Mamboleo Showground, Kisumu",int:"INT-014",ints:["INT-014","INT-016"],
    courses:[{c:"Product Knowledge",t:["Home 400 / 600 systems","Battery health & lifespan"]}],
    agents:["Brian Otieno","Mercy Wanjiku","Kelvin Omondi","Grace Atieno","Stephen Ochieng","Dennis Mutua"],status:"scheduled"},
   {id:"TRN-2486",date:iso(addDays(3)),time:"14:30",ahq:"Kakamega AHQ",loc:"Kakamega Social Hall",int:"INT-017",
@@ -471,6 +477,7 @@ function setMode(m){
   if(m==='mgr') mgo(mcurrent,false); else go(current,false);
 }
 function go(id,push=true){
+  if(id!=='home')FAB_OPEN=false;
   if(push&&current!==id)hist.push(current);
   current=id;render();
   document.querySelector('#screens .body')?.scrollTo(0,0);
@@ -525,61 +532,45 @@ resetDrafts();
 reg("home","Home",()=>{
   const todays=TRAININGS.filter(t=>t.status==="scheduled"&&t.date===iso(TODAY));
   const upcoming=TRAININGS.filter(t=>t.status==="scheduled"&&t.date>iso(TODAY)).sort((a,b)=>a.date.localeCompare(b.date));
-  const pend=PJP.filter(p=>p.status==="pending").length, gaps=PJP.filter(p=>p.status==="gap"&&p.date>=iso(TODAY)).length;
+  const gaps=PJP.filter(p=>p.status==="gap"&&p.date>=iso(TODAY)).length;
   const card=t=>{
-    const isT=t.date===iso(TODAY);
+    const ints=(t.ints&&t.ints.length?t.ints:(t.int?[t.int]:[]));
     return `<div class="card tight">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-        <div><div style="font-size:13.5px;font-weight:800">${t.ahq.replace(' AHQ','')} · ${t.time}</div>
-        <div style="font-size:11px;color:var(--ink-3);margin-top:2px">${prettyIso(t.date)} · ${t.id}</div></div>
-        <span class="pill ${isT?'today':'sched'}">${isT?'Today':'Scheduled'}</span></div>
+      <div><div style="font-size:13.5px;font-weight:800">${t.ahq.replace(' AHQ','')} · ${t.time}</div>
+      <div style="font-size:11px;color:var(--ink-3);margin-top:2px">${prettyIso(t.date)} · ${t.id}</div></div>
       <div style="font-size:11.5px;color:var(--ink-2);margin-top:7px">📍 ${t.loc}</div>
-      <div style="font-size:11.5px;color:var(--ink-2);margin-top:3px">👥 ${t.agents.length} invited · 📚 ${t.courses.map(c=>c.c).join(', ')}</div>
-      ${t.int?`<div style="margin-top:6px"><span class="chip blue">↳ ${t.int} ${intName(t.int)}</span></div>`:''}
+      <div style="font-size:11.5px;color:var(--ink-2);margin-top:3px">👥 ${t.agents.length} invited</div>
+      ${ints.length?`<div style="margin-top:6px;display:flex;flex-wrap:wrap">${ints.map(i=>`<span class="chip blue">↳ ${i}</span>`).join('')}</div>`:''}
       <div class="btn-row" style="margin-top:9px">
         <button class="btn btn-primary btn-sm" onclick="tryStart('${t.id}')">Start</button>
         <button class="btn btn-outline btn-sm" onclick="openResched('${t.id}')">Reschedule</button>
         <button class="btn btn-danger btn-sm" onclick="openCancel('${t.id}')">Cancel</button></div></div>`;
   };
   return shell({title:"Good morning, Pier",sub:"Regional Mentor · Western Region · August 2026",showBack:false,tab:"home",
+    foot:fabHome(),
     body:`
-      ${gaps?`<div class="banner warn">🗓 <b>${gaps} working day${gaps>1?'s':''} in your plan ${gaps>1?'have':'has'} nothing on ${gaps>1?'them':'it'}.</b> Unplanned days show as gaps to your ZTM. <span style="text-decoration:underline;cursor:pointer" onclick="go('pjp')">Fill them in</span></div>`:''}
-      ${pend?`<div class="banner pur">⏳ ${pend} plan day${pend>1?'s':''} awaiting approval from Lilian Wambui (ZTM).</div>`:''}
+      ${gaps?`<div class="banner warn">🗓 <b>${gaps} day${gaps>1?'s':''} unplanned</b> — plan ${gaps>1?'them':'it'} within 2 days.</div>`:''}
 
-      <div class="sec-head"><h3>Manager priorities this month <span class="new">NEW</span></h3><button class="edit" onclick="go('directives')">See all ${DIRECTIVES.length}</button></div>
-      <div class="card tight" style="cursor:pointer" onclick="go('directives')">
-        <div style="font-size:12.5px;font-weight:800">${DIRECTIVES[0].t}</div>
-        <div style="font-size:11px;color:var(--ink-3);margin-top:3px">From ${DIRECTIVES[0].by} · ${DIRECTIVES[0].kpi} · due ${prettyIso(DIRECTIVES[0].due)}</div>
-      </div>
-
-      <div class="sec-head" style="margin-top:15px"><h3>Today</h3></div>
+      <div class="sec-head"><h3>Today</h3></div>
       ${todays.map(card).join('')||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:18px">Nothing scheduled today.</div>`}
 
       <div class="sec-head" style="margin-top:15px"><h3>Coming up</h3></div>
-      ${upcoming.map(card).join('')||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:18px">Nothing upcoming.</div>`}
-
-      <div class="sec-head" style="margin-top:15px"><h3>Quick actions</h3></div>
-      <div class="grid2">
-        <button class="btn btn-outline" style="padding:14px 8px;font-size:12px" onclick="startSchedule()">＋ Schedule<br>a training</button>
-        <button class="btn btn-outline" style="padding:14px 8px;font-size:12px" onclick="go('ints')">🎯 My<br>interventions</button>
-        <button class="btn btn-outline" style="padding:14px 8px;font-size:12px" onclick="go('insight')">💡 Log a field<br>insight (R7)</button>
-        <button class="btn btn-outline" style="padding:14px 8px;font-size:12px" onclick="go('dayreport')">📝 End-of-day<br>report</button>
-      </div>`});
+      ${upcoming.map(card).join('')||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:18px">Nothing upcoming.</div>`}`});
 });
+let FAB_OPEN=false;
+function fabHome(){
+  const items=[["startSchedule()","＋ Schedule a training"],["go('ints')","🎯 My interventions"],
+    ["go('insight')","💡 Log a field insight (R7)"],["go('dayreport')","📝 End-of-day report"]];
+  return `${FAB_OPEN?`<div class="fab-scrim" onclick="toggleFab()"></div>`:''}
+    <div class="fab-wrap">
+      ${FAB_OPEN?`<div class="fab-menu">${items.map(([a,l])=>`<button onclick="FAB_OPEN=false;${a}">${l}</button>`).join('')}</div>`:''}
+      <button class="fab ${FAB_OPEN?'open':''}" onclick="toggleFab()">＋</button>
+    </div>`;
+}
+function toggleFab(){FAB_OPEN=!FAB_OPEN;render();}
 function intName(id){const i=INTS.find(x=>x.id===id);return i?i.t:'';}
 
-/* ---------- MANAGER DIRECTIVES (read side) ---------- */
-reg("directives","Manager priorities (cascaded)",()=>shell({
-  title:"Priorities this month",sub:"Cascaded from your CTM / ZTM",
-  body:`<div class="banner info">These come down from the training managers via the dashboard. Your plan should chase them — each one names the KPI it serves.</div>
-    ${DIRECTIVES.map(d=>`<div class="card">
-      <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
-        <div style="font-size:13.5px;font-weight:800;flex:1">${d.t}</div>
-        <span class="chip grey">${d.kpi}</span></div>
-      <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.5">${d.d}</div>
-      <div style="font-size:11px;color:var(--ink-3);margin-top:8px">From ${d.by} · target date ${prettyIso(d.due)}</div>
-      <button class="btn btn-outline btn-sm" style="width:100%;margin-top:9px" onclick="planAgainst('${d.kpi}','${esc(d.t)}')">Add a plan day for this</button>
-    </div>`).join('')}`}));
+/* (Manager priorities screen removed from the RM App) */
 function planAgainst(kpi,t){PJPD={date:"",kpi,cat:catForKpi(kpi),detail:t,loc:"",travel:false,route:"",nights:0,int:"",legs:[]};go('pjpNew');}
 function catForKpi(k){const m={R1:"Inactive agent reactivation (R1)",R2:"New agent F2F training (R2)",R3:"JKQ drive & low-scorer follow-up (R3)",R4:"Certified-agent conversion coaching (R4)",R5:"Training quality audit / follow-up (R5-R6)",R7:"360 field insight capture (R7)"};return m[k]||"";}
 
