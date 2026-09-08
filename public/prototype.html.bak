@@ -368,7 +368,7 @@ const SEED_INTS=[
    root:"",sessions:[{d:iso(addDays(-2)),exp:14,att:12,ahq:"Kisumu AHQ",pass:78}]},
   {id:"INT-016",t:"Reactivate bottom performers",aud:"Agents with no sale 30–60 days",scope:"Zone",zone:"Coast",
    kpi:"R1",type:"Reactive",by:"ZTM",byName:"Lilian Wambui",mode:"Field",tgtHead:18,attended:0,
-   baseline:"32% reactivation",metric:"",budget:0,date:iso(addDays(13)),status:"Approval pending",cascaded:true,
+   baseline:"32% reactivation",metric:"",budget:0,date:iso(addDays(13)),status:"Planned",cascaded:true,
    root:"Knowledge decay",sessions:[]},
   {id:"INT-017",t:"SEO certification & conversion push",aud:"July-certified agents",scope:"AHQ",zone:"Coast",
    kpi:"R4",type:"Strategic",by:"RM",byName:"Pier M.",mode:"Classroom",tgtHead:9,attended:9,
@@ -522,7 +522,7 @@ function esc(s){return String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;');}
    ===================================================================== */
 let S={},R={},SEL=[];
 function resetDrafts(){
-  S={date:"",time:"",ahq:"",loc:"",int:"",ints:[],mapQ:"",courses:[],agents:[],curCourse:"",curTopics:[],listKey:"all",listFilters:[],q:""};
+  S={date:"",time:"",ahq:"",loc:"",int:"",courses:[],agents:[],curCourse:"",curTopics:[],listKey:"all",q:""};
   R={tid:null,checkedIn:false,drift:0,feedback:"",stamp:"",attend:[],extra:[],invited:[],photo:false,video:false,
      courses:[],comments:"",star:""};
 }
@@ -540,10 +540,7 @@ reg("home","Home",()=>{
       <div style="font-size:11px;color:var(--ink-3);margin-top:2px">${prettyIso(t.date)} · ${t.id}</div></div>
       <div style="font-size:11.5px;color:var(--ink-2);margin-top:7px">📍 ${t.loc}</div>
       <div style="font-size:11.5px;color:var(--ink-2);margin-top:3px">👥 ${t.agents.length} invited</div>
-      ${ints.length?`<div style="margin-top:6px;display:flex;flex-wrap:wrap">${ints.map(i=>{
-        const name=intName(i);
-        return `<span class="chip blue" title="${esc(name)}">↳ ${i}${name?' · '+name:''}</span>`;
-      }).join('')}</div>`:''}
+      ${ints.length?`<div style="margin-top:6px;display:flex;flex-wrap:wrap">${ints.map(i=>`<span class="chip blue">↳ ${i}</span>`).join('')}</div>`:''}
       <div class="btn-row" style="margin-top:9px">
         <button class="btn btn-primary btn-sm" onclick="tryStart('${t.id}')">Start</button>
         <button class="btn btn-outline btn-sm" onclick="openResched('${t.id}')">Reschedule</button>
@@ -682,14 +679,10 @@ function savePJP(){
 }
 
 /* ---------- INTERVENTIONS ---------- */
-let INT_FILTER="all";
 reg("ints","My interventions",()=>{
-  const statuses={all:"All",inprogress:"In progress",pending:"Approval pending",complete:"Complete"};
-  const mine=INTS.filter(i=>i.cascaded||i.byName==="Pier M.").filter(i=>INT_FILTER==="all"||i.status===statuses[INT_FILTER]);
+  const mine=INTS.filter(i=>i.cascaded||i.byName==="Pier M.");
   return shell({title:"Interventions",sub:"Cascaded to me + ones I raised",
-    body:`<div class="seg" style="margin-bottom:11px">
-        ${Object.keys(statuses).map(k=>`<button class="${INT_FILTER===k?'on':''}" onclick="INT_FILTER='${k}';go('ints',false)">${statuses[k]}</button>`).join('')}
-      </div>
+    body:`<div class="banner info"><b>An intervention is the container; a training is one session inside it.</b> Several sessions roll up into one coverage number — so a programme is only complete at full coverage, not at 40%.</div>
       <button class="btn btn-primary" style="margin-bottom:12px" onclick="ID={t:'',aud:'',kpi:'',tgtHead:'',baseline:'',mode:'Field',root:''};go('intNew')">＋ Raise an intervention</button>
       ${mine.map(i=>{
         const pct=Math.round(i.attended/i.tgtHead*100);
@@ -698,7 +691,7 @@ reg("ints","My interventions",()=>{
           <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
             <div style="flex:1"><div style="font-size:13px;font-weight:800">${i.t}</div>
             <div style="font-size:10.5px;color:var(--ink-3);margin-top:2px">${i.id} · ${i.scope}${i.zone!=='All'?' · '+i.zone:''} · ${i.type}</div></div>
-            <span class="pill ${i.status==='Complete'?'done':i.status==='In progress'?'today':i.status==='Approval pending'?'pend':'sched'}">${i.status}</span></div>
+            <span class="pill ${i.status==='Complete'?'done':i.status==='In progress'?'today':'sched'}">${i.status}</span></div>
           <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:9px;font-weight:700">
             <span>Coverage</span><span>${i.attended} / ${i.tgtHead} agents · ${pct}%</span></div>
           <div class="bar"><i class="${cls}" style="width:${Math.min(pct,100)}%"></i></div>
@@ -726,7 +719,12 @@ reg("intDetail","Intervention detail",()=>{
         <div class="rev"><span class="k">Target date</span><span class="v">${prettyIso(i.date)}</span></div>
         ${i.root?`<div class="rev"><span class="k">Root cause (repeat)</span><span class="v">${i.root}</span></div>`:''}
       </div>
-
+      <div class="card">
+        <div class="sec-head"><h3>Did it work?</h3></div>
+        <div class="rev"><span class="k">Baseline</span><span class="v">${i.baseline}</span></div>
+        <div class="rev"><span class="k">30-day read</span><span class="v" style="color:${i.metric?'var(--green)':'var(--ink-3)'}">${i.metric||'Not due yet'}</span></div>
+        <div class="hint">The movement is read from the data platform 30 days after delivery — nobody types it in.</div>
+      </div>
       <div class="card">
         <div class="sec-head"><h3>Sessions delivered (${i.sessions.length})</h3></div>
         ${i.sessions.length?i.sessions.map(s=>`<div class="listrow" style="cursor:default">
@@ -773,7 +771,7 @@ function saveInt(){
   const id="INT-0"+(20+INTS.length);
   INTS.push({id,t:ID.t,aud:ID.aud,scope:"AHQ",zone:"Coast",kpi:ID.kpi,type:"Reactive",by:"RM",byName:"Pier M.",
     mode:ID.mode,tgtHead:+ID.tgtHead||10,attended:0,baseline:ID.baseline,metric:"",budget:0,
-    date:iso(addDays(14)),status:"Approval pending",cascaded:false,root:ID.root,sessions:[]});
+    date:iso(addDays(14)),status:"Planned",cascaded:false,root:ID.root,sessions:[]});
   alertBox("🎯","Intervention raised",`<b>${id}</b> created and sent to your ZTM for visibility. You can now schedule sessions against it.`,"Done","hist=[];go('ints',false)");
 }
 
@@ -800,48 +798,25 @@ reg("s1","Schedule · 1 — When & where",()=>shell({
     </div>
     <div class="card">
       <label class="label">Location <span class="req">*</span></label>
-      <input type="text" placeholder="Enter the exact venue detail" value="${S.loc}" oninput="S.loc=this.value">
-      <button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="go('mapPick')">📍 Pick on Google Maps</button>
+      <input type="text" placeholder="e.g. Mamboleo Showground, Kisumu" value="${S.loc}" oninput="S.loc=this.value">
+      <button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="pickMap()">📍 Pick on Google Maps</button>
     </div>
     <div class="card">
       <label class="label">Part of an intervention? <span class="new">NEW</span></label>
-      ${S.ints&&S.ints.length?`<div style="margin-bottom:8px">${S.ints.map(i=>`<span class="chip blue">↳ ${i}</span>`).join('')}</div>`:''}
-      <button class="btn btn-outline btn-sm" style="width:100%" onclick="go('intPick')">Select interventions</button>
-      <div class="hint">Linking it means this session's attendance counts toward those interventions' coverage.</div>
+      <select onchange="S.int=this.value">
+        <option value="">Standalone session</option>
+        ${INTS.filter(i=>i.status!=='Complete').map(i=>`<option value="${i.id}" ${S.int===i.id?'selected':''}>${i.id} — ${i.t}</option>`).join('')}
+      </select>
+      <div class="hint">Linking it means this session's attendance counts toward that intervention's coverage.</div>
     </div>`,
   foot:footBtn(`<button class="btn btn-primary" ${S.date&&S.time&&S.ahq&&S.loc.trim().length>2?'':'disabled'} onclick="s1next()">Continue</button>`)
 }));
-reg("mapPick","Pick location",()=>shell({
-  title:"Pick location",sub:"Search on Google Maps",
-  showBack:true,
-  body:`<div class="card">
-      <input type="text" placeholder="Search for a venue or address" value="${S.mapQ||''}" oninput="S.mapQ=this.value;go('mapPick',false)">
-    </div>
-    <div style="font-size:10.5px;color:var(--ink-3);font-weight:700;margin-bottom:8px">${S.mapQ?`Results for "${S.mapQ}"`:'Start typing to see results'}</div>
-    ${S.mapQ?[
-      {n:'Mamboleo Showground, Kisumu',a:'Mamboleo, Kisumu'},
-      {n:'Kakamega Social Hall',a:'Kakamega'},
-      {n:'Bungoma Town Depot',a:'Bungoma'},
-      {n:'Siaya Community Centre',a:'Siaya'},
-      {n:'Busia Municipal Hall',a:'Busia'}
-    ].filter(r=>r.n.toLowerCase().includes(S.mapQ.toLowerCase())||r.a.toLowerCase().includes(S.mapQ.toLowerCase())).map(r=>`<div class="listrow" onclick="S.loc='${r.n}';go('s1')">
-      <div class="nm">📍 ${r.n}<div class="meta">${r.a}</div></div><div style="color:var(--ink-3)">›</div></div>`).join('')
-    ||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">No results. Try a different search.</div>`
-    :`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">Type a venue, town or landmark.</div>`}`
-}));
-reg("intPick","Select interventions",()=>shell({
-  title:"Select interventions",sub:"Multi-select",
-  showBack:true,
-  body:`<div style="font-size:10.5px;color:var(--ink-3);font-weight:700;margin-bottom:8px">${S.ints?S.ints.length:0} selected</div>
-    ${INTS.filter(i=>i.status!=='Complete').map(i=>{
-      const on=S.ints&&S.ints.includes(i.id);
-      return `<div class="listrow" onclick="togInt('${i.id}')">
-        <div class="cbx ${on?'on':''}">${on?'✓':''}</div>
-        <div class="nm">${i.id} — ${i.t}<div class="meta">${i.kpi} · ${i.status}</div></div></div>`;
-    }).join('')||'<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">No open interventions.</div>'}
-    <button class="btn btn-primary" style="margin-top:10px" onclick="go('s1')">Done</button>`
-}));
-function togInt(id){if(!S.ints)S.ints=[];const i=S.ints.indexOf(id);if(i>-1)S.ints.splice(i,1);else S.ints.push(id);go('intPick',false);}
+function pickMap(){
+  modal(`<h3>Pick training location</h3><div class="map"><div class="rad"></div><div class="pin">📍</div></div>
+    <p style="font-size:12px">Simulated map picker — stores the address and the coordinates.</p>
+    <button class="btn btn-primary" onclick="S.loc='Mamboleo Showground, Kisumu';closeModal();go('s1',false)">Use this location</button>
+    <button class="btn btn-outline" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
+}
 function s1next(){
   if(S.date<=iso(TODAY)){alertBox("📅","Invalid date","Training date must be in the future.");return;}
   const c=TRAININGS.find(t=>t.status==="scheduled"&&t.date===S.date&&Math.abs(mins(t.time)-mins(S.time))<30);
@@ -880,51 +855,42 @@ function addCourse(){S.courses.push({c:S.curCourse,t:[...S.curTopics]});S.curCou
 
 /* ---- STEP 3: smart agent selection (rebuilt from feedback) ---- */
 reg("s3","Schedule · 3 — Agents",()=>{
-  const filters=S.listFilters||[];
-  const pool=AGENTS.filter(a=>filters.every(k=>LISTS[k].f(a)))
+  const pool=AGENTS.filter(a=>LISTS[S.listKey].f(a))
     .filter(a=>!S.q||a.n.toLowerCase().includes(S.q.toLowerCase()))
     .sort((a,b)=>a.j-b.j);
   const allSel=pool.length&&pool.every(a=>S.agents.includes(a.n));
-  const anyActive=filters.length>0||S.q;
   return shell({title:"Schedule a training",sub:"Step 3 of 4 — Who's coming",
     body:`${steps(3,4)}
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
-        <button class="btn btn-outline btn-sm" onclick="go('filterPick')">Filter ${filters.length?`(${filters.length})`:''}</button>
-        ${anyActive?`<button class="edit" onclick="S.listFilters=[];S.q='';go('s3',false)">Clear all</button>`:''}
-        <span style="font-size:11px;color:var(--ink-3);font-weight:700;margin-left:auto">${pool.length} match${pool.length===1?'':'es'}</span>
-      </div>
+      <div class="banner ok"><b>No minimum enforced.</b> You asked why an RM couldn't meet one or two agents — they can. A 1:1 coaching session is a valid training. The old floor is gone.</div>
+      <label class="label">Smart lists <span class="new">NEW</span></label>
+      <div style="margin-bottom:9px">${Object.keys(LISTS).map(k=>{
+        const n=AGENTS.filter(LISTS[k].f).length;
+        return `<span class="qtag ${S.listKey===k?'on':''}" style="display:inline-block;margin:0 4px 5px 0" onclick="S.listKey='${k}';go('s3',false)">${LISTS[k].t} (${n})</span>`;}).join('')}</div>
+      <div class="hint" style="margin-bottom:10px">${LISTS[S.listKey].d}</div>
       <input type="text" placeholder="🔍 Search by name" value="${S.q}" oninput="S.q=this.value;go('s3',false)" style="margin-bottom:10px">
       <div style="display:flex;gap:7px;margin-bottom:10px">
         <button class="btn btn-outline btn-sm" style="flex:1" onclick="selAll(${allSel?'false':'true'})">${allSel?'Clear':'Select all'} ${pool.length} shown</button>
+        <button class="btn btn-outline btn-sm" style="flex:1" onclick="selAHQ()">Select all in ${S.ahq?S.ahq.replace(' AHQ',''):'AHQ'}</button>
       </div>
       ${pool.map(a=>`<div class="listrow" onclick="togAgent('${esc(a.n)}')">
         <div class="cbx ${S.agents.includes(a.n)?'on':''}">${S.agents.includes(a.n)?'✓':''}</div>
-        <div class="nm">${a.n}<div class="meta">joined ${a.j}d ago · last sale ${a.ls}d ago · ${a.lt===null?'<b style="color:var(--red)">never trained</b>':'trained '+a.lt+'d ago'}${a.lit?'':' · <b style="color:var(--sk-orange)">no Litmos</b>'}</div></div>
-      </div>`).join('')||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">No agents match these filters.</div>`}
+        <div class="nm">${a.n}<div class="meta">${a.ahq.replace(' AHQ','')} · joined ${a.j}d ago · last sale ${a.ls}d ago · ${a.lt===null?'<b style="color:var(--red)">never trained</b>':'trained '+a.lt+'d ago'}${a.lit?'':' · <b style="color:var(--sk-orange)">no Litmos</b>'}</div></div>
+      </div>`).join('')||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">No agents match this list.</div>`}
       ${S.agents.length?`<div class="selbar"><div class="c">${S.agents.length} selected</div>
         <button class="btn btn-outline btn-sm" onclick="S.agents=[];go('s3',false)">Clear</button></div>`:''}`,
     foot:footBtn(`<button class="btn btn-primary" ${S.agents.length?'':'disabled'} onclick="go('s4')">Review${S.agents.length?` (${S.agents.length})`:''}</button>`)});
 });
 function togAgent(n){const i=S.agents.indexOf(n);i>-1?S.agents.splice(i,1):S.agents.push(n);go('s3',false);}
 function selAll(on){
-  const pool=AGENTS.filter(a=>(S.listFilters||[]).every(k=>LISTS[k].f(a))).filter(a=>!S.q||a.n.toLowerCase().includes(S.q.toLowerCase()));
+  const pool=AGENTS.filter(a=>LISTS[S.listKey].f(a)).filter(a=>!S.q||a.n.toLowerCase().includes(S.q.toLowerCase()));
   pool.forEach(a=>{const i=S.agents.indexOf(a.n);if(on&&i<0)S.agents.push(a.n);if(!on&&i>-1)S.agents.splice(i,1);});
   go('s3',false);
 }
-reg("filterPick","Filter agents",()=>shell({
-  title:"Filter agents",sub:"Match ALL selected lists",
-  showBack:true,
-  body:`<div style="font-size:10.5px;color:var(--ink-3);font-weight:700;margin-bottom:8px">Only agents matching every selected list are shown.</div>
-    ${Object.keys(LISTS).map(k=>{
-      const on=(S.listFilters||[]).includes(k);
-      const n=AGENTS.filter(LISTS[k].f).length;
-      return `<div class="listrow" onclick="togListFilter('${k}')">
-        <div class="cbx ${on?'on':''}">${on?'✓':''}</div>
-        <div class="nm">${LISTS[k].t} (${n})<div class="meta">${LISTS[k].d}</div></div></div>`;
-    }).join('')}
-    <button class="btn btn-primary" style="margin-top:10px" onclick="go('s3')">Show ${(function(){const f=S.listFilters||[];return AGENTS.filter(a=>f.every(k=>LISTS[k].f(a))).length;})()} matches</button>`
-}));
-function togListFilter(k){if(!S.listFilters)S.listFilters=[];const i=S.listFilters.indexOf(k);if(i>-1)S.listFilters.splice(i,1);else S.listFilters.push(k);go('filterPick',false);}
+function selAHQ(){
+  if(!S.ahq){toast("Pick an AHQ at step 1 first");return;}
+  AGENTS.filter(a=>a.ahq===S.ahq).forEach(a=>{if(!S.agents.includes(a.n))S.agents.push(a.n);});
+  go('s3',false);toast("Added everyone in "+S.ahq);
+}
 reg("s4","Schedule · 4 — Review",()=>shell({
   title:"Review & submit",sub:"Step 4 of 4",
   body:`${steps(4,4)}
@@ -934,7 +900,7 @@ reg("s4","Schedule · 4 — Review",()=>shell({
       <div class="rev"><span class="k">Time</span><span class="v">${S.time}</span></div>
       <div class="rev"><span class="k">AHQ</span><span class="v">${S.ahq}</span></div>
       <div class="rev"><span class="k">Location</span><span class="v">${S.loc}</span></div>
-      ${S.ints&&S.ints.length?`<div class="rev"><span class="k">Intervention${S.ints.length>1?'s':''}</span><span class="v">${S.ints.map(i=>`<span class="chip blue">${i}</span>`).join('')}</span></div>`:''}
+      ${S.int?`<div class="rev"><span class="k">Intervention</span><span class="v">${S.int}</span></div>`:''}
     </div>
     <div class="card">
       <div class="sec-head"><h3>Courses</h3><button class="edit" onclick="go('s2')">Edit</button></div>
@@ -950,10 +916,9 @@ reg("s4","Schedule · 4 — Review",()=>shell({
 }));
 function submitSchedule(){
   const id="TRN-"+(2500+Math.floor(Math.random()*90));
-  const ints=S.ints&&S.ints.length?S.ints:(S.int?[S.int]:[]);
-  TRAININGS.push({id,date:S.date,time:S.time,ahq:S.ahq,loc:S.loc,int:ints[0]||'',ints,courses:S.courses.map(c=>({c:c.c,t:c.t})),agents:[...S.agents],status:"scheduled"});
+  TRAININGS.push({id,date:S.date,time:S.time,ahq:S.ahq,loc:S.loc,int:S.int,courses:S.courses.map(c=>({c:c.c,t:c.t})),agents:[...S.agents],status:"scheduled"});
   modal(`<div class="ico">✅</div><h3>Training scheduled</h3>
-    <p><b>${id}</b> created. ${S.agents.length} agents notified — the session is now on their Kazi app.${ints.length?`<br><br>Linked to <b>${ints.join(', ')}</b>; attendance will roll up into coverage.`:'}</p>
+    <p><b>${id}</b> created. ${S.agents.length} agents notified — the session is now on their Kazi app.${S.int?`<br><br>Linked to <b>${S.int}</b>; attendance will roll up into its coverage.`:''}</p>
     <button class="btn btn-primary" onclick="closeModal();hist=[];go('home',false)">Back to home</button>`);
 }
 
@@ -965,7 +930,7 @@ function openResched(id){
     <p>Currently ${prettyIso(target.date)} at ${target.time}. Same record, new date and time.</p>
     <label class="label">New date</label><input type="date" id="rD" min="${iso(addDays(1))}" value="${target.date}">
     <label class="label" style="margin-top:10px">New time</label><input type="time" id="rT" value="${target.time}">
-
+    <div class="banner info" style="margin-top:12px">📣 <b>Yes — the same notification goes out again.</b> Every invited agent is re-notified with the new date, time and location, and their Kazi app entry updates in place. It's flagged as a change, not a new invite.</div>
     <button class="btn btn-primary" onclick="doResched()">Confirm reschedule</button>
     <button class="btn btn-outline" style="margin-top:8px" onclick="closeModal()">Back</button>`);
 }
@@ -1007,30 +972,35 @@ function tryStart(id){
 function T(){return TRAININGS.find(x=>x.id===R.tid)||TRAININGS[0];}
 reg("r1","Start · 1 — Check-in",()=>{
   const t=T(),now=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-  if(!R.checkedIn)doCheckIn();
   return shell({title:"Start training",sub:`${t.id} · Step 1 of 6 — Check in`,
     body:`${steps(1,6)}
       <div class="card">
         <div class="rev"><span class="k">Date</span><span class="v">${prettyIso(t.date)}</span></div>
-        <div class="rev"><span class="k">Start timestamp</span><span class="v">${R.stamp} <span style="color:var(--ink-3);font-weight:600">(actual)</span></span></div>
+        <div class="rev"><span class="k">Start timestamp</span><span class="v">${R.checkedIn?R.stamp:now} <span style="color:var(--ink-3);font-weight:600">(actual)</span></span></div>
         <div class="rev"><span class="k">Location</span><span class="v">${t.loc}</span></div>
-        <div class="rev"><span class="k">GPS</span><span class="v">${t.gps||'-0.0912, 34.7683'}</span></div>
       </div>
       <div class="map"><div class="rad"></div><div class="pin">📍</div></div>
-      <div class="banner warn">⚠️ You're <b>${R.drift} m</b> from the scheduled location (100 m tolerance). Explain why — you won't be blocked.</div>
-      <div class="card"><label class="label">Why the location changed <span class="req">*</span></label>
-        <textarea placeholder="e.g. Hall was locked, moved to the chief's camp" oninput="R.feedback=this.value">${R.feedback}</textarea></div>`,
-    foot:footBtn(`<button class="btn btn-primary" onclick="r1next()">Continue</button>`)});
+      ${R.checkedIn?(R.drift>100
+        ? `<div class="banner warn">⚠️ You're <b>${R.drift} m</b> from the scheduled location (100 m tolerance). Explain why — you won't be blocked.</div>
+           <div class="card"><label class="label">Why the location changed <span class="req">*</span></label>
+           <textarea placeholder="e.g. Hall was locked, moved to the chief's camp" oninput="R.feedback=this.value">${R.feedback}</textarea></div>`
+        : `<div class="banner ok">✓ Checked in at ${R.stamp} · ${R.drift} m from the venue.</div>`)
+        : `<div class="banner info">Check-in captures your GPS and the exact time. Records land in the system within the 24-hour timeliness SLA.</div>
+           <button class="btn btn-primary" onclick="doCheckIn(false)">📍 Check in here</button>
+           <button class="btn btn-outline" style="margin-top:8px" onclick="doCheckIn(true)">Simulate check-in far from venue</button>`}
+      <div class="hint" style="margin-top:11px">Agents check in separately on their own app once you submit.</div>`,
+    foot:R.checkedIn?footBtn(`<button class="btn btn-primary" onclick="r1next()">Continue</button>`):""});
 });
-function doCheckIn(){
-  R.checkedIn=true;R.drift=640;R.stamp=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+function doCheckIn(far){
+  R.checkedIn=true;R.drift=far?640:23;R.stamp=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  go('r1',false);
+  if(far)alertBox("⚠️","Location changed","You're <b>640 m</b> from the scheduled venue. Add a short explanation. You can still continue.");
 }
 function r1next(){if(R.drift>100&&!R.feedback.trim()){toast("Explain the location change first");return;}go('r2');}
 
 reg("r2","Start · 2 — Attendance",()=>{
   const t=T();
   const others=AGENTS.filter(a=>!R.invited.includes(a.n));
-  const tab=R.attTab||'invited';
   return shell({title:"Attendance",sub:`${t.id} · Step 2 of 6`,
     body:`${steps(2,6)}
       <div class="kpi">
@@ -1038,19 +1008,17 @@ reg("r2","Start · 2 — Attendance",()=>{
         <div class="k"><div class="n">${R.invited.length-R.attend.length}</div><div class="t">Absent</div></div>
         <div class="k"><div class="n">${R.extra.length}</div><div class="t">Walk-ins</div></div>
       </div>
-      <div class="seg" style="margin-bottom:11px">
-        <button class="${tab==='invited'?'on':''}" onclick="R.attTab='invited';go('r2',false)">Invited (${R.invited.length})</button>
-        <button class="${tab==='uninvited'?'on':''}" onclick="R.attTab='uninvited';go('r2',false)">Uninvited</button>
-      </div>
-      ${tab==='invited'
-        ? R.invited.map(n=>`<div class="listrow" onclick="togAttend('${esc(n)}')">
-            <div class="cbx ${R.attend.includes(n)?'on':''}">${R.attend.includes(n)?'✓':''}</div>
-            <div class="nm">${n}<div class="meta">${R.attend.includes(n)?'Present':'Marked absent'}</div></div></div>`).join('')
-        : `<input type="text" placeholder="🔍 Search any agent" oninput="R.q=this.value;go('r2',false)" style="margin-bottom:9px">
-          ${others.filter(a=>!R.q||a.n.toLowerCase().includes((R.q||'').toLowerCase())).slice(0,8).map(a=>`
-            <div class="listrow" onclick="togExtra('${esc(a.n)}')">
-              <div class="cbx ${R.extra.includes(a.n)?'on':''}">${R.extra.includes(a.n)?'✓':''}</div>
-              <div class="nm">${a.n}<div class="meta">Not invited · ${a.ahq.replace(' AHQ','')}</div></div></div>`).join('')}`}`,
+      <div class="sec-head"><h3>Invited (${R.invited.length})</h3><span style="font-size:10.5px;color:var(--ink-3)">Uncheck absentees</span></div>
+      ${R.invited.map(n=>`<div class="listrow" onclick="togAttend('${esc(n)}')">
+        <div class="cbx ${R.attend.includes(n)?'on':''}">${R.attend.includes(n)?'✓':''}</div>
+        <div class="nm">${n}<div class="meta">${R.attend.includes(n)?'Present':'Marked absent'}</div></div></div>`).join('')}
+      <div class="sec-head" style="margin-top:15px"><h3>Agents who turned up uninvited <span class="new">NEW</span></h3></div>
+      <div class="hint" style="margin-bottom:8px">You asked for this — walk-ins can be added here and they count toward attendance and coverage.</div>
+      <input type="text" placeholder="🔍 Search any agent" oninput="R.q=this.value;go('r2',false)" style="margin-bottom:9px">
+      ${others.filter(a=>!R.q||a.n.toLowerCase().includes((R.q||'').toLowerCase())).slice(0,8).map(a=>`
+        <div class="listrow" onclick="togExtra('${esc(a.n)}')">
+          <div class="cbx ${R.extra.includes(a.n)?'on':''}">${R.extra.includes(a.n)?'✓':''}</div>
+          <div class="nm">${a.n}<div class="meta">Not invited · ${a.ahq.replace(' AHQ','')}</div></div></div>`).join('')}`,
     foot:footBtn(`<button class="btn btn-primary" onclick="go('r3')">Continue</button>`)});
 });
 function togAttend(n){const i=R.attend.indexOf(n);i>-1?R.attend.splice(i,1):R.attend.push(n);go('r2',false);}
@@ -1135,7 +1103,7 @@ reg("r6","Start · 6 — Review & submit",()=>{
         <div style="margin-top:4px">${c.t.map(x=>`<span class="chip">${x}</span>`).join('')||'<span style="font-size:11px;color:var(--ink-3)">No topics</span>'}</div></div>`).join('')}</div>
       <div class="card"><div class="sec-head"><h3>Comments</h3><button class="edit" onclick="go('r5')">Edit</button></div>
         <div style="font-size:12.5px;color:var(--ink-2);line-height:1.5">${R.comments||'<span style="color:var(--ink-3)">None</span>'}</div></div>
-`,
+      ${t.int?`<div class="banner pur">↳ Rolls up into <b>${t.int}</b> — coverage will move from ${INTS.find(i=>i.id===t.int).attended} to ${INTS.find(i=>i.id===t.int).attended+R.attend.length+R.extra.length} of ${INTS.find(i=>i.id===t.int).tgtHead}.</div>`:''}`,
     foot:footBtn(`<button class="btn btn-primary" onclick="submitRun()">Submit training</button>`)});
 });
 function submitRun(){
@@ -1147,45 +1115,25 @@ function submitRun(){
 }
 function finishRun(){
   const t=T(),n=R.attend.length+R.extra.length;
-  const ints=t.ints&&t.ints.length?t.ints:(t.int?[t.int]:[]);
-  const approved=[...R.attend,...R.extra].map((nm,idx)=>({
-    n:nm,diff:(idx%3===0?'+0m':idx%3===1?'+1m':'+3m'),dist:(idx%4===0?'12m':idx%4===1?'45m':idx%4===2?'22m':'88m'),
-    status:(idx%5===0?'rejected':'approved')
-  }));
-  PAST.unshift({id:t.id,date:t.date,time:R.stamp,ahq:t.ahq,loc:t.loc,gps:t.gps||'-0.0912, 34.7683',inv:R.invited.length,att:n,int:t.int,ints,
-    courses:R.courses,star:R.star,cm:R.comments,approved});
-  ints.forEach(intId=>{const i=INTS.find(x=>x.id===intId);if(i){i.attended+=n;i.sessions.push({d:t.date,exp:R.invited.length,att:n,ahq:t.ahq,pass:0});
-    if(i.attended>=i.tgtHead)i.status="Complete";else i.status="In progress";}});
+  PAST.unshift({id:t.id,date:t.date,time:R.stamp,ahq:t.ahq,loc:t.loc,inv:R.invited.length,att:n,int:t.int,
+    courses:R.courses,star:R.star,cm:R.comments,read:null});
+  if(t.int){const i=INTS.find(x=>x.id===t.int);if(i){i.attended+=n;i.sessions.push({d:t.date,exp:R.invited.length,att:n,ahq:t.ahq,pass:0});
+    if(i.attended>=i.tgtHead)i.status="Complete";else i.status="In progress";}}
   [...R.attend,...R.extra].forEach(nm=>{const a=AGENTS.find(x=>x.n===nm);if(a)a.lt=0;});
   t.status="completed";closeModal();hist=[];go('past',false);
 }
-function showApproved(id){
-  const p=PAST.find(x=>x.id===id)||PAST[0];
-  const rows=p.approved||[];
-  modal(`<h3>Attendance approval</h3>
-    <div style="max-height:320px;overflow:auto">
-      ${rows.length?rows.map(r=>`<div class="listrow" style="align-items:center">
-        <div class="nm">${r.n}<div class="meta">Check-in ${r.diff} · ${r.dist} from venue</div></div>
-        <span class="pill ${r.status==='approved'?'done':'warn'}">${r.status}</span>
-      </div>`).join(''):'<div class="hint">No approval data yet.</div>'}
-    </div>
-    <button class="btn btn-primary" style="margin-top:10px" onclick="closeModal()">Close</button>`);
-}
 
 /* ---------- AGENTS (worklists) ---------- */
-let AG={key:"all",q:"",sel:[],sort:"lt",filters:[],ahq:[]};
+let AG={key:"all",q:"",sel:[],sort:"lt"};
 reg("agents","Agents",()=>{
-  let pool=AGENTS.filter(a=>(AG.filters||[]).every(k=>LISTS[k].f(a)))
-    .filter(a=>!AG.ahq.length||AG.ahq.includes(a.ahq))
-    .filter(a=>!AG.q||a.n.toLowerCase().includes(AG.q.toLowerCase()));
+  let pool=AGENTS.filter(a=>LISTS[AG.key].f(a)).filter(a=>!AG.q||a.n.toLowerCase().includes(AG.q.toLowerCase()));
   pool.sort((a,b)=>AG.sort==="lt"?((b.lt===null?9999:b.lt)-(a.lt===null?9999:a.lt)):(b.ls-a.ls));
-  const anyActive=(AG.filters||[]).length||AG.ahq.length||AG.q;
   return shell({title:"My agents",sub:"31 agents · Western Region",showBack:false,tab:"agents",
-    body:`<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
-        <button class="btn btn-outline btn-sm" onclick="go('agFilterPick')">Filter ${(AG.filters||[]).length+AG.ahq.length?`(${(AG.filters||[]).length+AG.ahq.length})`:''}</button>
-        ${anyActive?`<button class="edit" onclick="AG.filters=[];AG.ahq=[];AG.q='';go('agents',false)">Clear all</button>`:''}
-        <span style="font-size:11px;color:var(--ink-3);font-weight:700;margin-left:auto">${pool.length} match${pool.length===1?'':'es'}</span>
-      </div>
+    body:`<div class="banner info"><b>The app hands you the target list.</b> These are the worklists behind R1, R2 and R4 — no need to remember who's due.</div>
+      <div style="margin-bottom:10px">${Object.keys(LISTS).map(k=>{
+        const n=AGENTS.filter(LISTS[k].f).length;
+        return `<span class="qtag ${AG.key===k?'on':''}" style="display:inline-block;margin:0 4px 5px 0" onclick="AG.key='${k}';AG.sel=[];go('agents',false)">${LISTS[k].t} (${n})</span>`;}).join('')}</div>
+      <div class="hint" style="margin-bottom:10px">${LISTS[AG.key].d}</div>
       <input type="text" placeholder="🔍 Search" value="${AG.q}" oninput="AG.q=this.value;go('agents',false)" style="margin-bottom:9px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <button class="edit" onclick="agSelAll()">Select all ${pool.length}</button>
@@ -1194,16 +1142,16 @@ reg("agents","Agents",()=>{
       ${pool.map(a=>`<div class="listrow" style="align-items:flex-start">
         <div class="cbx ${AG.sel.includes(a.n)?'on':''}" onclick="event.stopPropagation();agTog('${esc(a.n)}')">${AG.sel.includes(a.n)?'✓':''}</div>
         <div class="nm" onclick="AGSEL='${esc(a.n)}';go('agentDetail')">${a.n}
-          <div class="meta">joined ${a.j}d · last sale ${a.ls}d ago<br>
+          <div class="meta">${a.ahq.replace(' AHQ','')} · joined ${a.j}d · last sale ${a.ls}d ago<br>
           ${a.lt===null?'<b style="color:var(--red)">Never trained</b>':'Trained '+a.lt+'d ago'} · Litmos ${a.lit?a.litp+'%':'<b style="color:var(--sk-orange)">never logged in</b>'}${a.cert?' · <b style="color:var(--green)">certified</b>'+(a.conv?'':' (not converted)'):''}</div></div>
-        <div style="color:var(--ink-3)">›</div></div>`).join('')||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">Nobody matches these filters.</div>`}
+        <div style="color:var(--ink-3)">›</div></div>`).join('')||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">Nobody on this list — good news.</div>`}
       ${AG.sel.length?`<div class="selbar"><div class="c">${AG.sel.length} selected</div>
         <button class="btn btn-primary btn-sm" onclick="inviteSelected()">Invite to a training</button>
         <button class="btn btn-outline btn-sm" onclick="AG.sel=[];go('agents',false)">Clear</button></div>`:''}`});
 });
 function agTog(n){const i=AG.sel.indexOf(n);i>-1?AG.sel.splice(i,1):AG.sel.push(n);go('agents',false);}
 function agSelAll(){
-  const pool=AGENTS.filter(a=>(AG.filters||[]).every(k=>LISTS[k].f(a))).filter(a=>!AG.ahq.length||AG.ahq.includes(a.ahq)).filter(a=>!AG.q||a.n.toLowerCase().includes(AG.q.toLowerCase()));
+  const pool=AGENTS.filter(a=>LISTS[AG.key].f(a)).filter(a=>!AG.q||a.n.toLowerCase().includes(AG.q.toLowerCase()));
   AG.sel=pool.map(a=>a.n);go('agents',false);
 }
 function inviteSelected(){
@@ -1211,29 +1159,6 @@ function inviteSelected(){
   const ah=AGENTS.find(a=>a.n===picked[0]);if(ah)S.ahq=ah.ahq;
   AG.sel=[];go('s1');toast(picked.length+" agents carried into a new training");
 }
-reg("agFilterPick","Filter agents",()=>shell({
-  title:"Filter agents",sub:"Match ALL selected lists and AHQs",
-  showBack:true,
-  body:`<div style="font-size:11px;font-weight:800;color:var(--ink-2);margin:10px 0 6px">Smart lists</div>
-    ${Object.keys(LISTS).map(k=>{
-      const on=(AG.filters||[]).includes(k);
-      const n=AGENTS.filter(LISTS[k].f).length;
-      return `<div class="listrow" onclick="togAgFilter('${k}')">
-        <div class="cbx ${on?'on':''}">${on?'✓':''}</div>
-        <div class="nm">${LISTS[k].t} (${n})<div class="meta">${LISTS[k].d}</div></div></div>`;
-    }).join('')}
-    <div style="font-size:11px;font-weight:800;color:var(--ink-2);margin:18px 0 6px">AHQ</div>
-    ${AHQS.map(a=>{
-      const on=(AG.ahq||[]).includes(a);
-      const n=AGENTS.filter(x=>x.ahq===a).length;
-      return `<div class="listrow" onclick="togAgAHQ('${a}')">
-        <div class="cbx ${on?'on':''}">${on?'✓':''}</div>
-        <div class="nm">${a.replace(' AHQ','')} (${n})</div></div>`;
-    }).join('')}
-    <button class="btn btn-primary" style="margin-top:10px" onclick="go('agents')">Show ${(function(){const f=AG.filters||[];return AGENTS.filter(a=>f.every(k=>LISTS[k].f(a))).filter(a=>!AG.ahq.length||AG.ahq.includes(a.ahq)).length;})()} matches</button>`
-}));
-function togAgFilter(k){if(!AG.filters)AG.filters=[];const i=AG.filters.indexOf(k);if(i>-1)AG.filters.splice(i,1);else AG.filters.push(k);go('agFilterPick',false);}
-function togAgAHQ(a){if(!AG.ahq)AG.ahq=[];const i=AG.ahq.indexOf(a);if(i>-1)AG.ahq.splice(i,1);else AG.ahq.push(a);go('agFilterPick',false);}
 let AGSEL=null;
 reg("agentDetail","Agent detail",()=>{
   const a=AGENTS.find(x=>x.n===AGSEL)||AGENTS[0];
@@ -1253,62 +1178,53 @@ reg("agentDetail","Agent detail",()=>{
       <div class="card"><div class="sec-head"><h3>Why they're on a list</h3></div>
         ${Object.keys(LISTS).filter(k=>k!=='all'&&LISTS[k].f(a)).map(k=>`<span class="chip">${LISTS[k].t}</span>`).join('')||'<div class="hint">Not flagged on any worklist.</div>'}
       </div>
-`});
+      <button class="btn btn-primary" onclick="resetDrafts();S.agents=['${esc(a.n)}'];S.ahq='${a.ahq}';go('s1')">Schedule a session with ${a.n.split(' ')[0]}</button>
+      <div class="hint" style="margin-top:8px;text-align:center">A one-person session is fine — no minimum.</div>`});
 });
 
 /* ---------- TRAININGS (past) ---------- */
-let F={ahq:[],from:"",to:"",open:false};
+let F={ahq:[],from:"",to:""};
 reg("past","Past trainings",()=>{
   const rows=PAST.filter(p=>(!F.ahq.length||F.ahq.includes(p.ahq))&&(!F.from||p.date>=F.from)&&(!F.to||p.date<=F.to))
     .sort((a,b)=>b.date.localeCompare(a.date));
   return shell({title:"Trainings",sub:"Completed only — cancelled excluded",showBack:false,tab:"past",
-    body:`<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
-        <button class="btn btn-outline btn-sm" onclick="go('trainFilterPick')">Filter ${(F.ahq.length||(F.from?1:0)+(F.to?1:0))?`(${(F.ahq.length+(F.from?1:0)+(F.to?1:0))})`:''}</button>
-        ${(F.ahq.length||F.from||F.to)?`<button class="edit" onclick="F={ahq:[],from:'',to:''};go('past',false)">Clear all</button>`:''}
-        <span style="font-size:11px;color:var(--ink-3);font-weight:700;margin-left:auto">${rows.length} training${rows.length===1?'':'s'}</span>
+    body:`<div class="card">
+        <label class="label">AHQ</label>
+        <div>${AHQS.map(a=>`<span class="qtag ${F.ahq.includes(a)?'on':''}" style="display:inline-block;margin:0 4px 5px 0" onclick="togF('${a}')">${a.replace(' AHQ','')}</span>`).join('')}</div>
+        <label class="label" style="margin-top:10px">Date range</label>
+        <div style="display:flex;gap:7px">
+          <input type="date" value="${F.from}" onchange="F.from=this.value;go('past',false)">
+          <input type="date" value="${F.to}" onchange="F.to=this.value;go('past',false)"></div>
+        ${(F.ahq.length||F.from||F.to)?`<button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="F={ahq:[],from:'',to:''};go('past',false)">Clear filters</button>`:''}
       </div>
+      <div style="font-size:10.5px;color:var(--ink-3);font-weight:700;margin-bottom:8px">${rows.length} training${rows.length===1?'':'s'} · newest first</div>
       ${rows.map(p=>`<div class="card tight" style="cursor:pointer" onclick="PSEL='${p.id}';go('pastDetail')">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
           <div><div style="font-size:13px;font-weight:800">${p.ahq.replace(' AHQ','')} · ${p.time}</div>
           <div style="font-size:10.5px;color:var(--ink-3);margin-top:2px">${prettyIso(p.date)} · ${p.id}</div></div>
-        </div>
+          <span class="pill done">Completed</span></div>
         <div style="font-size:11.5px;color:var(--ink-2);margin-top:7px">👥 ${p.att}/${p.inv} attended${p.star?` · ⭐ ${p.star}`:''}</div>
-        ${p.ints&&p.ints.length?`<div style="margin-top:6px;display:flex;flex-wrap:wrap">${p.ints.map(i=>`<span class="chip blue">↳ ${i}</span>`).join('')}</div>`:''}
+        ${p.read?`<div style="font-size:11.5px;color:var(--ink-2);margin-top:3px">📈 ${p.read.sold} of ${p.read.of} sold within 30 days</div>`:''}
       </div>`).join('')||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">No trainings match these filters.</div>`}`});
 });
 function togF(a){const i=F.ahq.indexOf(a);i>-1?F.ahq.splice(i,1):F.ahq.push(a);go('past',false);}
-reg("trainFilterPick","Filter trainings",()=>shell({
-  title:"Filter trainings",sub:"AHQ and date range",
-  showBack:true,
-  body:`<div style="font-size:11px;font-weight:800;color:var(--ink-2);margin:10px 0 6px">AHQ</div>
-    ${AHQS.map(a=>{
-      const on=(F.ahq||[]).includes(a);
-      const n=PAST.filter(p=>p.ahq===a).length;
-      return `<div class="listrow" onclick="togF('${a}')">
-        <div class="cbx ${on?'on':''}">${on?'✓':''}</div>
-        <div class="nm">${a.replace(' AHQ','')} (${n})</div></div>`;
-    }).join('')}
-    <div style="font-size:11px;font-weight:800;color:var(--ink-2);margin:18px 0 6px">Date range</div>
-    <div style="display:flex;gap:7px">
-      <input type="date" value="${F.from}" onchange="F.from=this.value;go('trainFilterPick',false)" placeholder="From">
-      <input type="date" value="${F.to}" onchange="F.to=this.value;go('trainFilterPick',false)" placeholder="To"></div>
-    <button class="btn btn-primary" style="margin-top:10px" onclick="go('past')">Show ${(function(){return PAST.filter(p=>(!F.ahq.length||F.ahq.includes(p.ahq))&&(!F.from||p.date>=F.from)&&(!F.to||p.date<=F.to)).length;})()} matches</button>`
-}));
 let PSEL=null;
 reg("pastDetail","Past training detail",()=>{
   const p=PAST.find(x=>x.id===PSEL)||PAST[0];
   return shell({title:p.id,sub:`${prettyIso(p.date)} · ${p.ahq}`,
     body:`<div class="card">
         <div class="rev"><span class="k">Started</span><span class="v">${p.time}</span></div>
-        <div class="rev"><span class="k">Location</span><span class="v">${p.loc} <span title="GPS: ${p.gps||'-0.0912, 34.7683'}" style="cursor:pointer">📍</span></span></div>
+        <div class="rev"><span class="k">Location</span><span class="v">${p.loc}</span></div>
         <div class="rev"><span class="k">Attendance</span><span class="v">${p.att} of ${p.inv}</span></div>
         ${p.star?`<div class="rev"><span class="k">⭐ Star of training</span><span class="v">${p.star}</span></div>`:''}
-        ${p.ints&&p.ints.length?`<div class="rev"><span class="k">Intervention${p.ints.length>1?'s':''}</span><span class="v">${p.ints.map(i=>`<span class="chip blue">${i}</span>`).join('')}</span></div>`:''}
+        ${p.int?`<div class="rev"><span class="k">Intervention</span><span class="v">${p.int}</span></div>`:''}
       </div>
-      <div class="card"><div class="sec-head"><h3>Attendance</h3></div>
-        <div class="rev"><span class="k">Submitted</span><span class="v">${p.att} of ${p.inv}</span></div>
-        <div class="rev" style="cursor:pointer" onclick="showApproved('${p.id}')"><span class="k">Approved</span><span class="v">${p.approved?p.approved.length+' of '+p.att:'—'} ›</span></div>
-      </div>
+      ${p.read?`<div class="card"><div class="sec-head"><h3>Did it work? <span class="new">NEW</span></h3></div>
+        <div style="font-size:25px;font-weight:800;letter-spacing:-1px">${Math.round(p.read.sold/p.read.of*100)}%</div>
+        <div style="font-size:11.5px;color:var(--ink-3);margin-top:3px">${p.read.sold} of ${p.read.of} agents made a sale within 30 days</div>
+        <div class="bar" style="margin-top:8px"><i class="${p.read.sold/p.read.of>=.5?'':'amber'}" style="width:${p.read.sold/p.read.of*100}%"></i></div>
+        <div class="hint">Read automatically from sales data ${p.read.days} days after delivery. Nobody enters this.</div></div>`
+        :`<div class="banner info">📈 The 30-day outcome read isn't due yet — it appears automatically once 30 days have passed.</div>`}
       <div class="card"><div class="sec-head"><h3>Courses</h3></div>
         ${p.courses.map(c=>`<div style="padding:5px 0"><div style="font-size:12.5px;font-weight:800">${c.c}</div>
         <div style="margin-top:4px">${c.t.map(t=>`<span class="chip">${t}</span>`).join('')}</div></div>`).join('')}</div>
@@ -1324,7 +1240,8 @@ reg("pastDetail","Past training detail",()=>{
 reg("kpi","My KPIs",()=>{
   const score=(KPI_LIB.reduce((s,k)=>s+(k.act>=k.target?5:3)*k.w,0)/KPI_LIB.reduce((s,k)=>s+k.w,0)).toFixed(1);
   return shell({title:"My KPIs",sub:"August 2026 · read-only",showBack:false,tab:"kpi",
-    body:`<div class="card" style="text-align:center;padding:18px">
+    body:`<div class="banner info">📊 <b>Nothing is entered here.</b> These come from the data platform (Looker, Litmos and sales data). The app's job is to make them visible, not to collect them.</div>
+      <div class="card" style="text-align:center;padding:18px">
         <div style="font-size:38px;font-weight:800;letter-spacing:-2px;line-height:1">${score}</div>
         <div style="font-size:11px;color:var(--ink-3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Weighted score out of 5</div>
       </div>
@@ -1366,9 +1283,11 @@ reg("insight","360 field insight (R7)",()=>shell({
 let DR="";
 reg("dayreport","End-of-day report",()=>shell({
   title:"How did today go?",sub:longIso(iso(TODAY)),
-  body:`<div class="card">
+  body:`<div class="banner ok">Daily, not monthly. A monthly write-up misses things or overstates them — this takes a minute and captures what actually happened, including work outside the plan.</div>
+    <div class="card">
       <label class="label">Today's report</label>
       <textarea style="min-height:170px" placeholder="What you did, who you met, anything that came up outside the plan…" oninput="DR=this.value">${DR}</textarea>
+      <div class="hint">Pre-filled with your name and date. Prompted at 6pm if you haven't submitted.</div>
     </div>
     <div class="card"><div class="sec-head"><h3>Today's plan, for reference</h3></div>
       ${(()=>{const p=PJP.find(x=>x.date===iso(TODAY));return p&&p.status!=='gap'
@@ -1376,7 +1295,7 @@ reg("dayreport","End-of-day report",()=>shell({
         :`<div class="hint">Nothing was planned for today.</div>`;})()}
       <div class="hint" style="margin-top:8px">If what you did differs from the plan, just say so here — that's the point of the daily report.</div>
     </div>`,
-  foot:footBtn(`<button class="btn btn-primary" onclick="alertBox('📝','Report submitted','Thanks — logged against today. Your ZTM sees it in the dashboard.','Done','hist=[];go(\\'home\\',false)')">Submit report</button>`)
+  foot:footBtn(`<button class="btn btn-primary" ${DR.trim()?'':'disabled'} onclick="alertBox('📝','Report submitted','Thanks — logged against today. Your ZTM sees it in the dashboard.','Done','hist=[];go(\\'home\\',false)')">Submit report</button>`)
 }));
 
 /* =====================================================================
