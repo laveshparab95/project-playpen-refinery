@@ -1,22 +1,21 @@
-# RM App — Home fix + Schedule a meeting edits
+# RM App — Start a meeting module edits
 
-## 0. Home screen fix
-Meeting cards show each intervention as code plus its short title (e.g. "INT-014 · Kisumu inactive agents") instead of the bare code.
+## 1. Step 1 of 6 — Check in
+- Remove the blue explainer line above the "Check in here" button.
+- Remove the "Simulate check-in far from venue" button. Tapping "Check in here" now itself captures a location away from the scheduled venue: it shows the distance warning and the required "Why the location changed" box, exactly as the old simulate button did.
+- Remove the line "Agents check in separately on their own app once you submit."
 
-## 1. Step 1 — Location
-- Keep the plain text box; placeholder becomes "Enter the exact venue detail".
-- "Pick on Google Maps" becomes a full page (not a pop-up): a search bar at the top, a simulated map, matching-place results, and a "Use this location" action that fills the venue field and returns to step 1.
+## 2. Step 2 of 6 — Attendance
+- Keep the Present / Absent / Walk-ins counts at the top.
+- Below them, split the two lists into two tabs: "Invited" and "Uninvited". Each tab shows only its own list (invited agents with the present/absent checkboxes; uninvited with the search box and add checkboxes).
+- Remove the line "You asked for this — walk-ins can be added here and they count toward attendance and coverage."
 
-## 2. Step 1 — Interventions
-Replace the single dropdown with a checkbox list of open interventions so several can be linked to one training. The review step and the created training record both carry all chosen interventions, and home cards show them as chips.
+## 3. Review meeting screen
+- Remove the blue "Rolls up into INT-014 — coverage will move from 12 to 18 of 40" message.
 
-## 3. Step 3 — Who's coming
-- Remove the green "No minimum enforced" banner.
-- Remove the "Everyone in my region" line above the search bar.
-- Replace the smart-list chip row with one multi-select filter: a compact expandable filter control listing the same lists; picking several narrows to agents matching all of them, with a clear-all option and a count of matches.
-- Agent rows no longer show the AHQ name.
-- Keep "Select all shown"; remove "Select all in <AHQ>".
+## 4. Reschedule meeting
+- Remove the blue notification message from the reschedule pop-up; everything else stays.
 
 ## Notes
-- All edits stay in `public/prototype.html`.
-- Verified in the preview afterwards, including that the manager portal is unaffected.
+- All edits stay in `public/prototype.html`; the manager portal is untouched.
+- Verified in the preview afterwards.
