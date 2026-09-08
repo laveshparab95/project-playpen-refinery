@@ -378,7 +378,7 @@ const SEED_INTS=[
 
 /* ---- trainings ---- */
 const SEED_TRAININGS=[
-  {id:"TRN-2481",date:iso(TODAY),time:"11:00",ahq:"Kisumu AHQ",loc:"Mamboleo Showground, Kisumu",int:"INT-014",
+  {id:"TRN-2481",date:iso(TODAY),time:"11:00",ahq:"Kisumu AHQ",loc:"Mamboleo Showground, Kisumu",int:"INT-014",ints:["INT-014","INT-016"],
    courses:[{c:"Product Knowledge",t:["Home 400 / 600 systems","Battery health & lifespan"]}],
    agents:["Brian Otieno","Mercy Wanjiku","Kelvin Omondi","Grace Atieno","Stephen Ochieng","Dennis Mutua"],status:"scheduled"},
   {id:"TRN-2486",date:iso(addDays(3)),time:"14:30",ahq:"Kakamega AHQ",loc:"Kakamega Social Hall",int:"INT-017",
@@ -477,6 +477,7 @@ function setMode(m){
   if(m==='mgr') mgo(mcurrent,false); else go(current,false);
 }
 function go(id,push=true){
+  if(id!=='home')FAB_OPEN=false;
   if(push&&current!==id)hist.push(current);
   current=id;render();
   document.querySelector('#screens .body')?.scrollTo(0,0);
@@ -566,7 +567,7 @@ function fabHome(){
       <button class="fab ${FAB_OPEN?'open':''}" onclick="toggleFab()">＋</button>
     </div>`;
 }
-function toggleFab(){FAB_OPEN=!FAB_OPEN;go('home');}
+function toggleFab(){FAB_OPEN=!FAB_OPEN;render();}
 function intName(id){const i=INTS.find(x=>x.id===id);return i?i.t:'';}
 
 /* (Manager priorities screen removed from the RM App) */
