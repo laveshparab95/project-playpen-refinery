@@ -121,3 +121,23 @@ On the Home "Today" / "Coming up" cards that already show multiple intervention 
 - All edits stay in `public/prototype.html`; the manager portal is untouched.
 - Seeded plan data gains multi-KPI / multi-activity examples and one rejected day so the new UI is visible.
 - Verified in the preview afterwards.
+
+## 7. Trainings tab
+
+### 7.1 Filters
+- Remove the always-visible AHQ chips and Date range inputs.
+- Replace with a single "Filter" button that opens a popup where AHQ (multi-select) and the from/to dates are both set, with Apply and Clear all.
+- The button shows a small dot when any filter is active; no chip summary.
+
+### 7.2 Training cards
+- Remove the "Completed" status pill.
+- Remove the sales line ("5 of 8 sold within 30 days").
+
+### 7.3 Training detail page
+- Remove the "Did it work?" section (and the "not due yet" banner that replaces it).
+- Attendance becomes two rows:
+  - "Attendance submitted" — count submitted.
+  - "Attendance approved" — count approved; tapping it opens a popup listing each agent with check-in time difference and distance difference, rows tinted green (approved) or red (rejected). Seeded with realistic sample values.
+- Show multiple interventions as chips (seeded data gains a second intervention where relevant).
+- Location row gains a check-in info icon beside it showing the GPS coordinates of the check-in.
+- Rename "Evidence" to a single section containing two labelled parts: "Training photo" and "Training video".
