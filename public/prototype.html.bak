@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RM App v2 + Manager Dashboard — Clickable Prototype</title>
+<style>
+  :root{
+    --sk-yellow:#FDB913; --sk-yellow-dark:#E5A400; --sk-orange:#F58220;
+    --ink:#1B1F27; --ink-2:#4A5262; --ink-3:#8A93A5;
+    --line:#E4E7EE; --bg:#F4F6FA; --card:#FFFFFF;
+    --green:#1E9E63; --red:#D64545; --blue:#2F6BD8; --purple:#6B4FD8;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(160deg,#232833 0%,#151922 60%,#0F1219 100%);color:var(--ink);min-height:100vh}
+
+  .page{max-width:1560px;margin:0 auto;padding:22px 20px 60px}
+  .masthead{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+  .masthead h1{color:#fff;font-size:19px;margin:0 0 5px;letter-spacing:-.2px}
+  .masthead p{color:#A9B2C4;font-size:12.5px;margin:0;max-width:680px;line-height:1.55}
+  .badge-proto{display:inline-block;background:var(--sk-yellow);color:#2A2200;font-weight:700;font-size:10px;letter-spacing:.9px;text-transform:uppercase;padding:4px 9px;border-radius:5px;margin-bottom:8px}
+  .mast-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn-ghost{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);color:#EDF0F6;font-size:12px;font-weight:600;padding:9px 13px;border-radius:9px;cursor:pointer;transition:.15s;font-family:inherit}
+  .btn-ghost:hover{background:rgba(255,255,255,.14)}
+  .btn-solid{background:var(--sk-yellow);border-color:var(--sk-yellow);color:#2A2200;font-weight:700}
+  .btn-solid:hover{background:var(--sk-yellow-dark)}
+
+  .switcher{display:inline-flex;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:11px;padding:4px;margin-bottom:18px}
+  .switcher button{border:none;background:none;color:#A9B2C4;font-size:13px;font-weight:700;padding:9px 18px;border-radius:8px;cursor:pointer;font-family:inherit}
+  .switcher button.on{background:var(--sk-yellow);color:#2A2200}
+
+  .stage{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
+  .surface{flex:1 1 auto;min-width:0}
+  .surface.hide{display:none}
+
+  /* ---------- phone ---------- */
+  .phone-wrap{flex:0 0 auto;display:flex;flex-direction:column;align-items:center}
+  .phone{width:392px;height:812px;background:#000;border-radius:44px;padding:11px;box-shadow:0 30px 70px rgba(0,0,0,.55),0 0 0 2px #2b2f38 inset;position:relative}
+  .screen-host{width:100%;height:100%;background:var(--bg);border-radius:34px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+  .notch{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:132px;height:26px;background:#000;border-radius:0 0 16px 16px;z-index:60}
+  .statusbar{height:34px;flex:0 0 34px;background:var(--sk-yellow);display:flex;align-items:center;justify-content:space-between;padding:0 20px;font-size:11.5px;font-weight:700;color:#2A2200}
+  .appbar{background:var(--sk-yellow);color:#2A2200;padding:6px 13px 13px;display:flex;align-items:center;gap:9px;flex:0 0 auto}
+  .appbar .back{width:29px;height:29px;border-radius:8px;border:none;background:rgba(0,0,0,.08);font-size:17px;cursor:pointer;line-height:1;color:#2A2200}
+  .appbar .titles{flex:1;min-width:0}
+  .appbar h2{margin:0;font-size:15.5px;font-weight:800;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .appbar .sub{font-size:10.5px;opacity:.75;font-weight:600;margin-top:1px}
+  .appbar .avatar{width:30px;height:30px;border-radius:50%;background:#2A2200;color:var(--sk-yellow);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+  .body{flex:1;overflow-y:auto;padding:13px 13px 20px}
+  .body::-webkit-scrollbar{width:5px}.body::-webkit-scrollbar-thumb{background:#C9CFDB;border-radius:4px}
+  .tabbar{flex:0 0 auto;background:#fff;border-top:1px solid var(--line);display:flex;padding:5px 2px 8px}
+  .tabbar button{flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9.5px;font-weight:700;color:var(--ink-3);padding:4px 0;font-family:inherit}
+  .tabbar button .ic{font-size:16px;line-height:1}
+  .tabbar button.on{color:var(--sk-orange)}
+  .screen{display:flex;flex-direction:column;width:100%;position:relative}
+  .fab-wrap{position:absolute;right:14px;bottom:70px;z-index:40;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .fab-menu{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .fab-menu button{background:#fff;border:1px solid var(--line);border-radius:22px;padding:9px 13px;font-size:12px;font-weight:700;color:var(--ink-1);box-shadow:0 6px 18px rgba(0,0,0,.13);cursor:pointer;font-family:inherit;white-space:nowrap}
+  .fab{width:52px;height:52px;border-radius:50%;border:none;background:var(--sk-orange);color:#fff;font-size:26px;line-height:1;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.22);font-family:inherit;transition:transform .18s ease}
+  .fab.open{transform:rotate(45deg)}
+  .fab-scrim{position:absolute;inset:0;background:rgba(15,18,25,.18);z-index:30}
+
+  /* ---------- browser (manager) ---------- */
+  .browser{background:#1C2029;border-radius:14px;padding:9px 9px 0;box-shadow:0 30px 70px rgba(0,0,0,.55);width:100%}
+  .bchrome{display:flex;align-items:center;gap:9px;padding:0 4px 9px}
+  .bdots{display:flex;gap:6px}.bdots i{width:11px;height:11px;border-radius:50%;display:block}
+  .bdots i:nth-child(1){background:#FF5F57}.bdots i:nth-child(2){background:#FEBC2E}.bdots i:nth-child(3){background:#28C840}
+  .burl{flex:1;background:#0F1219;border-radius:7px;padding:6px 12px;font-size:11.5px;color:#8A93A5;font-family:ui-monospace,Menlo,monospace}
+  .bview{background:var(--bg);border-radius:9px 9px 0 0;height:800px;display:flex;overflow:hidden}
+  .side{width:214px;flex:0 0 214px;background:#171B23;padding:16px 11px;overflow-y:auto}
+  .side .brand{display:flex;align-items:center;gap:8px;padding:0 7px 15px;border-bottom:1px solid rgba(255,255,255,.09);margin-bottom:12px}
+  .side .brand .lg{width:27px;height:27px;border-radius:7px;background:var(--sk-yellow);color:#2A2200;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px}
+  .side .brand div{color:#fff;font-size:12.5px;font-weight:800;line-height:1.25}
+  .side .brand span{color:#7A8296;font-size:10px;font-weight:600;display:block}
+  .side .grp{color:#5D6577;font-size:9.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;padding:11px 8px 5px}
+  .side button{width:100%;text-align:left;background:none;border:none;color:#A9B2C4;font-size:12.5px;font-weight:600;padding:8px 9px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:inherit}
+  .side button:hover{background:rgba(255,255,255,.06);color:#fff}
+  .side button.on{background:var(--sk-yellow);color:#2A2200;font-weight:800}
+  .side .cnt{margin-left:auto;background:var(--red);color:#fff;font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:9px}
+  .side button.on .cnt{background:#2A2200;color:var(--sk-yellow)}
+  .main{flex:1;overflow-y:auto;padding:20px 24px 40px;min-width:0}
+  .mhead{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+  .mhead h1{margin:0 0 3px;font-size:20px;letter-spacing:-.3px}
+  .mhead p{margin:0;font-size:12.5px;color:var(--ink-3)}
+
+  /* ---------- atoms ---------- */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:13px;margin-bottom:11px}
+  .card.tight{padding:11px}
+  .label{font-size:11px;font-weight:800;color:var(--ink-2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block}
+  .req{color:var(--red)}
+  input[type=text],input[type=date],input[type=time],input[type=number],select,textarea{
+    width:100%;border:1.5px solid var(--line);border-radius:9px;padding:10px 11px;font-size:13.5px;font-family:inherit;background:#fff;color:var(--ink);outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--sk-yellow);box-shadow:0 0 0 3px rgba(253,185,19,.18)}
+  textarea{resize:vertical;min-height:72px}
+  .hint{font-size:11px;color:var(--ink-3);margin-top:5px;line-height:1.45}
+  .btn{width:100%;border:none;border-radius:11px;padding:13px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;transition:.15s}
+  .btn-primary{background:var(--sk-yellow);color:#2A2200}
+  .btn-primary:hover{background:var(--sk-yellow-dark)}
+  .btn-primary:disabled{background:#E7E9EF;color:#A8AEBC;cursor:not-allowed}
+  .btn-outline{background:#fff;color:var(--ink-2);border:1.5px solid var(--line)}
+  .btn-danger{background:#FDECEC;color:var(--red);border:1.5px solid #F6C9C9}
+  .btn-green{background:var(--green);color:#fff}
+  .btn-sm{padding:8px 11px;font-size:12px;border-radius:8px;width:auto}
+  .btn-row{display:flex;gap:7px}.btn-row .btn{flex:1}
+  .steps{display:flex;gap:4px;margin-bottom:13px}
+  .steps i{flex:1;height:4px;border-radius:3px;background:#DFE3EC}.steps i.on{background:var(--sk-orange)}
+  .chip{display:inline-flex;align-items:center;gap:5px;background:#FFF6E0;border:1px solid #F5D98A;color:#6B5200;font-size:11px;font-weight:700;padding:4px 8px;border-radius:20px;margin:0 4px 4px 0}
+  .chip .x{cursor:pointer;font-size:13px;opacity:.6}.chip .x:hover{opacity:1}
+  .chip.blue{background:#EDF3FE;border-color:#C9DAF8;color:#1F4E9E}
+  .chip.grey{background:#EFF1F5;border-color:#DDE1E9;color:var(--ink-2)}
+  .pill{display:inline-block;font-size:9.5px;font-weight:800;padding:3px 8px;border-radius:20px;letter-spacing:.4px;text-transform:uppercase}
+  .pill.sched{background:#E7EFFD;color:var(--blue)}
+  .pill.done{background:#E4F5EC;color:var(--green)}
+  .pill.today{background:#FFF1D6;color:#8A6100}
+  .pill.canc{background:#FBE9E9;color:var(--red)}
+  .pill.pend{background:#F1ECFD;color:var(--purple)}
+  .pill.rej{background:#FBE9E9;color:var(--red)}
+  .listrow{display:flex;align-items:center;gap:10px;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;margin-bottom:7px;cursor:pointer}
+  .listrow:hover{border-color:#CDD4E2}
+  .listrow .nm{font-size:13px;font-weight:700;flex:1;min-width:0}
+  .listrow .meta{font-size:10.5px;color:var(--ink-3);margin-top:2px;font-weight:500;line-height:1.4}
+  .cbx{width:19px;height:19px;border-radius:6px;border:2px solid #C6CDDB;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:900}
+  .cbx.on{background:var(--green);border-color:var(--green)}
+  .cbx.rd{border-radius:50%}
+  .tt{width:100%;border-collapse:collapse;font-size:12px}
+  .tt th{text-align:left;font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-3);padding:7px 6px;border-bottom:1.5px solid var(--line);white-space:nowrap}
+  .tt td{padding:8px 6px;border-bottom:1px solid #F0F2F7;vertical-align:middle}
+  .tt tr:last-child td{border-bottom:none}
+  .tt tbody tr:hover{background:#FAFBFD}
+  .seg{display:flex;background:#E9ECF3;border-radius:9px;padding:3px;margin-bottom:11px;overflow-x:auto}
+  .seg button{flex:1;border:none;background:none;padding:7px 9px;font-size:11.5px;font-weight:700;color:var(--ink-2);border-radius:7px;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+  .kpi{display:flex;gap:8px;margin-bottom:11px;flex-wrap:wrap}
+  .kpi .k{flex:1;min-width:88px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px}
+  .kpi .k .n{font-size:23px;font-weight:800;letter-spacing:-1px;line-height:1}
+  .kpi .k .t{font-size:9.5px;color:var(--ink-3);font-weight:700;margin-top:5px;text-transform:uppercase;letter-spacing:.3px}
+  .rev{display:flex;justify-content:space-between;gap:11px;padding:8px 0;border-bottom:1px solid #F0F2F7;font-size:12.5px}
+  .rev:last-child{border-bottom:none}
+  .rev .k{color:var(--ink-3);font-weight:600;flex:0 0 42%}
+  .rev .v{font-weight:700;text-align:right;flex:1}
+  .sec-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+  .sec-head h3{margin:0;font-size:12.5px;font-weight:800}
+  .edit{background:none;border:none;color:var(--blue);font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;padding:0}
+  .banner{border-radius:10px;padding:10px 11px;font-size:11.5px;line-height:1.5;margin-bottom:11px;font-weight:600}
+  .banner.warn{background:#FFF6E0;border:1px solid #F5D98A;color:#6B5200}
+  .banner.info{background:#EDF3FE;border:1px solid #C9DAF8;color:#1F4E9E}
+  .banner.ok{background:#E4F5EC;border:1px solid #B7E3CB;color:#0F6B41}
+  .banner.pur{background:#F3EFFE;border:1px solid #D6C9F8;color:#4A2FA8}
+  .bar{height:7px;border-radius:5px;background:#E7EAF1;overflow:hidden;margin-top:5px}
+  .bar i{display:block;height:100%;border-radius:5px;background:var(--green)}
+  .bar i.amber{background:var(--sk-orange)}.bar i.red{background:var(--red)}
+  .capture{border:2px dashed #CBD2E0;border-radius:12px;padding:22px 12px;text-align:center;background:#fff;cursor:pointer}
+  .capture:hover{border-color:var(--sk-yellow)}
+  .capture .em{font-size:28px;display:block;margin-bottom:6px}
+  .capture .t{font-size:12.5px;font-weight:800}
+  .capture .s{font-size:10.5px;color:var(--ink-3);margin-top:4px}
+  .map{height:106px;border-radius:11px;background:repeating-linear-gradient(0deg,#E8EDF4 0 22px,#DFE6F0 22px 23px),repeating-linear-gradient(90deg,rgba(0,0,0,0) 0 30px,rgba(0,0,0,.04) 30px 31px);position:relative;border:1px solid var(--line);margin-bottom:10px;overflow:hidden}
+  .map .pin{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);font-size:24px}
+  .map .rad{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:80px;height:80px;border-radius:50%;background:rgba(47,107,216,.14);border:2px solid rgba(47,107,216,.4)}
+  .selbar{position:sticky;bottom:0;background:#fff;border:1px solid var(--line);border-radius:11px;padding:9px 11px;display:flex;align-items:center;gap:9px;margin-top:9px;box-shadow:0 -3px 14px rgba(0,0,0,.06)}
+  .selbar .c{font-size:12px;font-weight:800;flex:1}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+  @media(max-width:1500px){.grid4{grid-template-columns:repeat(2,1fr)}}
+  .load{display:inline-block;padding:2px 7px;border-radius:6px;font-size:10.5px;font-weight:800}
+  .load.ok{background:#E4F5EC;color:var(--green)}
+  .load.tight{background:#FFF1D6;color:#8A6100}
+  .load.over{background:#FBE9E9;color:var(--red)}
+  .modal{position:absolute;inset:0;background:rgba(15,18,25,.55);display:none;align-items:center;justify-content:center;padding:24px;z-index:80;border-radius:34px}
+  .modal.on{display:flex}
+  .modal .box{background:#fff;border-radius:17px;padding:19px;width:100%;max-height:84%;overflow:auto}
+  .modal h3{margin:0 0 7px;font-size:15.5px}
+  .modal p{margin:0 0 14px;font-size:12.5px;color:var(--ink-2);line-height:1.55}
+  .modal .ico{font-size:28px;margin-bottom:8px}
+  .wmodal{position:fixed;inset:0;background:rgba(15,18,25,.6);display:none;align-items:center;justify-content:center;padding:40px;z-index:150}
+  .wmodal.on{display:flex}
+  .wmodal .box{background:#fff;border-radius:15px;padding:22px;width:100%;max-width:560px;max-height:86vh;overflow:auto}
+  .wmodal h3{margin:0 0 6px;font-size:17px}
+
+  /* ---------- feedback rail ---------- */
+  .rail{flex:0 0 328px;background:#fff;border-radius:16px;padding:17px;box-shadow:0 22px 50px rgba(0,0,0,.3);position:sticky;top:22px}
+  .rail h3{margin:0 0 3px;font-size:14.5px}
+  .rail .rs{font-size:11.5px;color:var(--ink-3);margin:0 0 13px;line-height:1.5}
+  .rail .cur{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px;margin-bottom:10px}
+  .rail .cur .l{font-size:9.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-3);font-weight:800}
+  .rail .cur .n{font-size:13px;font-weight:800;margin-top:2px}
+  .rail textarea{min-height:96px;font-size:12.5px}
+  .qs{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 10px}
+  .qtag{background:var(--bg);border:1px solid var(--line);border-radius:15px;padding:4px 9px;font-size:10.5px;font-weight:700;color:var(--ink-2);cursor:pointer}
+  .qtag:hover{border-color:var(--sk-yellow);background:#FFF9EA}
+  .qtag.on{background:var(--sk-yellow);border-color:var(--sk-yellow);color:#2A2200}
+  .notes{margin-top:13px;border-top:1px solid var(--line);padding-top:11px;max-height:250px;overflow:auto}
+  .notes .nt{background:var(--bg);border-left:3px solid var(--sk-yellow);border-radius:0 8px 8px 0;padding:8px 10px;margin-bottom:7px}
+  .notes .nt .h{font-size:10px;font-weight:800;color:var(--ink-3);text-transform:uppercase;letter-spacing:.4px;display:flex;justify-content:space-between;gap:7px}
+  .notes .nt .h span{cursor:pointer;color:var(--red);font-size:13px}
+  .notes .nt .b{font-size:12px;margin-top:4px;line-height:1.5;white-space:pre-wrap}
+  .notes .none{font-size:11.5px;color:var(--ink-3);text-align:center;padding:13px 0}
+  .rail-foot{display:flex;gap:7px;margin-top:11px}
+  .rail-foot button{flex:1;padding:10px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;border:1.5px solid var(--line);background:#fff;color:var(--ink-2)}
+  .rail-foot button.pri{background:var(--sk-yellow);border-color:var(--sk-yellow);color:#2A2200}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(90px);background:var(--ink);color:#fff;padding:11px 19px;border-radius:10px;font-size:12.5px;font-weight:600;z-index:200;transition:.3s;opacity:0}
+  .toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+  .navnote{font-size:10.5px;color:#7A8296;text-align:center;margin-top:8px}
+  .new{display:inline-block;background:var(--purple);color:#fff;font-size:8.5px;font-weight:800;padding:2px 5px;border-radius:4px;letter-spacing:.5px;vertical-align:middle;margin-left:5px}
+  @media(max-width:1200px){.rail{position:static;flex:1 1 100%}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="masthead">
+    <div>
+      <span class="badge-proto">Clickable prototype v2 · not final design</span>
+      <h1>RM App (expanded scope) + Manager Dashboard</h1>
+      <p>Staff Kazi / RMMap. Now covers the whole loop: managers cascade priorities and interventions, RMs plan their month (PJP), deliver and log trainings, and everyone sees coverage. KPI figures are <b>read-only</b> — they come from the data platform, not from anyone typing them in. Purple <span class="new">NEW</span> tags mark what's been added since the last version.</p>
+    </div>
+    <div class="mast-actions">
+      <button class="btn-ghost" onclick="resetAll()">↺ Restart demo</button>
+      <button class="btn-ghost btn-solid" onclick="exportNotes()">⇩ Export feedback</button>
+    </div>
+  </div>
+
+  <div class="switcher">
+    <button id="swA" class="on" onclick="setMode('rm')">📱 RM App</button>
+    <button id="swB" onclick="setMode('mgr')">🖥 Manager Dashboard (CTM / ZTM)</button>
+  </div>
+
+  <div class="stage">
+    <div class="surface" id="surfRM">
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="screen-host">
+            <div class="statusbar"><span id="clock">09:41</span><span>▮▮▮ ⌁ ▰</span></div>
+            <div id="screens" style="flex:1;display:flex;min-height:0"></div>
+            <div class="modal" id="modal"><div class="box" id="modalBox"></div></div>
+          </div>
+        </div>
+        <div class="navnote">Regional Mentor view · tap through like the real app</div>
+      </div>
+    </div>
+
+    <div class="surface hide" id="surfMGR">
+      <div class="browser">
+        <div class="bchrome">
+          <div class="bdots"><i></i><i></i><i></i></div>
+          <div class="burl">https://kazi.sunking.com/training/manager</div>
+        </div>
+        <div class="bview">
+          <div class="side" id="mside"></div>
+          <div class="main" id="mmain"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rail">
+      <h3>Tell us what to change</h3>
+      <p class="rs">Leave a note on whichever screen you're looking at — both the app and the dashboard. Then hit <b>Export feedback</b> and send the file back.</p>
+      <div class="cur"><div class="l">Currently viewing</div><div class="n" id="curScreen">Home</div></div>
+      <div class="qs" id="qtags"></div>
+      <textarea id="fbInput" placeholder="What's missing, confusing, or wrong here? What would you add?"></textarea>
+      <div class="rail-foot">
+        <button class="pri" onclick="addNote()">Add note</button>
+        <button onclick="clearNotes()">Clear all</button>
+      </div>
+      <div class="notes" id="notes"></div>
+    </div>
+  </div>
+</div>
+<div class="wmodal" id="wmodal"><div class="box" id="wmodalBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   REFERENCE DATA  (mirrors the Training Command Centre master data)
+   ===================================================================== */
+const AHQS=["Kisumu AHQ","Kakamega AHQ","Bungoma AHQ","Siaya AHQ","Busia AHQ"];
+const ZONES=["North","South","Central","West","Coast","Clean Cook"];
+
+const KPI_LIB=[
+  {r:"R1",n:"Reactivate inactive agents",tgt:"≥50% of agents met sell within 30 days",act:55,target:50,unit:"%",w:15},
+  {r:"R2",n:"New-agent face-to-face training",tgt:"≥70% of last month's new agents trained F2F",act:73,target:70,unit:"%",w:15},
+  {r:"R3",n:"Monthly Job Knowledge Quiz",tgt:"≥60% average regional score",act:76,target:60,unit:"%",w:10},
+  {r:"R4",n:"Certified-agent conversion",tgt:"≥30% of certified agents make a quality sale in 30 days",act:65,target:30,unit:"%",w:20},
+  {r:"R5",n:"Training audit score",tgt:"≥50% answer 5/5 to 'did the training help?'",act:80,target:50,unit:"%",w:20},
+  {r:"R6",n:"Video audit compliance",tgt:"Submissions meet the classroom checklist",act:64,target:80,unit:"%",w:10},
+  {r:"R7",n:"360 field insights",tgt:"4 actionable insights per month",act:3,target:4,unit:"",w:10}
+];
+
+const ACTIVITY_CATS=[
+  "New agent F2F training (R2)","Inactive agent reactivation (R1)","Certified-agent conversion coaching (R4)",
+  "JKQ drive & low-scorer follow-up (R3)","Training quality audit / follow-up (R5-R6)","360 field insight capture (R7)",
+  "Strategic OKR intervention (C5)","Data QA / reporting (Z5a)","Admin / office day","Leave / off"
+];
+
+const COURSES={
+  "Product Knowledge":["Home 400 / 600 systems","Solar panel care","Battery health & lifespan","Troubleshooting common faults","Warranty terms"],
+  "Phone Sales (Sun King)":["Phone value proposition","STK push","Competitor comparison","Installation & aftersales"],
+  "Sales Techniques":["Door-to-door pitch","Handling objections","Demo best practice","Referral generation","Closing the sale"],
+  "SEO / CFSE Certification":["Certification pathway","EO Phase 1 learning","SEO exam preparation","Post-certification conversion"],
+  "Customer Onboarding":["KYC & documentation","Registering a customer in-app","Explaining the payment plan"],
+  "Collections & Repayment":["Reading the repayment dashboard","Follow-up call scripts","Handling defaulters","At-risk accounts"],
+  "App & Digital Tools":["Kazi app navigation","Offline mode","Uploading evidence","Litmos login & courses"],
+  "Compliance & Ethics":["Anti-fraud policy","Customer data privacy","Code of conduct"]
+};
+
+/* agents: j=days since joined, ls=days since last sale, lt=days since last training (null=never),
+   lit=Litmos logged in, litp=Litmos completion %, jkq=last JKQ score, cert=certified, conv=converted after cert */
+const SEED_AGENTS=[
+  {n:"Brian Otieno",     ahq:"Kisumu AHQ",  j:12, ls:2,  lt:6,   lit:true,  litp:80, jkq:72, cert:false,conv:false},
+  {n:"Mercy Wanjiku",    ahq:"Kisumu AHQ",  j:19, ls:1,  lt:null,lit:true,  litp:45, jkq:64, cert:false,conv:false},
+  {n:"Kelvin Omondi",    ahq:"Kisumu AHQ",  j:24, ls:3,  lt:null,lit:false, litp:0,  jkq:null,cert:false,conv:false},
+  {n:"Faith Achieng",    ahq:"Kakamega AHQ",j:38, ls:1,  lt:9,   lit:true,  litp:92, jkq:81, cert:true, conv:true},
+  {n:"Dennis Mutua",     ahq:"Kisumu AHQ",  j:56, ls:44, lt:33,  lit:true,  litp:60, jkq:55, cert:false,conv:false},
+  {n:"Sharon Nekesa",    ahq:"Bungoma AHQ", j:74, ls:1,  lt:18,  lit:true,  litp:88, jkq:79, cert:true, conv:false},
+  {n:"Peter Kiplagat",   ahq:"Kakamega AHQ",j:91, ls:38, lt:45,  lit:false, litp:0,  jkq:null,cert:false,conv:false},
+  {n:"Grace Atieno",     ahq:"Kisumu AHQ",  j:130,ls:2,  lt:27,  lit:true,  litp:74, jkq:68, cert:true, conv:false},
+  {n:"Samuel Wafula",    ahq:"Bungoma AHQ", j:168,ls:1,  lt:52,  lit:true,  litp:51, jkq:61, cert:false,conv:false},
+  {n:"Lydia Chepkoech",  ahq:"Siaya AHQ",   j:203,ls:35, lt:11,  lit:true,  litp:66, jkq:58, cert:false,conv:false},
+  {n:"Joseph Barasa",    ahq:"Bungoma AHQ", j:410,ls:52, lt:184, lit:false, litp:0,  jkq:null,cert:false,conv:false},
+  {n:"Everlyne Adhiambo",ahq:"Kisumu AHQ",  j:365,ls:47, lt:141, lit:true,  litp:30, jkq:49, cert:false,conv:false},
+  {n:"Moses Kirui",      ahq:"Kakamega AHQ",j:290,ls:58, lt:118, lit:true,  litp:22, jkq:52, cert:false,conv:false},
+  {n:"Caroline Auma",    ahq:"Siaya AHQ",   j:255,ls:41, lt:96,  lit:false, litp:0,  jkq:null,cert:false,conv:false},
+  {n:"Vincent Simiyu",   ahq:"Busia AHQ",   j:180,ls:33, lt:71,  lit:true,  litp:40, jkq:57, cert:false,conv:false},
+  {n:"Nancy Wekesa",     ahq:"Busia AHQ",   j:41, ls:2,  lt:null,lit:true,  litp:38, jkq:null,cert:false,conv:false},
+  {n:"Erick Onyango",    ahq:"Siaya AHQ",   j:33, ls:5,  lt:null,lit:false, litp:0,  jkq:null,cert:false,conv:false},
+  {n:"Beatrice Nafula",  ahq:"Kakamega AHQ",j:52, ls:1,  lt:14,  lit:true,  litp:70, jkq:66, cert:true, conv:false},
+  {n:"Stephen Ochieng",  ahq:"Kisumu AHQ",  j:47, ls:36, lt:22,  lit:true,  litp:55, jkq:60, cert:false,conv:false},
+  {n:"Rose Kwamboka",    ahq:"Bungoma AHQ", j:29, ls:4,  lt:null,lit:true,  litp:15, jkq:null,cert:false,conv:false}
+];
+let AGENTS=JSON.parse(JSON.stringify(SEED_AGENTS));
+
+/* worklist definitions — these drive the smart selection everywhere */
+const LISTS={
+  all:      {t:"All agents",              d:"Everyone in my region",                      f:a=>true},
+  inactive: {t:"Inactive 30–60 days",     d:"No sale in 30–60 days — the R1 target list", f:a=>a.ls>=30&&a.ls<=60},
+  newUntr:  {t:"New, never trained",      d:"Joined in the last 60 days, no F2F yet — R2",f:a=>a.j<=60&&a.lt===null},
+  never:    {t:"Never trained",           d:"No training on record, any tenure",           f:a=>a.lt===null},
+  certNot:  {t:"Certified, not converted",d:"Certified but no quality sale yet — R4",      f:a=>a.cert&&!a.conv},
+  noLitmos: {t:"Not on Litmos",           d:"Never logged in to Litmos",                   f:a=>!a.lit},
+  stale:    {t:"Not trained in 90+ days", d:"Knowledge decay risk",                        f:a=>a.lt!==null&&a.lt>=90}
+};
+
+const TODAY=new Date();
+function addDays(n){const x=new Date(TODAY);x.setDate(x.getDate()+n);return x;}
+function iso(d){const p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;}
+function pretty(d){return d.toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short'});}
+function prettyIso(s){const[y,m,dd]=s.split('-');return pretty(new Date(+y,+m-1,+dd));}
+function longIso(s){const[y,m,dd]=s.split('-');return new Date(+y,+m-1,+dd).toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});}
+function mins(t){const[h,m]=t.split(':').map(Number);return h*60+m;}
+
+/* ---- manager directives cascaded down for the month ---- */
+const SEED_DIRECTIVES=[
+  {id:"DIR-01",m:"August 2026",by:"Bayles Cossiga (CTM)",t:"HomePlus Max Lite rollout",
+   d:"Every AHQ to run at least one product session before month end. Decks are on Litmos.",kpi:"R2",due:iso(addDays(9))},
+  {id:"DIR-02",m:"August 2026",by:"Lilian Wambui (ZTM)",t:"Reactivate the inactive base",
+   d:"Collections dipped. Prioritise agents with no sale in 30–60 days — meet them face to face.",kpi:"R1",due:iso(addDays(13))},
+  {id:"DIR-03",m:"August 2026",by:"Lilian Wambui (ZTM)",t:"Clear the SEO conversion backlog",
+   d:"Agents certified in July who haven't made a quality sale need 1:1 coaching.",kpi:"R4",due:iso(addDays(6))}
+];
+
+/* ---- interventions (the container above individual sessions) ---- */
+const SEED_INTS=[
+  {id:"INT-014",t:"HomePlus Max Lite product rollout",aud:"All active agents",scope:"National",zone:"All",
+   kpi:"R2",type:"Strategic",by:"CTM",byName:"Bayles Cossiga",mode:"Field",tgtHead:40,attended:12,
+   baseline:"0 units sold",metric:"",budget:0,date:iso(addDays(9)),status:"In progress",cascaded:true,
+   root:"",sessions:[{d:iso(addDays(-2)),exp:14,att:12,ahq:"Kisumu AHQ",pass:78}]},
+  {id:"INT-016",t:"Reactivate bottom performers",aud:"Agents with no sale 30–60 days",scope:"Zone",zone:"Coast",
+   kpi:"R1",type:"Reactive",by:"ZTM",byName:"Lilian Wambui",mode:"Field",tgtHead:18,attended:0,
+   baseline:"32% reactivation",metric:"",budget:0,date:iso(addDays(13)),status:"Planned",cascaded:true,
+   root:"Knowledge decay",sessions:[]},
+  {id:"INT-017",t:"SEO certification & conversion push",aud:"July-certified agents",scope:"AHQ",zone:"Coast",
+   kpi:"R4",type:"Strategic",by:"RM",byName:"Pier M.",mode:"Classroom",tgtHead:9,attended:9,
+   baseline:"41% conversion",metric:"+13 pts",budget:10,date:iso(addDays(-16)),status:"Complete",cascaded:false,
+   root:"New joiners",sessions:[{d:iso(addDays(-16)),exp:9,att:9,ahq:"Kakamega AHQ",pass:88}]}
+];
+
+/* ---- trainings ---- */
+const SEED_TRAININGS=[
+  {id:"TRN-2481",date:iso(TODAY),time:"11:00",ahq:"Kisumu AHQ",loc:"Mamboleo Showground, Kisumu",int:"INT-014",ints:["INT-014","INT-016"],
+   courses:[{c:"Product Knowledge",t:["Home 400 / 600 systems","Battery health & lifespan"]}],
+   agents:["Brian Otieno","Mercy Wanjiku","Kelvin Omondi","Grace Atieno","Stephen Ochieng","Dennis Mutua"],status:"scheduled"},
+  {id:"TRN-2486",date:iso(addDays(3)),time:"14:30",ahq:"Kakamega AHQ",loc:"Kakamega Social Hall",int:"INT-017",
+   courses:[{c:"SEO / CFSE Certification",t:["SEO exam preparation","Post-certification conversion"]}],
+   agents:["Faith Achieng","Beatrice Nafula","Peter Kiplagat","Moses Kirui"],status:"scheduled"},
+  {id:"TRN-2490",date:iso(addDays(6)),time:"09:30",ahq:"Bungoma AHQ",loc:"Bungoma Town Depot",int:"",
+   courses:[{c:"Phone Sales (Sun King)",t:["Phone value proposition","STK push"]}],
+   agents:["Sharon Nekesa","Samuel Wafula","Joseph Barasa","Rose Kwamboka"],status:"scheduled"}
+];
+
+const SEED_PAST=[
+  {id:"TRN-2460",date:iso(addDays(-4)),time:"10:00",ahq:"Kisumu AHQ",loc:"Mamboleo Showground",inv:10,att:8,int:"INT-014",
+   courses:[{c:"Sales Techniques",t:["Door-to-door pitch","Handling objections"]}],star:"Brian Otieno",
+   cm:"Good turnout. Two agents asked for more demo practice.",read:{days:14,sold:5,of:8}},
+  {id:"TRN-2455",date:iso(addDays(-9)),time:"14:00",ahq:"Kakamega AHQ",loc:"Kakamega Social Hall",inv:12,att:11,int:"",
+   courses:[{c:"Collections & Repayment",t:["Reading the repayment dashboard"]},{c:"Compliance & Ethics",t:["Anti-fraud policy"]}],
+   star:"Faith Achieng",cm:"Covered the new defaulter policy.",read:{days:9,sold:7,of:11}},
+  {id:"TRN-2441",date:iso(addDays(-16)),time:"09:00",ahq:"Bungoma AHQ",loc:"Bungoma Town Depot",inv:8,att:5,int:"INT-017",
+   courses:[{c:"Product Knowledge",t:["Troubleshooting common faults","Warranty terms"]}],star:"",
+   cm:"Low attendance — market day clash.",read:{days:30,sold:2,of:5}},
+  {id:"TRN-2433",date:iso(addDays(-23)),time:"11:30",ahq:"Siaya AHQ",loc:"Siaya Community Centre",inv:9,att:9,int:"",
+   courses:[{c:"App & Digital Tools",t:["Kazi app navigation","Litmos login & courses"]}],star:"Lydia Chepkoech",
+   cm:"Full attendance.",read:{days:30,sold:6,of:9}}
+];
+
+/* ---- PJP: one row per working day ---- */
+function seedPJP(){
+  const rows=[];
+  for(let i=-3;i<=11;i++){
+    const d=addDays(i), wd=d.getDay();
+    if(wd===0||wd===6) continue;
+    rows.push({date:iso(d),kpi:"",cat:"",detail:"",loc:"",travel:false,route:"",nights:0,int:"",status:"gap",legs:[]});
+  }
+  const set=(idx,o)=>{if(rows[idx])Object.assign(rows[idx],o);};
+  set(0,{kpi:"R2",cat:"New agent F2F training (R2)",detail:"Meet 4 agents onboarded in July, Kisumu AHQ",loc:"Kisumu AHQ",status:"approved",int:"INT-014"});
+  set(1,{kpi:"R1",cat:"Inactive agent reactivation (R1)",detail:"Cluster leaders + low performers, Sega",loc:"Siaya AHQ",status:"approved"});
+  set(2,{kpi:"Z5a",cat:"Data QA / reporting (Z5a)",detail:"Weekly reporting and PJP review",loc:"Mega Plaza",status:"approved"});
+  set(3,{kpi:"R2",cat:"New agent F2F training (R2)",detail:"HomePlus Max Lite session — Mamboleo",loc:"Kisumu AHQ",status:"approved",int:"INT-014"});
+  set(4,{kpi:"R4",cat:"Certified-agent conversion coaching (R4)",detail:"July-certified agents, 1:1 coaching",loc:"Kakamega AHQ",status:"pending",int:"INT-017",travel:true,route:"Kisumu → Kakamega",nights:1});
+  set(5,{kpi:"R7",cat:"360 field insight capture (R7)",detail:"Retailer visits, Chokaa",loc:"Bungoma AHQ",status:"pending",travel:true,route:"Kakamega → Bungoma",nights:1});
+  set(7,{kpi:"R1",cat:"Inactive agent reactivation (R1)",detail:"Reactivation drive, Busia cluster",loc:"Busia AHQ",status:"pending"});
+  return rows;
+}
+
+let TRAININGS,PAST,INTS,DIRECTIVES,PJP;
+function seedAll(){
+  TRAININGS=JSON.parse(JSON.stringify(SEED_TRAININGS));
+  PAST=JSON.parse(JSON.stringify(SEED_PAST));
+  INTS=JSON.parse(JSON.stringify(SEED_INTS));
+  DIRECTIVES=JSON.parse(JSON.stringify(SEED_DIRECTIVES));
+  PJP=seedPJP();
+  AGENTS=JSON.parse(JSON.stringify(SEED_AGENTS));
+}
+seedAll();
+
+/* team, for the manager dashboard */
+const TEAM=[
+  {n:"Rina Ojiayo",     ahq:"Siaya AHQ",   zone:"West",  days:21,trav:7, field:38,plans:{p:2,a:19},score:3.4},
+  {n:"Barbara Ngina",   ahq:"Kakamega AHQ",zone:"West",  days:22,trav:6, field:27,plans:{p:0,a:22},score:3.1},
+  {n:"Leah Amimo",      ahq:"Busia AHQ",   zone:"West",  days:21,trav:3, field:14,plans:{p:4,a:17},score:2.6},
+  {n:"Clinton Matonda", ahq:"Kisumu AHQ",  zone:"Nairobi",days:22,trav:8,field:41,plans:{p:1,a:21},score:3.6},
+  {n:"Agnes Kanyi",     ahq:"Bungoma AHQ", zone:"Coast", days:21,trav:3, field:29,plans:{p:0,a:21},score:3.1},
+  {n:"John Lenzi",      ahq:"Kisumu AHQ",  zone:"Eastern",days:24,trav:11,field:50,plans:{p:3,a:21},score:3.1},
+  {n:"Pier M.",         ahq:"Kisumu AHQ",  zone:"West",  days:21,trav:4, field:33,plans:{p:3,a:18},score:3.2}
+];
+const SEED_APPROVALS=[
+  {id:"P000031",rm:"Pier M.",      date:iso(addDays(4)), kpi:"R4",cat:"Certified-agent conversion coaching (R4)",detail:"July-certified agents, 1:1 coaching",loc:"Kakamega AHQ",trav:"Y",route:"Kisumu → Kakamega",nights:1,st:"pending"},
+  {id:"P000032",rm:"Pier M.",      date:iso(addDays(5)), kpi:"R7",cat:"360 field insight capture (R7)",detail:"Retailer visits, Chokaa",loc:"Bungoma AHQ",trav:"Y",route:"Kakamega → Bungoma",nights:1,st:"pending"},
+  {id:"P000033",rm:"Pier M.",      date:iso(addDays(8)), kpi:"R1",cat:"Inactive agent reactivation (R1)",detail:"Reactivation drive, Busia cluster",loc:"Busia AHQ",trav:"N",route:"",nights:0,st:"pending"},
+  {id:"P000034",rm:"Leah Amimo",   date:iso(addDays(2)), kpi:"R2",cat:"New agent F2F training (R2)",detail:"New agents onboarded in July",loc:"Busia AHQ",trav:"N",route:"",nights:0,st:"pending"},
+  {id:"P000035",rm:"Leah Amimo",   date:iso(addDays(3)), kpi:"",  cat:"Admin / office day",detail:"Reporting",loc:"Busia",trav:"N",route:"",nights:0,st:"pending"},
+  {id:"P000036",rm:"Leah Amimo",   date:iso(addDays(7)), kpi:"R1",cat:"Inactive agent reactivation (R1)",detail:"Cluster visits",loc:"Busia AHQ",trav:"Y",route:"Busia → Bungoma",nights:2,st:"pending"},
+  {id:"P000037",rm:"Leah Amimo",   date:iso(addDays(9)), kpi:"R4",cat:"Certified-agent conversion coaching (R4)",detail:"Coaching",loc:"Busia AHQ",trav:"N",route:"",nights:0,st:"pending"},
+  {id:"P000038",rm:"John Lenzi",   date:iso(addDays(1)), kpi:"R2",cat:"New agent F2F training (R2)",detail:"VPP + new agent F2F, Lamu",loc:"Lamu",trav:"Y",route:"Malindi → Garsen → Lamu",nights:2,st:"pending"},
+  {id:"P000039",rm:"John Lenzi",   date:iso(addDays(6)), kpi:"R7",cat:"360 field insight capture (R7)",detail:"ABM feedback round",loc:"Kitui",trav:"N",route:"",nights:0,st:"pending"},
+  {id:"P000040",rm:"John Lenzi",   date:iso(addDays(10)),kpi:"R1",cat:"Inactive agent reactivation (R1)",detail:"Bottom quartile agents",loc:"Machakos",trav:"Y",route:"Kitui → Machakos",nights:1,st:"pending"},
+  {id:"P000041",rm:"Rina Ojiayo",  date:iso(addDays(2)), kpi:"R2",cat:"New agent F2F training (R2)",detail:"Sega cluster new agents",loc:"Siaya AHQ",trav:"N",route:"",nights:0,st:"pending"},
+  {id:"P000042",rm:"Rina Ojiayo",  date:iso(addDays(11)),kpi:"R3",cat:"JKQ drive & low-scorer follow-up (R3)",detail:"JKQ push, low scorers",loc:"Siaya AHQ",trav:"N",route:"",nights:0,st:"pending"}
+];
+let APPROVALS=JSON.parse(JSON.stringify(SEED_APPROVALS));
+
+/* =====================================================================
+   ROUTER
+   ===================================================================== */
+const SCREENS={},MSCREENS={};
+let hist=[],current="home",mcurrent="m_overview",MODE="rm";
+function reg(id,title,fn){SCREENS[id]={title,fn};}
+function mreg(id,title,fn){MSCREENS[id]={title,fn};}
+
+function setMode(m){
+  MODE=m;
+  document.getElementById('swA').classList.toggle('on',m==='rm');
+  document.getElementById('swB').classList.toggle('on',m==='mgr');
+  document.getElementById('surfRM').classList.toggle('hide',m!=='rm');
+  document.getElementById('surfMGR').classList.toggle('hide',m!=='mgr');
+  if(m==='mgr') mgo(mcurrent,false); else go(current,false);
+}
+function go(id,push=true){
+  if(id!=='home')FAB_OPEN=false;
+  if(push&&current!==id)hist.push(current);
+  current=id;render();
+  document.querySelector('#screens .body')?.scrollTo(0,0);
+  label(SCREENS[id].title,id);
+}
+function back(){current=hist.pop()||"home";render();label(SCREENS[current].title,current);}
+function render(){document.getElementById('screens').innerHTML=SCREENS[current].fn();}
+function mgo(id,scroll=true){
+  mcurrent=id;
+  document.getElementById('mside').innerHTML=mside();
+  document.getElementById('mmain').innerHTML=MSCREENS[id].fn();
+  if(scroll)document.getElementById('mmain').scrollTo(0,0);
+  label("Dashboard · "+MSCREENS[id].title,id);
+}
+function label(t,id){document.getElementById('curScreen').textContent=t;renderQTags(id);}
+
+function shell({title,sub,showBack=true,body,tab=null,foot=""}){
+  return `<div class="screen" style="width:100%;height:100%">
+    <div class="appbar">
+      ${showBack?`<button class="back" onclick="back()">‹</button>`:``}
+      <div class="titles"><h2>${title}</h2>${sub?`<div class="sub">${sub}</div>`:``}</div>
+      <div class="avatar">PM</div>
+    </div>
+    <div class="body">${body}</div>${foot}${tab?tabbar(tab):``}</div>`;
+}
+function tabbar(on){
+  const t=[["home","⌂","Home"],["pjp","🗓","Plan"],["agents","👥","Agents"],["past","🗂","Trainings"],["kpi","📊","KPIs"]];
+  return `<div class="tabbar">${t.map(([k,i,l])=>`<button class="${on===k?'on':''}" onclick="go('${k}')"><span class="ic">${i}</span>${l}</button>`).join('')}</div>`;
+}
+function steps(n,total){let s="";for(let i=1;i<=total;i++)s+=`<i class="${i<=n?'on':''}"></i>`;return `<div class="steps">${s}</div>`;}
+function footBtn(h){return `<div style="flex:0 0 auto;padding:10px 13px;background:#fff;border-top:1px solid var(--line)">${h}</div>`;}
+function modal(h){document.getElementById('modalBox').innerHTML=h;document.getElementById('modal').classList.add('on');}
+function closeModal(){document.getElementById('modal').classList.remove('on');}
+function alertBox(i,t,m,b="Got it",after=""){modal(`<div class="ico">${i}</div><h3>${t}</h3><p>${m}</p><button class="btn btn-primary" onclick="closeModal();${after}">${b}</button>`);}
+function wmodal(h){document.getElementById('wmodalBox').innerHTML=h;document.getElementById('wmodal').classList.add('on');}
+function closeW(){document.getElementById('wmodal').classList.remove('on');}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2300);}
+function esc(s){return String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;');}
+
+/* =====================================================================
+   RM APP
+   ===================================================================== */
+let S={},R={},SEL=[];
+function resetDrafts(){
+  S={date:"",time:"",ahq:"",loc:"",int:"",courses:[],agents:[],curCourse:"",curTopics:[],listKey:"all",q:""};
+  R={tid:null,checkedIn:false,drift:0,feedback:"",stamp:"",attend:[],extra:[],invited:[],photo:false,video:false,
+     courses:[],comments:"",star:""};
+}
+resetDrafts();
+
+/* ---------- HOME ---------- */
+reg("home","Home",()=>{
+  const todays=TRAININGS.filter(t=>t.status==="scheduled"&&t.date===iso(TODAY));
+  const upcoming=TRAININGS.filter(t=>t.status==="scheduled"&&t.date>iso(TODAY)).sort((a,b)=>a.date.localeCompare(b.date));
+  const gaps=PJP.filter(p=>p.status==="gap"&&p.date>=iso(TODAY)).length;
+  const card=t=>{
+    const ints=(t.ints&&t.ints.length?t.ints:(t.int?[t.int]:[]));
+    return `<div class="card tight">
+      <div><div style="font-size:13.5px;font-weight:800">${t.ahq.replace(' AHQ','')} · ${t.time}</div>
+      <div style="font-size:11px;color:var(--ink-3);margin-top:2px">${prettyIso(t.date)} · ${t.id}</div></div>
+      <div style="font-size:11.5px;color:var(--ink-2);margin-top:7px">📍 ${t.loc}</div>
+      <div style="font-size:11.5px;color:var(--ink-2);margin-top:3px">👥 ${t.agents.length} invited</div>
+      ${ints.length?`<div style="margin-top:6px;display:flex;flex-wrap:wrap">${ints.map(i=>`<span class="chip blue">↳ ${i}</span>`).join('')}</div>`:''}
+      <div class="btn-row" style="margin-top:9px">
+        <button class="btn btn-primary btn-sm" onclick="tryStart('${t.id}')">Start</button>
+        <button class="btn btn-outline btn-sm" onclick="openResched('${t.id}')">Reschedule</button>
+        <button class="btn btn-danger btn-sm" onclick="openCancel('${t.id}')">Cancel</button></div></div>`;
+  };
+  return shell({title:"Good morning, Pier",sub:"Regional Mentor · Western Region · August 2026",showBack:false,tab:"home",
+    foot:fabHome(),
+    body:`
+      ${gaps?`<div class="banner warn">🗓 <b>${gaps} day${gaps>1?'s':''} unplanned</b> — plan ${gaps>1?'them':'it'} within 2 days.</div>`:''}
+
+      <div class="sec-head"><h3>Today</h3></div>
+      ${todays.map(card).join('')||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:18px">Nothing scheduled today.</div>`}
+
+      <div class="sec-head" style="margin-top:15px"><h3>Coming up</h3></div>
+      ${upcoming.map(card).join('')||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:18px">Nothing upcoming.</div>`}`});
+});
+let FAB_OPEN=false;
+function fabHome(){
+  const items=[["startSchedule()","＋ Schedule a training"],["go('ints')","🎯 My interventions"],
+    ["go('insight')","💡 Log a field insight (R7)"],["go('dayreport')","📝 End-of-day report"]];
+  return `${FAB_OPEN?`<div class="fab-scrim" onclick="toggleFab()"></div>`:''}
+    <div class="fab-wrap">
+      ${FAB_OPEN?`<div class="fab-menu">${items.map(([a,l])=>`<button onclick="FAB_OPEN=false;${a}">${l}</button>`).join('')}</div>`:''}
+      <button class="fab ${FAB_OPEN?'open':''}" onclick="toggleFab()">＋</button>
+    </div>`;
+}
+function toggleFab(){FAB_OPEN=!FAB_OPEN;render();}
+function intName(id){const i=INTS.find(x=>x.id===id);return i?i.t:'';}
+
+/* (Manager priorities screen removed from the RM App) */
+function planAgainst(kpi,t){PJPD={date:"",kpi,cat:catForKpi(kpi),detail:t,loc:"",travel:false,route:"",nights:0,int:"",legs:[]};go('pjpNew');}
+function catForKpi(k){const m={R1:"Inactive agent reactivation (R1)",R2:"New agent F2F training (R2)",R3:"JKQ drive & low-scorer follow-up (R3)",R4:"Certified-agent conversion coaching (R4)",R5:"Training quality audit / follow-up (R5-R6)",R7:"360 field insight capture (R7)"};return m[k]||"";}
+
+/* ---------- PJP ---------- */
+const BLANK_PJPD={date:"",kpi:"",cat:"",detail:"",loc:"",travel:false,route:"",nights:0,int:"",legs:[]};
+let PJPD={...BLANK_PJPD};
+reg("pjp","My plan (PJP)",()=>{
+  const future=PJP.filter(p=>p.date>=iso(addDays(-3)));
+  const rows=future.map(p=>{
+    const st={approved:['done','Approved'],pending:['pend','Pending'],gap:['canc','Not planned'],rejected:['rej','Rejected']}[p.status];
+    return `<div class="listrow" style="align-items:flex-start" onclick="openPJP('${p.date}')">
+      <div style="flex:0 0 42px;text-align:center">
+        <div style="font-size:9.5px;color:var(--ink-3);font-weight:800;text-transform:uppercase">${prettyIso(p.date).split(' ')[0]}</div>
+        <div style="font-size:17px;font-weight:800;line-height:1.1">${p.date.slice(8)}</div></div>
+      <div class="nm" style="font-weight:${p.status==='gap'?'500':'700'};color:${p.status==='gap'?'var(--ink-3)':'var(--ink)'}">
+        ${p.status==='gap'?'<i>Nothing planned</i>':p.cat}
+        ${p.status!=='gap'?`<div class="meta">${p.detail||''}${p.loc?' · 📍'+p.loc:''}${p.travel?` · ✈️ ${p.nights}n`:''}</div>`:''}
+        ${p.int?`<div style="margin-top:4px"><span class="chip blue" style="font-size:10px">↳ ${p.int}</span></div>`:''}
+      </div>
+      <span class="pill ${st[0]}">${st[1]}</span></div>`;
+  }).join('');
+  const pend=PJP.filter(p=>p.status==="pending").length;
+  return shell({title:"My plan",sub:"One row per working day · August 2026",showBack:false,tab:"pjp",
+    body:`<div class="banner info"><b>PJP moves into the app.</b> Every working day gets a row, so an unplanned day shows as a gap rather than just being absent. Plans go to your ZTM for approval; delivered records don't need approving.</div>
+      <div class="kpi">
+        <div class="k"><div class="n">${PJP.filter(p=>p.status==='approved').length}</div><div class="t">Approved</div></div>
+        <div class="k"><div class="n">${pend}</div><div class="t">Pending</div></div>
+        <div class="k"><div class="n">${PJP.filter(p=>p.status==='gap').length}</div><div class="t">Gaps</div></div>
+      </div>
+      <button class="btn btn-primary" style="margin-bottom:12px" onclick="PJPD={date:'',kpi:'',cat:'',detail:'',loc:'',travel:false,route:'',nights:0,int:'',legs:[]};go('pjpNew')">＋ Plan a day</button>
+      ${rows}`});
+});
+function openPJP(date){
+  const p=PJP.find(x=>x.date===date);
+  if(p.status==='gap'){PJPD={date,kpi:"",cat:"",detail:"",loc:"",travel:false,route:"",nights:0,int:"",legs:[]};go('pjpNew');return;}
+  modal(`<h3>${longIso(p.date)}</h3>
+    <div class="rev"><span class="k">Status</span><span class="v">${p.status}</span></div>
+    <div class="rev"><span class="k">KPI</span><span class="v">${p.kpi||'—'}</span></div>
+    <div class="rev"><span class="k">Activity</span><span class="v">${p.cat}</span></div>
+    <div class="rev"><span class="k">Detail</span><span class="v">${p.detail||'—'}</span></div>
+    <div class="rev"><span class="k">Location</span><span class="v">${p.loc||'—'}</span></div>
+    <div class="rev"><span class="k">Travel</span><span class="v">${p.travel?`Yes · ${p.route} · ${p.nights} night(s)`:'No'}</span></div>
+    ${p.int?`<div class="rev"><span class="k">Intervention</span><span class="v">${p.int}</span></div>`:''}
+    <div style="height:12px"></div>
+    <button class="btn btn-primary" onclick="closeModal()">Close</button>`);
+}
+reg("pjpNew","Plan a day",()=>{
+  if(!PJPD)PJPD={...BLANK_PJPD};
+  const d=PJPD;
+  return shell({title:"Plan a day",sub:"Goes to your ZTM for approval",
+    body:`<div class="card">
+        <label class="label">Date <span class="req">*</span></label>
+        <input type="date" value="${d.date}" onchange="PJPD.date=this.value;go('pjpNew',false)">
+        <div class="hint">Working days only. Multi-day trips: add legs below.</div>
+      </div>
+      <div class="card">
+        <label class="label">KPI this day serves <span class="req">*</span></label>
+        <select onchange="PJPD.kpi=this.value;PJPD.cat=catForKpi(this.value);go('pjpNew',false)">
+          <option value="">Select…</option>
+          ${KPI_LIB.map(k=>`<option value="${k.r}" ${d.kpi===k.r?'selected':''}>${k.r} — ${k.n}</option>`).join('')}
+          <option value="Z5a" ${d.kpi==='Z5a'?'selected':''}>Z5a — Data QA / reporting</option>
+          <option value="NT" ${d.kpi==='NT'?'selected':''}>NT — not a KPI day (admin / leave / travel)</option>
+        </select>
+        <div class="hint">One day chases one KPI. In the current sheet <b>8,959 rows are missing this</b> — making it a required picker fixes that at source.</div>
+      </div>
+      <div class="card">
+        <label class="label">Activity category <span class="req">*</span></label>
+        <select onchange="PJPD.cat=this.value">
+          <option value="">Select…</option>
+          ${ACTIVITY_CATS.map(c=>`<option ${d.cat===c?'selected':''}>${c}</option>`).join('')}
+        </select>
+        <label class="label" style="margin-top:11px">What exactly will you do?</label>
+        <textarea placeholder="e.g. Meet 4 agents onboarded in July, Kerugoya AHQ" oninput="PJPD.detail=this.value">${d.detail}</textarea>
+      </div>
+      <div class="card">
+        <label class="label">Location</label>
+        <input type="text" placeholder="AHQ / venue" value="${d.loc}" oninput="PJPD.loc=this.value">
+        <label class="label" style="margin-top:11px">Travelling?</label>
+        <div class="seg" style="margin-bottom:0">
+          <button class="${!d.travel?'on':''}" onclick="PJPD.travel=false;go('pjpNew',false)">No</button>
+          <button class="${d.travel?'on':''}" onclick="PJPD.travel=true;go('pjpNew',false)">Yes</button></div>
+        ${d.travel?`<label class="label" style="margin-top:11px">Route</label>
+          <input type="text" placeholder="e.g. Kisumu → Kakamega" value="${d.route}" oninput="PJPD.route=this.value">
+          <label class="label" style="margin-top:11px">Nights away</label>
+          <input type="number" min="0" value="${d.nights}" oninput="PJPD.nights=+this.value">
+          <div class="hint">Route is text today, so distance is only a proxy. A maps lookup would give real kilometres — worth telling us if that matters.</div>`:''}
+      </div>
+      <div class="card">
+        <label class="label">Link to an intervention <span style="font-weight:600;text-transform:none;letter-spacing:0;color:var(--ink-3)">(optional)</span></label>
+        <select onchange="PJPD.int=this.value">
+          <option value="">Not tied to one</option>
+          ${INTS.map(i=>`<option value="${i.id}" ${d.int===i.id?'selected':''}>${i.id} — ${i.t}</option>`).join('')}
+        </select>
+        <div class="hint">The day points at the intervention; it doesn't copy its data. Attendance and results live on the intervention.</div>
+      </div>`,
+    foot:footBtn(`<button class="btn btn-primary" ${d.date&&d.kpi?'':'disabled'} onclick="savePJP()">Submit for approval</button>`)});
+});
+function savePJP(){
+  const ex=PJP.find(p=>p.date===PJPD.date);
+  const rec={...PJPD,status:"pending"};
+  if(ex)Object.assign(ex,rec); else PJP.push(rec);
+  PJP.sort((a,b)=>a.date.localeCompare(b.date));
+  APPROVALS.unshift({id:"P0000"+(43+APPROVALS.length),rm:"Pier M.",date:rec.date,kpi:rec.kpi,cat:rec.cat,detail:rec.detail,
+    loc:rec.loc,trav:rec.travel?"Y":"N",route:rec.route,nights:rec.nights,st:"pending"});
+  alertBox("📤","Plan day submitted",`${longIso(rec.date)} sent to Lilian Wambui (ZTM) for approval. You'll be notified when it's actioned.`,"Done","hist=[];go('pjp',false)");
+}
+
+/* ---------- INTERVENTIONS ---------- */
+reg("ints","My interventions",()=>{
+  const mine=INTS.filter(i=>i.cascaded||i.byName==="Pier M.");
+  return shell({title:"Interventions",sub:"Cascaded to me + ones I raised",
+    body:`<div class="banner info"><b>An intervention is the container; a training is one session inside it.</b> Several sessions roll up into one coverage number — so a programme is only complete at full coverage, not at 40%.</div>
+      <button class="btn btn-primary" style="margin-bottom:12px" onclick="ID={t:'',aud:'',kpi:'',tgtHead:'',baseline:'',mode:'Field',root:''};go('intNew')">＋ Raise an intervention</button>
+      ${mine.map(i=>{
+        const pct=Math.round(i.attended/i.tgtHead*100);
+        const cls=pct>=90?'':pct>=50?'amber':'red';
+        return `<div class="card tight" style="cursor:pointer" onclick="INTSEL='${i.id}';go('intDetail')">
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
+            <div style="flex:1"><div style="font-size:13px;font-weight:800">${i.t}</div>
+            <div style="font-size:10.5px;color:var(--ink-3);margin-top:2px">${i.id} · ${i.scope}${i.zone!=='All'?' · '+i.zone:''} · ${i.type}</div></div>
+            <span class="pill ${i.status==='Complete'?'done':i.status==='In progress'?'today':'sched'}">${i.status}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:9px;font-weight:700">
+            <span>Coverage</span><span>${i.attended} / ${i.tgtHead} agents · ${pct}%</span></div>
+          <div class="bar"><i class="${cls}" style="width:${Math.min(pct,100)}%"></i></div>
+          <div style="font-size:11px;color:var(--ink-3);margin-top:7px">${i.kpi} · raised by ${i.byName} (${i.by})${i.cascaded?' · cascaded to you':''}</div>
+        </div>`;}).join('')}`,tab:null});
+});
+const BLANK_ID={t:"",aud:"",kpi:"",tgtHead:"",baseline:"",mode:"Field",root:""};
+let INTSEL=null,ID={...BLANK_ID};
+reg("intDetail","Intervention detail",()=>{
+  const i=INTS.find(x=>x.id===INTSEL)||INTS[0];
+  const pct=Math.round(i.attended/i.tgtHead*100);
+  return shell({title:i.id,sub:i.t,
+    body:`<div class="card">
+        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800"><span>Coverage</span><span>${i.attended} / ${i.tgtHead} · ${pct}%</span></div>
+        <div class="bar" style="height:9px"><i class="${pct>=90?'':pct>=50?'amber':'red'}" style="width:${Math.min(pct,100)}%"></i></div>
+        <div class="hint">Built up from delivered sessions, not claimed once.</div>
+      </div>
+      <div class="card">
+        <div class="rev"><span class="k">Audience</span><span class="v">${i.aud}</span></div>
+        <div class="rev"><span class="k">Scope</span><span class="v">${i.scope}${i.zone!=='All'?' · '+i.zone:''}</span></div>
+        <div class="rev"><span class="k">KPI being moved</span><span class="v">${i.kpi}</span></div>
+        <div class="rev"><span class="k">Type</span><span class="v">${i.type}</span></div>
+        <div class="rev"><span class="k">Raised by</span><span class="v">${i.byName} (${i.by})</span></div>
+        <div class="rev"><span class="k">Mode</span><span class="v">${i.mode}</span></div>
+        <div class="rev"><span class="k">Target date</span><span class="v">${prettyIso(i.date)}</span></div>
+        ${i.root?`<div class="rev"><span class="k">Root cause (repeat)</span><span class="v">${i.root}</span></div>`:''}
+      </div>
+      <div class="card">
+        <div class="sec-head"><h3>Did it work?</h3></div>
+        <div class="rev"><span class="k">Baseline</span><span class="v">${i.baseline}</span></div>
+        <div class="rev"><span class="k">30-day read</span><span class="v" style="color:${i.metric?'var(--green)':'var(--ink-3)'}">${i.metric||'Not due yet'}</span></div>
+        <div class="hint">The movement is read from the data platform 30 days after delivery — nobody types it in.</div>
+      </div>
+      <div class="card">
+        <div class="sec-head"><h3>Sessions delivered (${i.sessions.length})</h3></div>
+        ${i.sessions.length?i.sessions.map(s=>`<div class="listrow" style="cursor:default">
+          <div class="nm">${prettyIso(s.d)} · ${s.ahq.replace(' AHQ','')}<div class="meta">${s.att} of ${s.exp} attended · pass rate ${s.pass}%</div></div></div>`).join('')
+          :`<div style="font-size:12px;color:var(--ink-3);text-align:center;padding:12px">No sessions yet.</div>`}
+        <button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="scheduleForInt('${i.id}')">＋ Schedule a session for this</button>
+      </div>`});
+});
+function scheduleForInt(id){resetDrafts();S.int=id;const i=INTS.find(x=>x.id===id);S.ahq=AHQS[0];go('s1');}
+reg("intNew","Raise an intervention",()=>{if(!ID)ID={...BLANK_ID};return shell({
+  title:"Raise an intervention",sub:"A need you've spotted in the field",
+  body:`<div class="banner info">Use this when you've found a gap — a failing metric, a product nobody can pitch, a request from an ABM. It becomes a measurable programme rather than a one-off session.</div>
+    <div class="card">
+      <label class="label">What is it? <span class="req">*</span></label>
+      <input type="text" placeholder="e.g. Retailers can't pitch Sun King phones" value="${ID.t}" oninput="ID.t=this.value">
+      <label class="label" style="margin-top:11px">Who is it for? <span class="req">*</span></label>
+      <input type="text" placeholder="e.g. ATD retailers in Utawala cluster" value="${ID.aud}" oninput="ID.aud=this.value">
+    </div>
+    <div class="card">
+      <label class="label">Which KPI should this move? <span class="req">*</span></label>
+      <select onchange="ID.kpi=this.value">
+        <option value="">Select…</option>
+        ${KPI_LIB.map(k=>`<option value="${k.r}" ${ID.kpi===k.r?'selected':''}>${k.r} — ${k.n}</option>`).join('')}
+      </select>
+      <label class="label" style="margin-top:11px">How many agents should it reach?</label>
+      <input type="number" placeholder="Target headcount" value="${ID.tgtHead}" oninput="ID.tgtHead=this.value">
+      <label class="label" style="margin-top:11px">Where is the metric now? (baseline)</label>
+      <input type="text" placeholder="e.g. 32% reactivation" value="${ID.baseline}" oninput="ID.baseline=this.value">
+      <div class="hint">Baseline plus a 30-day read is what proves the intervention worked.</div>
+    </div>
+    <div class="card">
+      <label class="label">Mode</label>
+      <div class="seg" style="margin-bottom:0">
+        ${["Field","Classroom","Virtual","Litmos"].map(m=>`<button class="${ID.mode===m?'on':''}" onclick="ID.mode='${m}';go('intNew',false)">${m}</button>`).join('')}</div>
+      <label class="label" style="margin-top:12px">If this is a repeat, why? <span style="font-weight:600;text-transform:none;letter-spacing:0;color:var(--ink-3)">(optional)</span></label>
+      <select onchange="ID.root=this.value">
+        <option value="">Not a repeat</option>
+        ${["New joiners","Knowledge decay","Failed assessment","Process change"].map(r=>`<option ${ID.root===r?'selected':''}>${r}</option>`).join('')}
+      </select>
+    </div>`,
+  foot:footBtn(`<button class="btn btn-primary" ${ID.t&&ID.aud&&ID.kpi?'':'disabled'} onclick="saveInt()">Submit to my ZTM</button>`)
+});});
+function saveInt(){
+  const id="INT-0"+(20+INTS.length);
+  INTS.push({id,t:ID.t,aud:ID.aud,scope:"AHQ",zone:"Coast",kpi:ID.kpi,type:"Reactive",by:"RM",byName:"Pier M.",
+    mode:ID.mode,tgtHead:+ID.tgtHead||10,attended:0,baseline:ID.baseline,metric:"",budget:0,
+    date:iso(addDays(14)),status:"Planned",cascaded:false,root:ID.root,sessions:[]});
+  alertBox("🎯","Intervention raised",`<b>${id}</b> created and sent to your ZTM for visibility. You can now schedule sessions against it.`,"Done","hist=[];go('ints',false)");
+}
+
+/* ---------- SCHEDULE FLOW ---------- */
+function startSchedule(){resetDrafts();go('s1');}
+reg("s1","Schedule · 1 — When & where",()=>shell({
+  title:"Schedule a training",sub:"Step 1 of 4 — When & where",
+  body:`${steps(1,4)}
+    ${S.agents.length?`<div class="banner ok">✓ ${S.agents.length} agents carried over from your selection. You can adjust them at step 3.</div>`:''}
+    <div class="card">
+      <label class="label">Training date <span class="req">*</span></label>
+      <input type="date" min="${iso(addDays(1))}" value="${S.date}" onchange="S.date=this.value;go('s1',false)">
+      <div class="hint">Future dates only.</div>
+    </div>
+    <div class="card">
+      <label class="label">Training time <span class="req">*</span></label>
+      <input type="time" value="${S.time}" onchange="S.time=this.value;go('s1',false)">
+      <div class="hint">Must be 30+ minutes clear of another training that day.</div>
+    </div>
+    <div class="card">
+      <label class="label">AHQ <span class="req">*</span></label>
+      <select onchange="S.ahq=this.value;go('s1',false)">
+        <option value="">Select AHQ…</option>${AHQS.map(a=>`<option ${S.ahq===a?'selected':''}>${a}</option>`).join('')}</select>
+    </div>
+    <div class="card">
+      <label class="label">Location <span class="req">*</span></label>
+      <input type="text" placeholder="e.g. Mamboleo Showground, Kisumu" value="${S.loc}" oninput="S.loc=this.value">
+      <button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="pickMap()">📍 Pick on Google Maps</button>
+    </div>
+    <div class="card">
+      <label class="label">Part of an intervention? <span class="new">NEW</span></label>
+      <select onchange="S.int=this.value">
+        <option value="">Standalone session</option>
+        ${INTS.filter(i=>i.status!=='Complete').map(i=>`<option value="${i.id}" ${S.int===i.id?'selected':''}>${i.id} — ${i.t}</option>`).join('')}
+      </select>
+      <div class="hint">Linking it means this session's attendance counts toward that intervention's coverage.</div>
+    </div>`,
+  foot:footBtn(`<button class="btn btn-primary" ${S.date&&S.time&&S.ahq&&S.loc.trim().length>2?'':'disabled'} onclick="s1next()">Continue</button>`)
+}));
+function pickMap(){
+  modal(`<h3>Pick training location</h3><div class="map"><div class="rad"></div><div class="pin">📍</div></div>
+    <p style="font-size:12px">Simulated map picker — stores the address and the coordinates.</p>
+    <button class="btn btn-primary" onclick="S.loc='Mamboleo Showground, Kisumu';closeModal();go('s1',false)">Use this location</button>
+    <button class="btn btn-outline" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
+}
+function s1next(){
+  if(S.date<=iso(TODAY)){alertBox("📅","Invalid date","Training date must be in the future.");return;}
+  const c=TRAININGS.find(t=>t.status==="scheduled"&&t.date===S.date&&Math.abs(mins(t.time)-mins(S.time))<30);
+  if(c){modal(`<div class="ico">⚠️</div><h3>Training time clash</h3>
+    <p>You already have <b>${c.id}</b> at <b>${c.time}</b> that day (${c.ahq}). Trainings must be 30+ minutes apart.</p>
+    <button class="btn btn-primary" onclick="closeModal()">Change time</button>`);return;}
+  go('s2');
+}
+reg("s2","Schedule · 2 — Courses",()=>shell({
+  title:"Schedule a training",sub:"Step 2 of 4 — Courses & topics",
+  body:`${steps(2,4)}
+    <div class="banner info">Courses come from Litmos, so retired content never appears here. Around 2,000 old courses are being deactivated — this picker follows that automatically.</div>
+    ${S.courses.length?`<div class="card"><div class="sec-head"><h3>Added (${S.courses.length})</h3></div>
+      ${S.courses.map((c,i)=>`<div style="padding:8px 0;border-bottom:1px solid #F0F2F7">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:12.5px;font-weight:800">${c.c}</div>
+          <button class="edit" style="color:var(--red)" onclick="S.courses.splice(${i},1);go('s2',false)">Remove</button></div>
+        <div style="margin-top:5px">${c.t.map(t=>`<span class="chip">${t}</span>`).join('')}</div></div>`).join('')}</div>`:''}
+    <div class="card">
+      <label class="label">Primary course <span class="req">*</span></label>
+      <select onchange="S.curCourse=this.value;S.curTopics=[];go('s2',false)">
+        <option value="">Search / select…</option>
+        ${Object.keys(COURSES).map(c=>{const u=S.courses.some(x=>x.c===c);
+          return `<option value="${c}" ${S.curCourse===c?'selected':''} ${u?'disabled':''}>${c}${u?' — added':''}</option>`;}).join('')}
+      </select>
+      ${S.curCourse?`<label class="label" style="margin-top:12px">Topics <span class="req">*</span></label>
+        ${COURSES[S.curCourse].map(t=>`<div class="listrow" onclick="togTopic('${esc(t)}')">
+          <div class="cbx ${S.curTopics.includes(t)?'on':''}">${S.curTopics.includes(t)?'✓':''}</div>
+          <div class="nm">${t}</div></div>`).join('')}
+        <button class="btn btn-outline" style="margin-top:7px" ${S.curTopics.length?'':'disabled'} onclick="addCourse()">＋ Add this course</button>`:''}
+    </div>`,
+  foot:footBtn(`<button class="btn btn-primary" ${S.courses.length?'':'disabled'} onclick="go('s3')">Continue</button>`)
+}));
+function togTopic(t){const i=S.curTopics.indexOf(t);i>-1?S.curTopics.splice(i,1):S.curTopics.push(t);go('s2',false);}
+function addCourse(){S.courses.push({c:S.curCourse,t:[...S.curTopics]});S.curCourse="";S.curTopics=[];go('s2',false);toast("Course added");}
+
+/* ---- STEP 3: smart agent selection (rebuilt from feedback) ---- */
+reg("s3","Schedule · 3 — Agents",()=>{
+  const pool=AGENTS.filter(a=>LISTS[S.listKey].f(a))
+    .filter(a=>!S.q||a.n.toLowerCase().includes(S.q.toLowerCase()))
+    .sort((a,b)=>a.j-b.j);
+  const allSel=pool.length&&pool.every(a=>S.agents.includes(a.n));
+  return shell({title:"Schedule a training",sub:"Step 3 of 4 — Who's coming",
+    body:`${steps(3,4)}
+      <div class="banner ok"><b>No minimum enforced.</b> You asked why an RM couldn't meet one or two agents — they can. A 1:1 coaching session is a valid training. The old floor is gone.</div>
+      <label class="label">Smart lists <span class="new">NEW</span></label>
+      <div style="margin-bottom:9px">${Object.keys(LISTS).map(k=>{
+        const n=AGENTS.filter(LISTS[k].f).length;
+        return `<span class="qtag ${S.listKey===k?'on':''}" style="display:inline-block;margin:0 4px 5px 0" onclick="S.listKey='${k}';go('s3',false)">${LISTS[k].t} (${n})</span>`;}).join('')}</div>
+      <div class="hint" style="margin-bottom:10px">${LISTS[S.listKey].d}</div>
+      <input type="text" placeholder="🔍 Search by name" value="${S.q}" oninput="S.q=this.value;go('s3',false)" style="margin-bottom:10px">
+      <div style="display:flex;gap:7px;margin-bottom:10px">
+        <button class="btn btn-outline btn-sm" style="flex:1" onclick="selAll(${allSel?'false':'true'})">${allSel?'Clear':'Select all'} ${pool.length} shown</button>
+        <button class="btn btn-outline btn-sm" style="flex:1" onclick="selAHQ()">Select all in ${S.ahq?S.ahq.replace(' AHQ',''):'AHQ'}</button>
+      </div>
+      ${pool.map(a=>`<div class="listrow" onclick="togAgent('${esc(a.n)}')">
+        <div class="cbx ${S.agents.includes(a.n)?'on':''}">${S.agents.includes(a.n)?'✓':''}</div>
+        <div class="nm">${a.n}<div class="meta">${a.ahq.replace(' AHQ','')} · joined ${a.j}d ago · last sale ${a.ls}d ago · ${a.lt===null?'<b style="color:var(--red)">never trained</b>':'trained '+a.lt+'d ago'}${a.lit?'':' · <b style="color:var(--sk-orange)">no Litmos</b>'}</div></div>
+      </div>`).join('')||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">No agents match this list.</div>`}
+      ${S.agents.length?`<div class="selbar"><div class="c">${S.agents.length} selected</div>
+        <button class="btn btn-outline btn-sm" onclick="S.agents=[];go('s3',false)">Clear</button></div>`:''}`,
+    foot:footBtn(`<button class="btn btn-primary" ${S.agents.length?'':'disabled'} onclick="go('s4')">Review${S.agents.length?` (${S.agents.length})`:''}</button>`)});
+});
+function togAgent(n){const i=S.agents.indexOf(n);i>-1?S.agents.splice(i,1):S.agents.push(n);go('s3',false);}
+function selAll(on){
+  const pool=AGENTS.filter(a=>LISTS[S.listKey].f(a)).filter(a=>!S.q||a.n.toLowerCase().includes(S.q.toLowerCase()));
+  pool.forEach(a=>{const i=S.agents.indexOf(a.n);if(on&&i<0)S.agents.push(a.n);if(!on&&i>-1)S.agents.splice(i,1);});
+  go('s3',false);
+}
+function selAHQ(){
+  if(!S.ahq){toast("Pick an AHQ at step 1 first");return;}
+  AGENTS.filter(a=>a.ahq===S.ahq).forEach(a=>{if(!S.agents.includes(a.n))S.agents.push(a.n);});
+  go('s3',false);toast("Added everyone in "+S.ahq);
+}
+reg("s4","Schedule · 4 — Review",()=>shell({
+  title:"Review & submit",sub:"Step 4 of 4",
+  body:`${steps(4,4)}
+    <div class="card">
+      <div class="sec-head"><h3>When & where</h3><button class="edit" onclick="go('s1')">Edit</button></div>
+      <div class="rev"><span class="k">Date</span><span class="v">${prettyIso(S.date)}</span></div>
+      <div class="rev"><span class="k">Time</span><span class="v">${S.time}</span></div>
+      <div class="rev"><span class="k">AHQ</span><span class="v">${S.ahq}</span></div>
+      <div class="rev"><span class="k">Location</span><span class="v">${S.loc}</span></div>
+      ${S.int?`<div class="rev"><span class="k">Intervention</span><span class="v">${S.int}</span></div>`:''}
+    </div>
+    <div class="card">
+      <div class="sec-head"><h3>Courses</h3><button class="edit" onclick="go('s2')">Edit</button></div>
+      ${S.courses.map(c=>`<div style="padding:6px 0"><div style="font-size:12.5px;font-weight:800">${c.c}</div>
+        <div style="margin-top:4px">${c.t.map(t=>`<span class="chip">${t}</span>`).join('')}</div></div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="sec-head"><h3>Agents (${S.agents.length})</h3><button class="edit" onclick="go('s3')">Edit</button></div>
+      <div>${S.agents.map(n=>`<span class="chip">${n}</span>`).join('')}</div>
+    </div>
+    <div class="banner info">On submit each agent gets a notification with the date, time and location, and the training appears in their Kazi app under <b>Upcoming trainings</b>.</div>`,
+  foot:footBtn(`<button class="btn btn-primary" onclick="submitSchedule()">Submit training</button>`)
+}));
+function submitSchedule(){
+  const id="TRN-"+(2500+Math.floor(Math.random()*90));
+  TRAININGS.push({id,date:S.date,time:S.time,ahq:S.ahq,loc:S.loc,int:S.int,courses:S.courses.map(c=>({c:c.c,t:c.t})),agents:[...S.agents],status:"scheduled"});
+  modal(`<div class="ico">✅</div><h3>Training scheduled</h3>
+    <p><b>${id}</b> created. ${S.agents.length} agents notified — the session is now on their Kazi app.${S.int?`<br><br>Linked to <b>${S.int}</b>; attendance will roll up into its coverage.`:''}</p>
+    <button class="btn btn-primary" onclick="closeModal();hist=[];go('home',false)">Back to home</button>`);
+}
+
+/* ---------- RESCHEDULE / CANCEL ---------- */
+let target=null;
+function openResched(id){
+  target=TRAININGS.find(t=>t.id===id);
+  modal(`<h3>Reschedule ${target.id}</h3>
+    <p>Currently ${prettyIso(target.date)} at ${target.time}. Same record, new date and time.</p>
+    <label class="label">New date</label><input type="date" id="rD" min="${iso(addDays(1))}" value="${target.date}">
+    <label class="label" style="margin-top:10px">New time</label><input type="time" id="rT" value="${target.time}">
+    <div class="banner info" style="margin-top:12px">📣 <b>Yes — the same notification goes out again.</b> Every invited agent is re-notified with the new date, time and location, and their Kazi app entry updates in place. It's flagged as a change, not a new invite.</div>
+    <button class="btn btn-primary" onclick="doResched()">Confirm reschedule</button>
+    <button class="btn btn-outline" style="margin-top:8px" onclick="closeModal()">Back</button>`);
+}
+function doResched(){
+  const d=document.getElementById('rD').value,t=document.getElementById('rT').value;
+  if(!d||!t){toast("Pick a date and time");return;}
+  if(d<=iso(TODAY)){alertBox("📅","Invalid date","New date must be in the future.");return;}
+  const c=TRAININGS.find(x=>x.id!==target.id&&x.status==="scheduled"&&x.date===d&&Math.abs(mins(x.time)-mins(t))<30);
+  if(c){alertBox("⚠️","Training time clash",`${c.id} is already at ${c.time} that day.`);return;}
+  target.date=d;target.time=t;
+  alertBox("🔁","Rescheduled",`${target.id} moved to ${prettyIso(d)} at ${t}. All ${target.agents.length} invited agents re-notified with the new details.`,"Done","go('home',false)");
+}
+function openCancel(id){
+  target=TRAININGS.find(t=>t.id===id);
+  modal(`<div class="ico">⚠️</div><h3>Cancel ${target.id}?</h3>
+    <p>Cancelled trainings can't be rescheduled and won't appear in past records.</p>
+    <label class="label">Reason <span class="req">*</span></label>
+    <textarea id="cR" placeholder="e.g. Heavy rain — venue inaccessible"></textarea><div style="height:12px"></div>
+    <button class="btn btn-danger" onclick="doCancel()">Cancel training</button>
+    <button class="btn btn-outline" style="margin-top:8px" onclick="closeModal()">Keep it</button>`);
+}
+function doCancel(){
+  const r=document.getElementById('cR').value.trim();
+  if(!r){toast("A reason is required");return;}
+  target.status="cancelled";
+  alertBox("🚫","Cancelled",`${target.id} cancelled. Reason stored and all invited agents notified.`,"Done","go('home',false)");
+}
+
+/* ---------- START TRAINING ---------- */
+function tryStart(id){
+  const t=TRAININGS.find(x=>x.id===id);
+  if(t.date!==iso(TODAY)){alertBox("⏳","Not today's training",
+    `${t.id} is scheduled for <b>${prettyIso(t.date)}</b>. Trainings can only be started on the day.`);return;}
+  resetDrafts();R.tid=id;
+  R.courses=t.courses.map(c=>({c:c.c,t:[...c.t]}));
+  R.invited=[...t.agents];R.attend=[...t.agents];
+  go('r1');
+}
+function T(){return TRAININGS.find(x=>x.id===R.tid)||TRAININGS[0];}
+reg("r1","Start · 1 — Check-in",()=>{
+  const t=T(),now=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  return shell({title:"Start training",sub:`${t.id} · Step 1 of 6 — Check in`,
+    body:`${steps(1,6)}
+      <div class="card">
+        <div class="rev"><span class="k">Date</span><span class="v">${prettyIso(t.date)}</span></div>
+        <div class="rev"><span class="k">Start timestamp</span><span class="v">${R.checkedIn?R.stamp:now} <span style="color:var(--ink-3);font-weight:600">(actual)</span></span></div>
+        <div class="rev"><span class="k">Location</span><span class="v">${t.loc}</span></div>
+      </div>
+      <div class="map"><div class="rad"></div><div class="pin">📍</div></div>
+      ${R.checkedIn?(R.drift>100
+        ? `<div class="banner warn">⚠️ You're <b>${R.drift} m</b> from the scheduled location (100 m tolerance). Explain why — you won't be blocked.</div>
+           <div class="card"><label class="label">Why the location changed <span class="req">*</span></label>
+           <textarea placeholder="e.g. Hall was locked, moved to the chief's camp" oninput="R.feedback=this.value">${R.feedback}</textarea></div>`
+        : `<div class="banner ok">✓ Checked in at ${R.stamp} · ${R.drift} m from the venue.</div>`)
+        : `<div class="banner info">Check-in captures your GPS and the exact time. Records land in the system within the 24-hour timeliness SLA.</div>
+           <button class="btn btn-primary" onclick="doCheckIn(false)">📍 Check in here</button>
+           <button class="btn btn-outline" style="margin-top:8px" onclick="doCheckIn(true)">Simulate check-in far from venue</button>`}
+      <div class="hint" style="margin-top:11px">Agents check in separately on their own app once you submit.</div>`,
+    foot:R.checkedIn?footBtn(`<button class="btn btn-primary" onclick="r1next()">Continue</button>`):""});
+});
+function doCheckIn(far){
+  R.checkedIn=true;R.drift=far?640:23;R.stamp=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  go('r1',false);
+  if(far)alertBox("⚠️","Location changed","You're <b>640 m</b> from the scheduled venue. Add a short explanation. You can still continue.");
+}
+function r1next(){if(R.drift>100&&!R.feedback.trim()){toast("Explain the location change first");return;}go('r2');}
+
+reg("r2","Start · 2 — Attendance",()=>{
+  const t=T();
+  const others=AGENTS.filter(a=>!R.invited.includes(a.n));
+  return shell({title:"Attendance",sub:`${t.id} · Step 2 of 6`,
+    body:`${steps(2,6)}
+      <div class="kpi">
+        <div class="k"><div class="n">${R.attend.length+R.extra.length}</div><div class="t">Present</div></div>
+        <div class="k"><div class="n">${R.invited.length-R.attend.length}</div><div class="t">Absent</div></div>
+        <div class="k"><div class="n">${R.extra.length}</div><div class="t">Walk-ins</div></div>
+      </div>
+      <div class="sec-head"><h3>Invited (${R.invited.length})</h3><span style="font-size:10.5px;color:var(--ink-3)">Uncheck absentees</span></div>
+      ${R.invited.map(n=>`<div class="listrow" onclick="togAttend('${esc(n)}')">
+        <div class="cbx ${R.attend.includes(n)?'on':''}">${R.attend.includes(n)?'✓':''}</div>
+        <div class="nm">${n}<div class="meta">${R.attend.includes(n)?'Present':'Marked absent'}</div></div></div>`).join('')}
+      <div class="sec-head" style="margin-top:15px"><h3>Agents who turned up uninvited <span class="new">NEW</span></h3></div>
+      <div class="hint" style="margin-bottom:8px">You asked for this — walk-ins can be added here and they count toward attendance and coverage.</div>
+      <input type="text" placeholder="🔍 Search any agent" oninput="R.q=this.value;go('r2',false)" style="margin-bottom:9px">
+      ${others.filter(a=>!R.q||a.n.toLowerCase().includes((R.q||'').toLowerCase())).slice(0,8).map(a=>`
+        <div class="listrow" onclick="togExtra('${esc(a.n)}')">
+          <div class="cbx ${R.extra.includes(a.n)?'on':''}">${R.extra.includes(a.n)?'✓':''}</div>
+          <div class="nm">${a.n}<div class="meta">Not invited · ${a.ahq.replace(' AHQ','')}</div></div></div>`).join('')}`,
+    foot:footBtn(`<button class="btn btn-primary" onclick="go('r3')">Continue</button>`)});
+});
+function togAttend(n){const i=R.attend.indexOf(n);i>-1?R.attend.splice(i,1):R.attend.push(n);go('r2',false);}
+function togExtra(n){const i=R.extra.indexOf(n);i>-1?R.extra.splice(i,1):R.extra.push(n);go('r2',false);}
+
+reg("r3","Start · 3 — Photo & video",()=>shell({
+  title:"Photo & video",sub:`${T().id} · Step 3 of 6`,
+  body:`${steps(3,6)}
+    <div class="sec-head"><h3>Training photo <span class="req">*</span></h3></div>
+    ${R.photo?`<div class="card tight"><div style="height:130px;border-radius:11px;background:linear-gradient(135deg,#F6D97A,#F0A94B);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#4A3200;font-weight:800">
+        <div style="font-size:27px">🖼️</div><div style="font-size:11.5px;margin-top:5px">Captured ${R.photoTime}</div></div>
+      <button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="R.photo=false;go('r3',false)">Retake</button></div>`
+      :`<div class="capture" onclick="R.photo=true;R.photoTime=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});go('r3',false)">
+        <span class="em">📷</span><div class="t">Open camera</div><div class="s">Taken in-app — no gallery upload.</div></div>`}
+    <div class="sec-head" style="margin-top:15px"><h3>Training video</h3></div>
+    ${R.video?`<div class="card tight"><div style="display:flex;align-items:center;gap:9px">
+        <div style="font-size:22px">🎬</div><div style="flex:1"><div style="font-size:12.5px;font-weight:800">training-clip.mp4</div>
+        <div style="font-size:10.5px;color:var(--ink-3)">18 MB · uploaded ${R.videoTime}</div></div>
+        <button class="edit" style="color:var(--red)" onclick="R.video=false;go('r3',false)">Remove</button></div></div>`
+      :`<div class="capture" onclick="R.video=true;R.videoTime=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});go('r3',false)">
+        <span class="em">🎬</span><div class="t">Upload video</div><div class="s">Queues and uploads when you get signal.</div></div>`}
+    <div class="banner info" style="margin-top:12px">Videos are later reviewed against the classroom checklist — that review is what R6 measures, not the upload itself.</div>`,
+  foot:footBtn(`<button class="btn btn-primary" ${R.photo?'':'disabled'} onclick="go('r4')">Continue</button>`)
+}));
+
+reg("r4","Start · 4 — Courses covered",()=>shell({
+  title:"Courses covered",sub:`${T().id} · Step 4 of 6`,
+  body:`${steps(4,6)}
+    <div class="banner info">Pre-filled from scheduling. Change it to what you actually covered.</div>
+    ${R.courses.map((c,i)=>`<div class="card tight">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:12.5px;font-weight:800">${c.c}</div>
+        <button class="edit" style="color:var(--red)" onclick="R.courses.splice(${i},1);go('r4',false)">Remove</button></div>
+      <div style="margin-top:6px">${c.t.map((t,j)=>`<span class="chip">${t}<span class="x" onclick="event.stopPropagation();R.courses[${i}].t.splice(${j},1);go('r4',false)">×</span></span>`).join('')}</div>
+      <select style="margin-top:6px;font-size:12px" onchange="if(this.value){R.courses[${i}].t.push(this.value);go('r4',false)}">
+        <option value="">＋ Add a topic…</option>
+        ${COURSES[c.c].filter(t=>!c.t.includes(t)).map(t=>`<option>${t}</option>`).join('')}</select>
+    </div>`).join('')}
+    <div class="card"><label class="label">Add another course</label>
+      <select onchange="if(this.value){R.courses.push({c:this.value,t:[]});go('r4',false)}">
+        <option value="">Select…</option>
+        ${Object.keys(COURSES).filter(c=>!R.courses.some(x=>x.c===c)).map(c=>`<option>${c}</option>`).join('')}</select>
+    </div>`,
+  foot:footBtn(`<button class="btn btn-primary" ${R.courses.length?'':'disabled'} onclick="go('r5')">Continue</button>`)
+}));
+
+reg("r5","Start · 5 — Comments & star",()=>{
+  const present=[...R.attend,...R.extra];
+  return shell({title:"Comments",sub:`${T().id} · Step 5 of 6`,
+    body:`${steps(5,6)}
+      <div class="card">
+        <div class="sec-head"><h3>⭐ Star of the training <span class="new">NEW</span></h3></div>
+        <div class="hint" style="margin-bottom:9px">Your idea — flag the one agent who stood out. This feeds recognition and rewards, and gives the business a list of agents worth investing in.</div>
+        ${present.map(n=>`<div class="listrow" onclick="R.star=(R.star==='${esc(n)}'?'':'${esc(n)}');go('r5',false)">
+          <div class="cbx rd ${R.star===n?'on':''}">${R.star===n?'★':''}</div>
+          <div class="nm">${n}</div></div>`).join('')||'<div class="hint">Nobody marked present yet.</div>'}
+      </div>
+      <div class="card">
+        <label class="label">Summary / comments <span style="font-weight:600;text-transform:none;letter-spacing:0;color:var(--ink-3)">(optional)</span></label>
+        <textarea style="min-height:120px" placeholder="How did it go? Anything the region should know?" oninput="R.comments=this.value">${R.comments}</textarea>
+      </div>`,
+    foot:footBtn(`<button class="btn btn-primary" onclick="go('r6')">Review</button>`)});
+});
+
+reg("r6","Start · 6 — Review & submit",()=>{
+  const t=T();
+  return shell({title:"Review & submit",sub:`${t.id} · Step 6 of 6`,
+    body:`${steps(6,6)}
+      <div class="card"><div class="sec-head"><h3>Check-in</h3><button class="edit" onclick="go('r1')">Edit</button></div>
+        <div class="rev"><span class="k">Started</span><span class="v">${R.stamp}</span></div>
+        <div class="rev"><span class="k">GPS drift</span><span class="v" style="color:${R.drift>100?'var(--red)':'var(--green)'}">${R.drift} m</span></div>
+        ${R.feedback?`<div class="rev"><span class="k">Reason</span><span class="v">${R.feedback}</span></div>`:''}</div>
+      <div class="card"><div class="sec-head"><h3>Attendance</h3><button class="edit" onclick="go('r2')">Edit</button></div>
+        <div class="rev"><span class="k">Present</span><span class="v">${R.attend.length+R.extra.length} of ${R.invited.length} invited${R.extra.length?` (+${R.extra.length} walk-in)`:''}</span></div>
+        ${R.star?`<div class="rev"><span class="k">⭐ Star</span><span class="v">${R.star}</span></div>`:''}
+        <div style="margin-top:6px">${[...R.attend,...R.extra].map(n=>`<span class="chip">${n===R.star?'⭐ ':''}${n}</span>`).join('')}</div></div>
+      <div class="card"><div class="sec-head"><h3>Evidence</h3><button class="edit" onclick="go('r3')">Edit</button></div>
+        <div class="rev"><span class="k">Photo</span><span class="v">${R.photo?'✓ '+R.photoTime:'—'}</span></div>
+        <div class="rev"><span class="k">Video</span><span class="v">${R.video?'✓ '+R.videoTime:'Not uploaded'}</span></div></div>
+      <div class="card"><div class="sec-head"><h3>Courses</h3><button class="edit" onclick="go('r4')">Edit</button></div>
+        ${R.courses.map(c=>`<div style="padding:5px 0"><div style="font-size:12.5px;font-weight:800">${c.c}</div>
+        <div style="margin-top:4px">${c.t.map(x=>`<span class="chip">${x}</span>`).join('')||'<span style="font-size:11px;color:var(--ink-3)">No topics</span>'}</div></div>`).join('')}</div>
+      <div class="card"><div class="sec-head"><h3>Comments</h3><button class="edit" onclick="go('r5')">Edit</button></div>
+        <div style="font-size:12.5px;color:var(--ink-2);line-height:1.5">${R.comments||'<span style="color:var(--ink-3)">None</span>'}</div></div>
+      ${t.int?`<div class="banner pur">↳ Rolls up into <b>${t.int}</b> — coverage will move from ${INTS.find(i=>i.id===t.int).attended} to ${INTS.find(i=>i.id===t.int).attended+R.attend.length+R.extra.length} of ${INTS.find(i=>i.id===t.int).tgtHead}.</div>`:''}`,
+    foot:footBtn(`<button class="btn btn-primary" onclick="submitRun()">Submit training</button>`)});
+});
+function submitRun(){
+  const t=T(),n=R.attend.length+R.extra.length;
+  modal(`<div class="ico">🎉</div><h3>Training submitted</h3>
+    <p><b>${t.id}</b> recorded with ${n} agents present.<br><br>
+    Agents get their check-in notification now, and the post-training survey ("did this help you do better on the job?") goes to them in 7 days — that's what R5 measures.</p>
+    <button class="btn btn-primary" onclick="finishRun()">Done</button>`);
+}
+function finishRun(){
+  const t=T(),n=R.attend.length+R.extra.length;
+  PAST.unshift({id:t.id,date:t.date,time:R.stamp,ahq:t.ahq,loc:t.loc,inv:R.invited.length,att:n,int:t.int,
+    courses:R.courses,star:R.star,cm:R.comments,read:null});
+  if(t.int){const i=INTS.find(x=>x.id===t.int);if(i){i.attended+=n;i.sessions.push({d:t.date,exp:R.invited.length,att:n,ahq:t.ahq,pass:0});
+    if(i.attended>=i.tgtHead)i.status="Complete";else i.status="In progress";}}
+  [...R.attend,...R.extra].forEach(nm=>{const a=AGENTS.find(x=>x.n===nm);if(a)a.lt=0;});
+  t.status="completed";closeModal();hist=[];go('past',false);
+}
+
+/* ---------- AGENTS (worklists) ---------- */
+let AG={key:"all",q:"",sel:[],sort:"lt"};
+reg("agents","Agents",()=>{
+  let pool=AGENTS.filter(a=>LISTS[AG.key].f(a)).filter(a=>!AG.q||a.n.toLowerCase().includes(AG.q.toLowerCase()));
+  pool.sort((a,b)=>AG.sort==="lt"?((b.lt===null?9999:b.lt)-(a.lt===null?9999:a.lt)):(b.ls-a.ls));
+  return shell({title:"My agents",sub:"31 agents · Western Region",showBack:false,tab:"agents",
+    body:`<div class="banner info"><b>The app hands you the target list.</b> These are the worklists behind R1, R2 and R4 — no need to remember who's due.</div>
+      <div style="margin-bottom:10px">${Object.keys(LISTS).map(k=>{
+        const n=AGENTS.filter(LISTS[k].f).length;
+        return `<span class="qtag ${AG.key===k?'on':''}" style="display:inline-block;margin:0 4px 5px 0" onclick="AG.key='${k}';AG.sel=[];go('agents',false)">${LISTS[k].t} (${n})</span>`;}).join('')}</div>
+      <div class="hint" style="margin-bottom:10px">${LISTS[AG.key].d}</div>
+      <input type="text" placeholder="🔍 Search" value="${AG.q}" oninput="AG.q=this.value;go('agents',false)" style="margin-bottom:9px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <button class="edit" onclick="agSelAll()">Select all ${pool.length}</button>
+        <button class="edit" onclick="AG.sort=AG.sort==='lt'?'ls':'lt';go('agents',false)">Sort: ${AG.sort==='lt'?'days since training ↓':'days since sale ↓'}</button>
+      </div>
+      ${pool.map(a=>`<div class="listrow" style="align-items:flex-start">
+        <div class="cbx ${AG.sel.includes(a.n)?'on':''}" onclick="event.stopPropagation();agTog('${esc(a.n)}')">${AG.sel.includes(a.n)?'✓':''}</div>
+        <div class="nm" onclick="AGSEL='${esc(a.n)}';go('agentDetail')">${a.n}
+          <div class="meta">${a.ahq.replace(' AHQ','')} · joined ${a.j}d · last sale ${a.ls}d ago<br>
+          ${a.lt===null?'<b style="color:var(--red)">Never trained</b>':'Trained '+a.lt+'d ago'} · Litmos ${a.lit?a.litp+'%':'<b style="color:var(--sk-orange)">never logged in</b>'}${a.cert?' · <b style="color:var(--green)">certified</b>'+(a.conv?'':' (not converted)'):''}</div></div>
+        <div style="color:var(--ink-3)">›</div></div>`).join('')||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">Nobody on this list — good news.</div>`}
+      ${AG.sel.length?`<div class="selbar"><div class="c">${AG.sel.length} selected</div>
+        <button class="btn btn-primary btn-sm" onclick="inviteSelected()">Invite to a training</button>
+        <button class="btn btn-outline btn-sm" onclick="AG.sel=[];go('agents',false)">Clear</button></div>`:''}`});
+});
+function agTog(n){const i=AG.sel.indexOf(n);i>-1?AG.sel.splice(i,1):AG.sel.push(n);go('agents',false);}
+function agSelAll(){
+  const pool=AGENTS.filter(a=>LISTS[AG.key].f(a)).filter(a=>!AG.q||a.n.toLowerCase().includes(AG.q.toLowerCase()));
+  AG.sel=pool.map(a=>a.n);go('agents',false);
+}
+function inviteSelected(){
+  const picked=[...AG.sel];resetDrafts();S.agents=picked;
+  const ah=AGENTS.find(a=>a.n===picked[0]);if(ah)S.ahq=ah.ahq;
+  AG.sel=[];go('s1');toast(picked.length+" agents carried into a new training");
+}
+let AGSEL=null;
+reg("agentDetail","Agent detail",()=>{
+  const a=AGENTS.find(x=>x.n===AGSEL)||AGENTS[0];
+  return shell({title:a.n,sub:a.ahq,
+    body:`<div class="kpi">
+        <div class="k"><div class="n">${a.j}</div><div class="t">Days since joining</div></div>
+        <div class="k"><div class="n">${a.ls}</div><div class="t">Days since sale</div></div>
+        <div class="k"><div class="n">${a.lt===null?'—':a.lt}</div><div class="t">Days since training</div></div>
+      </div>
+      <div class="card"><div class="sec-head"><h3>Learning</h3></div>
+        <div class="rev"><span class="k">Litmos account</span><span class="v" style="color:${a.lit?'var(--green)':'var(--red)'}">${a.lit?'Active':'Never logged in'}</span></div>
+        <div class="rev"><span class="k">Course completion</span><span class="v">${a.litp}%</span></div>
+        <div class="bar"><i class="${a.litp>=70?'':a.litp>=40?'amber':'red'}" style="width:${a.litp}%"></i></div>
+        <div class="rev" style="margin-top:8px"><span class="k">Last JKQ score</span><span class="v">${a.jkq===null?'Not taken':a.jkq+'%'}</span></div>
+        <div class="rev"><span class="k">Certification</span><span class="v">${a.cert?(a.conv?'Certified · converted ✓':'Certified · <b style="color:var(--sk-orange)">not converted</b>'):'Not certified'}</span></div>
+      </div>
+      <div class="card"><div class="sec-head"><h3>Why they're on a list</h3></div>
+        ${Object.keys(LISTS).filter(k=>k!=='all'&&LISTS[k].f(a)).map(k=>`<span class="chip">${LISTS[k].t}</span>`).join('')||'<div class="hint">Not flagged on any worklist.</div>'}
+      </div>
+      <button class="btn btn-primary" onclick="resetDrafts();S.agents=['${esc(a.n)}'];S.ahq='${a.ahq}';go('s1')">Schedule a session with ${a.n.split(' ')[0]}</button>
+      <div class="hint" style="margin-top:8px;text-align:center">A one-person session is fine — no minimum.</div>`});
+});
+
+/* ---------- TRAININGS (past) ---------- */
+let F={ahq:[],from:"",to:""};
+reg("past","Past trainings",()=>{
+  const rows=PAST.filter(p=>(!F.ahq.length||F.ahq.includes(p.ahq))&&(!F.from||p.date>=F.from)&&(!F.to||p.date<=F.to))
+    .sort((a,b)=>b.date.localeCompare(a.date));
+  return shell({title:"Trainings",sub:"Completed only — cancelled excluded",showBack:false,tab:"past",
+    body:`<div class="card">
+        <label class="label">AHQ</label>
+        <div>${AHQS.map(a=>`<span class="qtag ${F.ahq.includes(a)?'on':''}" style="display:inline-block;margin:0 4px 5px 0" onclick="togF('${a}')">${a.replace(' AHQ','')}</span>`).join('')}</div>
+        <label class="label" style="margin-top:10px">Date range</label>
+        <div style="display:flex;gap:7px">
+          <input type="date" value="${F.from}" onchange="F.from=this.value;go('past',false)">
+          <input type="date" value="${F.to}" onchange="F.to=this.value;go('past',false)"></div>
+        ${(F.ahq.length||F.from||F.to)?`<button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="F={ahq:[],from:'',to:''};go('past',false)">Clear filters</button>`:''}
+      </div>
+      <div style="font-size:10.5px;color:var(--ink-3);font-weight:700;margin-bottom:8px">${rows.length} training${rows.length===1?'':'s'} · newest first</div>
+      ${rows.map(p=>`<div class="card tight" style="cursor:pointer" onclick="PSEL='${p.id}';go('pastDetail')">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div><div style="font-size:13px;font-weight:800">${p.ahq.replace(' AHQ','')} · ${p.time}</div>
+          <div style="font-size:10.5px;color:var(--ink-3);margin-top:2px">${prettyIso(p.date)} · ${p.id}</div></div>
+          <span class="pill done">Completed</span></div>
+        <div style="font-size:11.5px;color:var(--ink-2);margin-top:7px">👥 ${p.att}/${p.inv} attended${p.star?` · ⭐ ${p.star}`:''}</div>
+        ${p.read?`<div style="font-size:11.5px;color:var(--ink-2);margin-top:3px">📈 ${p.read.sold} of ${p.read.of} sold within 30 days</div>`:''}
+      </div>`).join('')||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">No trainings match these filters.</div>`}`});
+});
+function togF(a){const i=F.ahq.indexOf(a);i>-1?F.ahq.splice(i,1):F.ahq.push(a);go('past',false);}
+let PSEL=null;
+reg("pastDetail","Past training detail",()=>{
+  const p=PAST.find(x=>x.id===PSEL)||PAST[0];
+  return shell({title:p.id,sub:`${prettyIso(p.date)} · ${p.ahq}`,
+    body:`<div class="card">
+        <div class="rev"><span class="k">Started</span><span class="v">${p.time}</span></div>
+        <div class="rev"><span class="k">Location</span><span class="v">${p.loc}</span></div>
+        <div class="rev"><span class="k">Attendance</span><span class="v">${p.att} of ${p.inv}</span></div>
+        ${p.star?`<div class="rev"><span class="k">⭐ Star of training</span><span class="v">${p.star}</span></div>`:''}
+        ${p.int?`<div class="rev"><span class="k">Intervention</span><span class="v">${p.int}</span></div>`:''}
+      </div>
+      ${p.read?`<div class="card"><div class="sec-head"><h3>Did it work? <span class="new">NEW</span></h3></div>
+        <div style="font-size:25px;font-weight:800;letter-spacing:-1px">${Math.round(p.read.sold/p.read.of*100)}%</div>
+        <div style="font-size:11.5px;color:var(--ink-3);margin-top:3px">${p.read.sold} of ${p.read.of} agents made a sale within 30 days</div>
+        <div class="bar" style="margin-top:8px"><i class="${p.read.sold/p.read.of>=.5?'':'amber'}" style="width:${p.read.sold/p.read.of*100}%"></i></div>
+        <div class="hint">Read automatically from sales data ${p.read.days} days after delivery. Nobody enters this.</div></div>`
+        :`<div class="banner info">📈 The 30-day outcome read isn't due yet — it appears automatically once 30 days have passed.</div>`}
+      <div class="card"><div class="sec-head"><h3>Courses</h3></div>
+        ${p.courses.map(c=>`<div style="padding:5px 0"><div style="font-size:12.5px;font-weight:800">${c.c}</div>
+        <div style="margin-top:4px">${c.t.map(t=>`<span class="chip">${t}</span>`).join('')}</div></div>`).join('')}</div>
+      <div class="card"><div class="sec-head"><h3>Evidence</h3></div>
+        <div style="height:120px;border-radius:11px;background:linear-gradient(135deg,#F6D97A,#F0A94B);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#4A3200;font-weight:800">
+          <div style="font-size:27px">🖼️</div><div style="font-size:11.5px;margin-top:5px">Training photo</div></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;font-weight:700"><span style="font-size:17px">🎬</span> training-clip.mp4</div></div>
+      <div class="card"><div class="sec-head"><h3>Comments</h3></div>
+        <div style="font-size:12.5px;color:var(--ink-2);line-height:1.55">${p.cm||'<span style="color:var(--ink-3)">None</span>'}</div></div>`});
+});
+
+/* ---------- KPIs (read-only, deliberately simple) ---------- */
+reg("kpi","My KPIs",()=>{
+  const score=(KPI_LIB.reduce((s,k)=>s+(k.act>=k.target?5:3)*k.w,0)/KPI_LIB.reduce((s,k)=>s+k.w,0)).toFixed(1);
+  return shell({title:"My KPIs",sub:"August 2026 · read-only",showBack:false,tab:"kpi",
+    body:`<div class="banner info">📊 <b>Nothing is entered here.</b> These come from the data platform (Looker, Litmos and sales data). The app's job is to make them visible, not to collect them.</div>
+      <div class="card" style="text-align:center;padding:18px">
+        <div style="font-size:38px;font-weight:800;letter-spacing:-2px;line-height:1">${score}</div>
+        <div style="font-size:11px;color:var(--ink-3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Weighted score out of 5</div>
+      </div>
+      ${KPI_LIB.map(k=>{
+        const hit=k.act>=k.target,pct=Math.min(k.act/k.target*100,100);
+        return `<div class="card tight">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+            <div style="flex:1"><div style="font-size:12.5px;font-weight:800">${k.r} · ${k.n}</div>
+            <div style="font-size:10.5px;color:var(--ink-3);margin-top:2px">${k.tgt}</div></div>
+            <div style="text-align:right"><div style="font-size:19px;font-weight:800;letter-spacing:-.5px;color:${hit?'var(--green)':'var(--red)'}">${k.act}${k.unit}</div>
+            <div style="font-size:9.5px;color:var(--ink-3);font-weight:700">target ${k.target}${k.unit}</div></div></div>
+          <div class="bar"><i class="${hit?'':'red'}" style="width:${pct}%"></i></div>
+        </div>`;}).join('')}
+      <div class="hint" style="text-align:center;margin-top:6px">Weightings and targets are set centrally. Tell us if this is too much or too little detail for the field.</div>`});
+});
+
+/* ---------- 360 FIELD INSIGHT (R7) ---------- */
+let INS={p:"",e:"",r:"",cat:""};
+reg("insight","360 field insight (R7)",()=>shell({
+  title:"Log a field insight",sub:"R7 · 3 of 4 logged this month",
+  body:`<div class="banner info">R7 asks for four actionable insights a month, each with a problem, the evidence, and what you recommend. Structuring it means it can actually be routed and actioned.</div>
+    <div class="card">
+      <label class="label">Area</label>
+      <select onchange="INS.cat=this.value">
+        <option value="">Select…</option>
+        ${["Product","Pricing","Competition","Agent experience","Customer experience","Process / systems","Stock & supply"].map(c=>`<option ${INS.cat===c?'selected':''}>${c}</option>`).join('')}</select>
+      <label class="label" style="margin-top:11px">Problem statement <span class="req">*</span></label>
+      <textarea placeholder="e.g. ATD retailers can't sell Spark 50 — no pricing group exists for them" oninput="INS.p=this.value">${INS.p}</textarea>
+      <label class="label" style="margin-top:11px">Evidence <span class="req">*</span></label>
+      <textarea placeholder="e.g. 3 retailers in Chokaa raised this; none have sold a Spark 50 this month" oninput="INS.e=this.value">${INS.e}</textarea>
+      <label class="label" style="margin-top:11px">Recommendation <span class="req">*</span></label>
+      <textarea placeholder="e.g. Create an ATD pricing group for Spark 50 and notify retailers" oninput="INS.r=this.value">${INS.r}</textarea>
+    </div>
+    <div class="hint">Insights route to the CTM and the relevant department, and you'll see when yours is actioned.</div>`,
+  foot:footBtn(`<button class="btn btn-primary" ${INS.p&&INS.e&&INS.r?'':'disabled'} onclick="alertBox('💡','Insight logged','Sent to your CTM and the relevant department. That\\'s 4 of 4 for August — R7 complete.','Done','hist=[];go(\\'home\\',false)')">Submit insight</button>`)
+}));
+
+/* ---------- END-OF-DAY REPORT ---------- */
+let DR="";
+reg("dayreport","End-of-day report",()=>shell({
+  title:"How did today go?",sub:longIso(iso(TODAY)),
+  body:`<div class="banner ok">Daily, not monthly. A monthly write-up misses things or overstates them — this takes a minute and captures what actually happened, including work outside the plan.</div>
+    <div class="card">
+      <label class="label">Today's report</label>
+      <textarea style="min-height:170px" placeholder="What you did, who you met, anything that came up outside the plan…" oninput="DR=this.value">${DR}</textarea>
+      <div class="hint">Pre-filled with your name and date. Prompted at 6pm if you haven't submitted.</div>
+    </div>
+    <div class="card"><div class="sec-head"><h3>Today's plan, for reference</h3></div>
+      ${(()=>{const p=PJP.find(x=>x.date===iso(TODAY));return p&&p.status!=='gap'
+        ?`<div style="font-size:12.5px;font-weight:700">${p.cat}</div><div style="font-size:11.5px;color:var(--ink-3);margin-top:3px">${p.detail}</div>`
+        :`<div class="hint">Nothing was planned for today.</div>`;})()}
+      <div class="hint" style="margin-top:8px">If what you did differs from the plan, just say so here — that's the point of the daily report.</div>
+    </div>`,
+  foot:footBtn(`<button class="btn btn-primary" ${DR.trim()?'':'disabled'} onclick="alertBox('📝','Report submitted','Thanks — logged against today. Your ZTM sees it in the dashboard.','Done','hist=[];go(\\'home\\',false)')">Submit report</button>`)
+}));
+
+/* =====================================================================
+   MANAGER DASHBOARD
+   ===================================================================== */
+function mside(){
+  const pend=APPROVALS.filter(a=>a.st==="pending").length;
+  const items=[
+    ["OVERVIEW",[["m_overview","▦","Overview",0]]],
+    ["PLANNING",[["m_approvals","✓","Approvals",pend],["m_capacity","▤","Capacity",0],["m_directives","⚑","Priorities",0]]],
+    ["DELIVERY",[["m_ints","🎯","Interventions",0],["m_calendar","🗓","Team calendar",0],["m_reports","📝","Daily reports",0]]],
+    ["PERFORMANCE",[["m_kpi","📊","Team KPIs",0],["m_team","👥","My team",0]]]
+  ];
+  return `<div class="brand"><div class="lg">SK</div><div>Training Command<span>Lilian Wambui · ZTM Coast</span></div></div>
+    ${items.map(([g,rows])=>`<div class="grp">${g}</div>${rows.map(([k,i,l,c])=>
+      `<button class="${mcurrent===k?'on':''}" onclick="mgo('${k}')"><span>${i}</span>${l}${c?`<span class="cnt">${c}</span>`:''}</button>`).join('')}`).join('')}`;
+}
+function mh(t,s,right=""){return `<div class="mhead"><div><h1>${t}</h1><p>${s}</p></div><div>${right}</div></div>`;}
+
+mreg("m_overview","Overview",()=>{
+  const pend=APPROVALS.filter(a=>a.st==="pending").length;
+  return mh("Overview","August 2026 · Coast Zone · 7 RMs")+`
+    <div class="grid4">
+      <div class="card"><div style="font-size:10px;color:var(--ink-3);font-weight:800;text-transform:uppercase;letter-spacing:.5px">Plans awaiting you</div>
+        <div style="font-size:30px;font-weight:800;letter-spacing:-1.5px;margin-top:5px;color:${pend?'var(--red)':'var(--green)'}">${pend}</div>
+        <button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="mgo('m_approvals')">Review</button></div>
+      <div class="card"><div style="font-size:10px;color:var(--ink-3);font-weight:800;text-transform:uppercase;letter-spacing:.5px">Planned person-days</div>
+        <div style="font-size:30px;font-weight:800;letter-spacing:-1.5px;margin-top:5px">152</div>
+        <div style="font-size:11px;color:var(--ink-3);margin-top:4px">of 154 available</div></div>
+      <div class="card"><div style="font-size:10px;color:var(--ink-3);font-weight:800;text-transform:uppercase;letter-spacing:.5px">Field-day share</div>
+        <div style="font-size:30px;font-weight:800;letter-spacing:-1.5px;margin-top:5px;color:var(--sk-orange)">33%</div>
+        <div style="font-size:11px;color:var(--ink-3);margin-top:4px">target ≥60% (Z5b)</div></div>
+      <div class="card"><div style="font-size:10px;color:var(--ink-3);font-weight:800;text-transform:uppercase;letter-spacing:.5px">Weighted zone score</div>
+        <div style="font-size:30px;font-weight:800;letter-spacing:-1.5px;margin-top:5px">3.2</div>
+        <div style="font-size:11px;color:var(--ink-3);margin-top:4px">from the data platform</div></div>
+    </div>
+    <div class="grid2" style="margin-top:14px">
+      <div class="card">
+        <div class="sec-head"><h3>Needs attention</h3></div>
+        <div class="listrow" style="cursor:pointer" onclick="mgo('m_approvals')"><div class="nm">${pend} plan days pending approval<div class="meta">Oldest submitted 3 days ago</div></div><div style="color:var(--ink-3)">›</div></div>
+        <div class="listrow" style="cursor:pointer" onclick="mgo('m_capacity')"><div class="nm">Leah Amimo is at 14% field time<div class="meta">Well under the 60% target</div></div><div style="color:var(--ink-3)">›</div></div>
+        <div class="listrow" style="cursor:pointer" onclick="mgo('m_ints')"><div class="nm">INT-014 is at 30% coverage<div class="meta">Target date in 9 days</div></div><div style="color:var(--ink-3)">›</div></div>
+        <div class="listrow" style="cursor:pointer" onclick="mgo('m_capacity')"><div class="nm">3 unplanned working days across the team<div class="meta">Gaps, not absences</div></div><div style="color:var(--ink-3)">›</div></div>
+      </div>
+      <div class="card">
+        <div class="sec-head"><h3>Can we absorb more this month? <span class="new">NEW</span></h3></div>
+        <p style="font-size:12px;color:var(--ink-2);line-height:1.55;margin:0 0 11px">This is the question the training calendar spreadsheet gets used for today. Capacity is planned days minus committed days, per RM per week.</p>
+        ${TEAM.slice(0,4).map(m=>{
+          const load=Math.round(m.days/22*100),cls=load>100?'over':load>92?'tight':'ok';
+          return `<div style="display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid #F0F2F7">
+            <div style="flex:1;font-size:12.5px;font-weight:700">${m.n}</div>
+            <div style="flex:0 0 120px"><div class="bar"><i class="${load>100?'red':load>92?'amber':''}" style="width:${Math.min(load,100)}%"></i></div></div>
+            <span class="load ${cls}">${load}%</span></div>`;}).join('')}
+        <button class="btn btn-outline btn-sm" style="width:100%;margin-top:10px" onclick="mgo('m_capacity')">Open capacity view</button>
+      </div>
+    </div>`;
+});
+
+mreg("m_approvals","Approvals",()=>{
+  const pend=APPROVALS.filter(a=>a.st==="pending");
+  const byRM={};pend.forEach(a=>{(byRM[a.rm]=byRM[a.rm]||[]).push(a);});
+  return mh("Plan approvals",`${pend.length} day${pend.length===1?'':'s'} awaiting your decision · plans are gated, delivered records are not`,
+    pend.length?`<button class="btn btn-green btn-sm" onclick="approveAll()">Approve all ${pend.length}</button>`:"")+
+    (pend.length?Object.keys(byRM).map(rm=>`
+      <div class="card">
+        <div class="sec-head"><h3>${rm} · ${byRM[rm].length} day${byRM[rm].length>1?'s':''}</h3>
+          <button class="edit" onclick="approveRM('${esc(rm)}')">Approve all for ${rm.split(' ')[0]}</button></div>
+        <table class="tt">
+          <thead><tr><th>ID</th><th>Date</th><th>KPI</th><th>Activity</th><th>Location</th><th>Travel</th><th style="text-align:right">Decision</th></tr></thead>
+          <tbody>${byRM[rm].map(a=>`<tr>
+            <td style="color:var(--ink-3);font-size:11px">${a.id}</td>
+            <td style="white-space:nowrap">${prettyIso(a.date)}</td>
+            <td>${a.kpi?`<span class="chip grey" style="margin:0">${a.kpi}</span>`:'<span style="color:var(--red);font-size:11px;font-weight:700">missing</span>'}</td>
+            <td><div style="font-weight:600">${a.cat}</div><div style="font-size:10.5px;color:var(--ink-3)">${a.detail}</div></td>
+            <td>${a.loc}</td>
+            <td>${a.trav==='Y'?`<div style="font-size:11px">${a.route}<div style="color:var(--ink-3)">${a.nights}n away</div></div>`:'—'}</td>
+            <td style="text-align:right;white-space:nowrap">
+              <button class="btn btn-green btn-sm" onclick="decide('${a.id}','approved')">Approve</button>
+              <button class="btn btn-danger btn-sm" onclick="rejectPrompt('${a.id}')">Reject</button></td></tr>`).join('')}
+          </tbody></table>
+      </div>`).join('')
+      :`<div class="card" style="text-align:center;padding:40px;color:var(--ink-3)">
+         <div style="font-size:34px">✓</div><div style="font-size:14px;font-weight:700;margin-top:8px;color:var(--ink)">Queue is clear</div>
+         <p style="font-size:12.5px">Approvals can also be actioned in one tap from the notification email.</p></div>`);
+});
+function decide(id,st,reason){
+  const a=APPROVALS.find(x=>x.id===id);a.st=st;a.reason=reason||"";
+  const p=PJP.find(x=>x.date===a.date);if(p&&a.rm==="Pier M.")p.status=st==="approved"?"approved":"rejected";
+  mgo('m_approvals');toast(`${id} ${st}`);
+}
+function approveAll(){APPROVALS.filter(a=>a.st==="pending").forEach(a=>decide(a.id,'approved'));toast("All plans approved — RMs notified");}
+function approveRM(rm){APPROVALS.filter(a=>a.st==="pending"&&a.rm===rm).forEach(a=>decide(a.id,'approved'));toast(rm+"'s plan approved");}
+function rejectPrompt(id){
+  wmodal(`<h3>Reject ${id}</h3><p style="font-size:12.5px;color:var(--ink-2)">The RM is notified with your reason and can resubmit.</p>
+    <label class="label">Reason <span class="req">*</span></label><textarea id="wr" placeholder="e.g. Three travel days in one week — split this across two weeks"></textarea>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-danger" onclick="doReject('${id}')">Reject</button>
+      <button class="btn btn-outline" onclick="closeW()">Cancel</button></div>`);
+}
+function doReject(id){
+  const r=document.getElementById('wr').value.trim();
+  if(!r){toast("A reason is required");return;}
+  closeW();decide(id,'rejected',r);
+}
+
+mreg("m_capacity","Capacity",()=>{
+  return mh("Capacity utilisation","Can the zone absorb another programme this month? Planned days against available days, per RM per week.")+`
+    <div class="card">
+      <div class="banner info">This replaces the training-calendar spreadsheet. Green means room, amber means tight, red means the RM is over-committed — so a new intervention should wait or go to someone else.</div>
+      <table class="tt">
+        <thead><tr><th>RM</th><th>AHQ</th><th>Wk 1</th><th>Wk 2</th><th>Wk 3</th><th>Wk 4</th><th>Total days</th><th>Travel</th><th>Field %</th><th>Load</th></tr></thead>
+        <tbody>${TEAM.map(m=>{
+          const wk=[5,5,Math.round(m.days/4),Math.max(m.days-15,1)],load=Math.round(m.days/22*100);
+          const cls=load>100?'over':load>92?'tight':'ok';
+          return `<tr>
+            <td style="font-weight:700">${m.n}</td><td style="color:var(--ink-3)">${m.ahq.replace(' AHQ','')}</td>
+            ${wk.map(w=>`<td>${w}</td>`).join('')}
+            <td style="font-weight:800">${m.days}</td><td>${m.trav}</td>
+            <td style="color:${m.field>=60?'var(--green)':m.field>=40?'var(--sk-orange)':'var(--red)'};font-weight:800">${m.field}%</td>
+            <td><span class="load ${cls}">${load}%</span></td></tr>`;}).join('')}
+        </tbody></table>
+    </div>
+    <div class="grid2">
+      <div class="card"><div class="sec-head"><h3>Try it: can we fit a new programme?</h3></div>
+        <label class="label">How many agent-sessions?</label><input type="number" id="capH" value="40" oninput="calcCap()">
+        <label class="label" style="margin-top:10px">By when?</label>
+        <select id="capW" onchange="calcCap()"><option value="2">Within 2 weeks</option><option value="4" selected>Within 4 weeks</option><option value="8">Within 8 weeks</option></select>
+        <div id="capOut" style="margin-top:13px"></div>
+      </div>
+      <div class="card"><div class="sec-head"><h3>Where the days are going</h3></div>
+        ${[["R1 Reactivation",28],["R2 New-agent F2F",51],["R4 Conversion",14],["R7 Field insight",12],["Admin / reporting",31],["Travel",16]].map(([l,v])=>`
+          <div style="display:flex;align-items:center;gap:9px;padding:5px 0">
+            <div style="flex:0 0 132px;font-size:12px;font-weight:600">${l}</div>
+            <div style="flex:1"><div class="bar"><i style="width:${v/51*100}%;background:var(--blue)"></i></div></div>
+            <div style="flex:0 0 34px;text-align:right;font-size:12px;font-weight:800">${v}</div></div>`).join('')}
+        <div class="hint">Effort against the scorecard — if R5/R6 carry 30% of the weight but get 1% of the days, that shows up here.</div>
+      </div>
+    </div>`;
+});
+function calcCap(){
+  const h=+document.getElementById('capH').value||0,w=+document.getElementById('capW').value;
+  const perDay=8,free=TEAM.reduce((s,m)=>s+Math.max(0,22-m.days),0)+w*3;
+  const need=Math.ceil(h/perDay),ok=need<=free;
+  document.getElementById('capOut').innerHTML=
+    `<div class="banner ${ok?'ok':'warn'}" style="margin:0">${ok?'✓':'⚠️'} <b>${need} RM-days</b> needed (at ~${perDay} agents a session).
+     The zone has roughly <b>${free} free days</b> in that window — ${ok?'this fits.':'this does not fit. Extend the window or split across zones.'}</div>`;
+}
+
+mreg("m_directives","Priorities",()=>
+  mh("Monthly priorities","What you cascade down to your RMs. These appear on their home screen and pre-fill their plan.",
+    `<button class="btn btn-primary btn-sm" onclick="newDirective()">＋ New priority</button>`)+
+  `<div class="banner info">PJPs are defined top-down: the training manager agrees priorities with the business, you cascade them, and RMs plan against them. This is where that cascade lives.</div>
+   ${DIRECTIVES.map(d=>`<div class="card">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+        <div style="flex:1"><div style="font-size:14px;font-weight:800">${d.t}</div>
+        <div style="font-size:12px;color:var(--ink-2);margin-top:5px;line-height:1.55">${d.d}</div>
+        <div style="font-size:11px;color:var(--ink-3);margin-top:8px">${d.id} · from ${d.by} · target ${prettyIso(d.due)}</div></div>
+        <span class="chip grey">${d.kpi}</span></div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid #F0F2F7;font-size:11.5px;color:var(--ink-3)">
+        Cascaded to <b>7 RMs</b> · ${Math.floor(Math.random()*4)+2} have planned days against it</div>
+    </div>`).join('')}`);
+function newDirective(){
+  wmodal(`<h3>New monthly priority</h3><p style="font-size:12.5px;color:var(--ink-2)">This lands on every RM's home screen and pre-fills a plan day.</p>
+    <label class="label">Title</label><input type="text" id="dT" placeholder="e.g. HomePlus Max Lite rollout">
+    <label class="label" style="margin-top:10px">What should they do?</label><textarea id="dD" placeholder="Be specific about the expectation"></textarea>
+    <label class="label" style="margin-top:10px">KPI it serves</label>
+    <select id="dK">${KPI_LIB.map(k=>`<option value="${k.r}">${k.r} — ${k.n}</option>`).join('')}</select>
+    <label class="label" style="margin-top:10px">Cascade to</label>
+    <select id="dS"><option>All RMs in Coast Zone (7)</option><option>Selected RMs…</option><option>All zones (National)</option></select>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-primary" onclick="saveDirective()">Cascade to team</button>
+      <button class="btn btn-outline" onclick="closeW()">Cancel</button></div>`);
+}
+function saveDirective(){
+  const t=document.getElementById('dT').value.trim();
+  if(!t){toast("Give it a title");return;}
+  DIRECTIVES.unshift({id:"DIR-0"+(DIRECTIVES.length+1),m:"August 2026",by:"Lilian Wambui (ZTM)",t,
+    d:document.getElementById('dD').value||"—",kpi:document.getElementById('dK').value,due:iso(addDays(14))});
+  closeW();mgo('m_directives');toast("Cascaded to 7 RMs — they're notified now");
+}
+
+mreg("m_ints","Interventions",()=>
+  mh("Interventions register","Programmes with a target, a baseline and a coverage number — not a list of sessions.",
+    `<button class="btn btn-primary btn-sm" onclick="newInt()">＋ New intervention</button>`)+
+  `<div class="grid3" style="margin-bottom:14px">
+    <div class="card"><div style="font-size:10px;color:var(--ink-3);font-weight:800;text-transform:uppercase">Live this month</div>
+      <div style="font-size:26px;font-weight:800;margin-top:4px">${INTS.filter(i=>i.status!=='Complete').length}</div></div>
+    <div class="card"><div style="font-size:10px;color:var(--ink-3);font-weight:800;text-transform:uppercase">Strategic share</div>
+      <div style="font-size:26px;font-weight:800;margin-top:4px">${Math.round(INTS.filter(i=>i.type==='Strategic').length/INTS.length*100)}%</div>
+      <div style="font-size:11px;color:var(--ink-3)">target ≥40%</div></div>
+    <div class="card"><div style="font-size:10px;color:var(--ink-3);font-weight:800;text-transform:uppercase">Average coverage</div>
+      <div style="font-size:26px;font-weight:800;margin-top:4px">${Math.round(INTS.reduce((s,i)=>s+i.attended/i.tgtHead,0)/INTS.length*100)}%</div></div>
+  </div>
+  <div class="card"><table class="tt">
+    <thead><tr><th>ID</th><th>Intervention</th><th>Scope</th><th>KPI</th><th>Type</th><th>Raised by</th><th>Coverage</th><th>30-day read</th><th>Status</th></tr></thead>
+    <tbody>${INTS.map(i=>{const pct=Math.round(i.attended/i.tgtHead*100);
+      return `<tr>
+        <td style="color:var(--ink-3);font-size:11px">${i.id}</td>
+        <td><div style="font-weight:700">${i.t}</div><div style="font-size:10.5px;color:var(--ink-3)">${i.aud}</div></td>
+        <td>${i.scope}${i.zone!=='All'?`<div style="font-size:10.5px;color:var(--ink-3)">${i.zone}</div>`:''}</td>
+        <td><span class="chip grey" style="margin:0">${i.kpi}</span></td>
+        <td>${i.type}</td><td style="font-size:11.5px">${i.byName}<div style="color:var(--ink-3);font-size:10.5px">${i.by}</div></td>
+        <td style="min-width:110px"><div style="font-size:11.5px;font-weight:700">${i.attended}/${i.tgtHead} · ${pct}%</div>
+          <div class="bar"><i class="${pct>=90?'':pct>=50?'amber':'red'}" style="width:${Math.min(pct,100)}%"></i></div></td>
+        <td style="color:${i.metric?'var(--green)':'var(--ink-3)'};font-weight:700">${i.metric||'—'}</td>
+        <td><span class="pill ${i.status==='Complete'?'done':i.status==='In progress'?'today':'sched'}">${i.status}</span></td></tr>`;}).join('')}
+    </tbody></table></div>`);
+function newInt(){
+  wmodal(`<h3>New intervention</h3><p style="font-size:12.5px;color:var(--ink-2)">Cascade decides who it lands on: National reaches every zone of the line; Zone / AHQ / Cluster reaches the named zone's RMs.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div style="grid-column:1/-1"><label class="label">Activity / module</label><input type="text" id="iT" placeholder="e.g. HomePlus Max Lite rollout"></div>
+      <div style="grid-column:1/-1"><label class="label">Audience</label><input type="text" id="iA" placeholder="e.g. All active agents"></div>
+      <div><label class="label">Target scope</label><select id="iS">${["National","Zone","Line","AHQ","Cluster"].map(x=>`<option>${x}</option>`).join('')}</select></div>
+      <div><label class="label">Target zone</label><select id="iZ"><option>All</option>${ZONES.map(z=>`<option>${z}</option>`).join('')}</select></div>
+      <div><label class="label">KPI being moved</label><select id="iK">${KPI_LIB.map(k=>`<option value="${k.r}">${k.r} — ${k.n}</option>`).join('')}</select></div>
+      <div><label class="label">Type</label><select id="iTy"><option>Strategic</option><option>Reactive</option></select></div>
+      <div><label class="label">Target headcount</label><input type="number" id="iH" value="30"></div>
+      <div><label class="label">Baseline (metric now)</label><input type="text" id="iB" placeholder="e.g. 32% reactivation"></div>
+      <div><label class="label">Mode</label><select id="iM"><option>Field</option><option>Classroom</option><option>Virtual</option><option>Litmos</option></select></div>
+      <div><label class="label">Budget (USD)</label><input type="number" id="iBu" value="0"></div>
+    </div>
+    <div class="banner info" style="margin-top:13px">Google Forms can't show an RM only their own interventions — a shared picklist is the workaround today. In the app, cascade puts it straight on the right RMs' home screens.</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="saveMInt()">Create & cascade</button>
+      <button class="btn btn-outline" onclick="closeW()">Cancel</button></div>`);
+}
+function saveMInt(){
+  const t=document.getElementById('iT').value.trim();
+  if(!t){toast("Give it a name");return;}
+  const g=id=>document.getElementById(id).value;
+  INTS.unshift({id:"INT-0"+(20+INTS.length),t,aud:g('iA')||"All agents",scope:g('iS'),zone:g('iZ'),kpi:g('iK'),
+    type:g('iTy'),by:"ZTM",byName:"Lilian Wambui",mode:g('iM'),tgtHead:+g('iH')||30,attended:0,baseline:g('iB'),
+    metric:"",budget:+g('iBu')||0,date:iso(addDays(21)),status:"Planned",cascaded:true,root:"",sessions:[]});
+  closeW();mgo('m_ints');toast("Intervention created and cascaded to the zone");
+}
+
+mreg("m_calendar","Team calendar",()=>{
+  const days=[];for(let i=-1;i<=12;i++){const d=addDays(i);if(d.getDay()!==0&&d.getDay()!==6)days.push(d);}
+  const acts=["R2 New-agent F2F","R1 Reactivation","R4 Conversion","Admin","R7 Insight","JKQ drive",""];
+  return mh("Team calendar","Where everyone is, day by day. Click a cell to see the plan.")+`
+    <div class="card" style="overflow-x:auto">
+      <table class="tt" style="min-width:900px">
+        <thead><tr><th style="position:sticky;left:0;background:#fff">RM</th>
+          ${days.map(d=>`<th style="text-align:center">${d.toLocaleDateString('en-GB',{weekday:'narrow'})}<div style="font-weight:700;color:var(--ink)">${d.getDate()}</div></th>`).join('')}</tr></thead>
+        <tbody>${TEAM.map((m,mi)=>`<tr><td style="font-weight:700;position:sticky;left:0;background:#fff;white-space:nowrap">${m.n}</td>
+          ${days.map((d,di)=>{
+            const seed=(mi*7+di*3)%7,a=acts[seed],trav=(mi+di)%9===0;
+            const bg=a===""?'#F7F8FB':trav?'#FFF1D6':a.startsWith('R2')?'#E7EFFD':a.startsWith('R1')?'#E4F5EC':a.startsWith('R4')?'#F3EFFE':'#F0F2F7';
+            return `<td style="text-align:center;padding:3px" title="${a||'Not planned'}">
+              <div style="background:${bg};border-radius:5px;height:26px;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;color:var(--ink-2)">${a?a.split(' ')[0]:'—'}</div></td>`;}).join('')}
+        </tr>`).join('')}</tbody></table>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:11px;color:var(--ink-3)">
+        ${[["#E7EFFD","R2 New-agent F2F"],["#E4F5EC","R1 Reactivation"],["#F3EFFE","R4 Conversion"],["#FFF1D6","Travel"],["#F7F8FB","Not planned"]].map(([c,l])=>
+          `<span><i style="display:inline-block;width:11px;height:11px;border-radius:3px;background:${c};vertical-align:middle;margin-right:5px"></i>${l}</span>`).join('')}
+      </div>
+    </div>`;
+});
+
+mreg("m_reports","Daily reports",()=>
+  mh("Daily reports","What actually happened, day by day. Daily beats monthly — a month-end write-up misses things or overstates them.")+`
+  ${[["Pier M.","Met 6 Sega cluster leaders and the ABM on AHQ performance, plus 3 low-performing agents in Sega township. Follow-up first week of September. Logged on the app.",0],
+     ["John Lenzi","Started in the RM skill-share call, then the East Zone L&D call. Afternoon: visited an ATD retailer at Chokaa, trained on STK push and the retailer's aftersales role. ABM flagged that agents aren't selling phones because QOS dropped — agreed to cover it in every area meeting until it's fixed. Retailers also asked about dealership options and can't sell Spark 50 (no pricing group).",0],
+     ["Leah Amimo","Attended the skills-share and the regional business alignment meeting; took ABM feedback. Walking the ABMs through HomePlus Max Lite on tomorrow's training call.",1],
+     ["Rina Ojiayo","Travelled to Kisumu, reviewed the weekly team summary, discussed the Last Mile pilot virtually.",1]
+   ].map(([n,t,d])=>`<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+        <div style="font-size:13px;font-weight:800">${n}</div>
+        <div style="font-size:11px;color:var(--ink-3)">${prettyIso(iso(addDays(-d)))}</div></div>
+      <div style="font-size:12.5px;color:var(--ink-2);line-height:1.6">${t}</div>
+    </div>`).join('')}
+  <div class="banner info">Reports like the second one are where field insights come from — the app's R7 capture turns those paragraphs into routed, actionable items instead of prose someone has to read.</div>`);
+
+mreg("m_kpi","Team KPIs",()=>
+  mh("Team KPIs","Read-only. Sourced from the data platform — nobody types these in.")+`
+  <div class="banner info">📊 KPI entry is deliberately out of scope. Actuals come from Looker, Litmos and sales data; the app shows them so RMs and managers see the same numbers.</div>
+  <div class="card"><table class="tt">
+    <thead><tr><th>RM</th><th>AHQ</th>${KPI_LIB.map(k=>`<th style="text-align:center">${k.r}</th>`).join('')}<th style="text-align:center">Score /5</th></tr></thead>
+    <tbody>${TEAM.map((m,i)=>`<tr><td style="font-weight:700">${m.n}</td><td style="color:var(--ink-3)">${m.ahq.replace(' AHQ','')}</td>
+      ${KPI_LIB.map((k,j)=>{const v=Math.max(18,Math.min(98,k.act+((i*7+j*13)%36)-18));
+        return `<td style="text-align:center;font-weight:700;color:${v>=k.target?'var(--green)':'var(--red)'}">${k.unit==='%'?v+'%':Math.round(v/20)}</td>`;}).join('')}
+      <td style="text-align:center;font-weight:800">${m.score}</td></tr>`).join('')}
+    </tbody></table>
+    <div class="hint" style="margin-top:10px">Weightings: R1 15 · R2 15 · R3 10 · R4 20 · R5 20 · R6 10 · R7 10</div>
+  </div>`);
+
+mreg("m_team","My team",()=>
+  mh("My team","7 Regional Mentors · Coast Zone")+`
+  <div class="card"><table class="tt">
+    <thead><tr><th>RM</th><th>AHQ</th><th>Zone</th><th>Planned days</th><th>Travel days</th><th>Field %</th><th>Plans pending</th><th>Score</th><th></th></tr></thead>
+    <tbody>${TEAM.map(m=>`<tr>
+      <td style="font-weight:700">${m.n}</td><td>${m.ahq.replace(' AHQ','')}</td><td style="color:var(--ink-3)">${m.zone}</td>
+      <td>${m.days}</td><td>${m.trav}</td>
+      <td style="font-weight:800;color:${m.field>=60?'var(--green)':m.field>=40?'var(--sk-orange)':'var(--red)'}">${m.field}%</td>
+      <td>${m.plans.p?`<span class="pill pend">${m.plans.p} pending</span>`:'—'}</td>
+      <td style="font-weight:800">${m.score}</td>
+      <td style="text-align:right"><button class="btn btn-outline btn-sm" onclick="toast('Opens the RM\\'s profile, plan history and coaching log (C4)')">View</button></td></tr>`).join('')}
+    </tbody></table></div>
+  <div class="banner info">A 1:1 coaching log (KPI C4) would live here — monthly 1:1 with every direct report, dated, plus a development plan per bottom performer. Tell us if that belongs in this build.</div>`);
+
+/* =====================================================================
+   FEEDBACK
+   ===================================================================== */
+let NOTES=[],tagsSel=[];
+const QTAGS={
+  home:["Home layout","Priorities block","Missing action"],
+  directives:["Cascade clarity","Too rigid","Useful"],
+  pjp:["Plan view","Gaps concept","Too much admin"],
+  pjpNew:["Fields needed","KPI picker","Travel & legs","Too many taps"],
+  ints:["Intervention concept","Coverage logic","Too abstract"],
+  intDetail:["Detail missing","30-day read"],
+  intNew:["RM should/shouldn't raise these","Fields needed"],
+  s1:["Date rules","Time clash","Maps","Intervention link"],
+  s2:["Course list","Litmos link"],
+  s3:["Smart lists","Select all","No minimum","More filters"],
+  s4:["Missing info","Notification content"],
+  r1:["GPS tolerance","Offline concern"],
+  r2:["Walk-ins","Attendance flow"],
+  r3:["Photo rules","Video rules","Data/connectivity"],
+  r4:["Course editing"],
+  r5:["Star of training","Comment prompts"],
+  r6:["Review layout"],
+  agents:["Worklists","Invite flow","More lists needed","Agent data"],
+  agentDetail:["Agent 360","Data missing"],
+  past:["Filters","Info shown"],
+  pastDetail:["30-day read","Detail missing"],
+  kpi:["Too simple","Too complex","Wrong KPIs","Right call"],
+  insight:["Insight format","Routing"],
+  dayreport:["Daily vs monthly","Too much typing"],
+  m_overview:["Wrong tiles","Missing alerts"],
+  m_approvals:["Approval flow","Bulk actions","Not needed"],
+  m_capacity:["Capacity logic","Wrong assumptions","Very useful"],
+  m_directives:["Cascade model","Too top-down"],
+  m_ints:["Register fields","Cascade rules"],
+  m_calendar:["Calendar view","Granularity"],
+  m_reports:["Daily reports","Volume concern"],
+  m_kpi:["Read-only is right","Need more"],
+  m_team:["Coaching log","Team view"]
+};
+function renderQTags(id){
+  const t=QTAGS[id]||["General"];tagsSel=[];
+  document.getElementById('qtags').innerHTML=t.map(x=>`<span class="qtag" onclick="togTag(this,'${esc(x)}')">${x}</span>`).join('');
+}
+function togTag(el,t){el.classList.toggle('on');const i=tagsSel.indexOf(t);i>-1?tagsSel.splice(i,1):tagsSel.push(t);}
+function addNote(){
+  const v=document.getElementById('fbInput').value.trim();
+  if(!v&&!tagsSel.length){toast("Write a note first");return;}
+  const sc=MODE==='mgr'?("Dashboard · "+MSCREENS[mcurrent].title):SCREENS[current].title;
+  NOTES.push({screen:sc,surface:MODE==='mgr'?'Manager Dashboard':'RM App',tags:[...tagsSel],text:v,when:new Date().toLocaleString('en-GB')});
+  document.getElementById('fbInput').value="";
+  renderQTags(MODE==='mgr'?mcurrent:current);drawNotes();toast("Note added");save();
+}
+function drawNotes(){
+  const el=document.getElementById('notes');
+  if(!NOTES.length){el.innerHTML=`<div class="none">No notes yet — add one above.</div>`;return;}
+  el.innerHTML=NOTES.map((n,i)=>`<div class="nt">
+    <div class="h"><span style="flex:1">${n.screen}</span><span onclick="delNote(${i})">×</span></div>
+    ${n.tags.length?`<div style="margin-top:4px">${n.tags.map(t=>`<span class="chip" style="font-size:9.5px;padding:2px 6px">${t}</span>`).join('')}</div>`:''}
+    ${n.text?`<div class="b">${n.text.replace(/</g,'&lt;')}</div>`:''}</div>`).reverse().join('');
+}
+function delNote(i){NOTES.splice(i,1);drawNotes();save();}
+function clearNotes(){if(NOTES.length&&!confirm("Delete all feedback notes?"))return;NOTES=[];drawNotes();save();}
+function exportNotes(){
+  if(!NOTES.length){toast("No feedback captured yet");return;}
+  let out=`RM APP v2 + MANAGER DASHBOARD — USER FEEDBACK\nPrototype review · exported ${new Date().toLocaleString('en-GB')}\nReviewer: ______________________   Role: ______________________\n\n`;
+  ["RM App","Manager Dashboard"].forEach(surf=>{
+    const set=NOTES.filter(n=>n.surface===surf);if(!set.length)return;
+    out+=`\n${'='.repeat(surf.length+8)}\n   ${surf.toUpperCase()}\n${'='.repeat(surf.length+8)}\n`;
+    const by={};set.forEach(n=>{(by[n.screen]=by[n.screen]||[]).push(n);});
+    Object.keys(by).forEach(s=>{
+      out+=`\n${s}\n${'-'.repeat(s.length)}\n`;
+      by[s].forEach(n=>{if(n.tags.length)out+=`  [${n.tags.join('] [')}]\n`;if(n.text)out+=`  ${n.text}\n`;out+=`\n`;});
+    });
+  });
+  out+=`\n${NOTES.length} note(s) total.\n`;
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:"text/plain"}));
+  a.download=`RM-app-v2-feedback-${new Date().toISOString().slice(0,10)}.txt`;a.click();
+  navigator.clipboard?.writeText(out).catch(()=>{});
+  toast("Feedback downloaded (and copied to clipboard)");
+}
+function save(){try{localStorage.setItem('rmProtoV2',JSON.stringify(NOTES));}catch(e){}}
+function load(){try{const v=localStorage.getItem('rmProtoV2');if(v)NOTES=JSON.parse(v);}catch(e){}}
+
+function resetAll(){
+  seedAll();APPROVALS=JSON.parse(JSON.stringify(SEED_APPROVALS));
+  resetDrafts();F={ahq:[],from:"",to:""};AG={key:"all",q:"",sel:[],sort:"lt"};DR="";INS={p:"",e:"",r:"",cat:""};
+  hist=[];current="home";mcurrent="m_overview";
+  if(MODE==='mgr')mgo('m_overview',false);else go('home',false);
+  toast("Demo restarted — your feedback notes are kept");
+}
+
+/* boot */
+document.getElementById('clock').textContent=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+load();drawNotes();go('home',false);
+document.getElementById('mside').innerHTML=mside();
+document.getElementById('mmain').innerHTML=MSCREENS.m_overview.fn();
+</script>
+</body>
+</html>
