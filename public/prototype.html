@@ -603,83 +603,152 @@ function toggleFab(){FAB_OPEN=!FAB_OPEN;render();}
 function intName(id){const i=INTS.find(x=>x.id===id);return i?i.t:'';}
 
 /* (Manager priorities screen removed from the RM App) */
-function planAgainst(kpi,t){PJPD={date:"",kpi,cat:catForKpi(kpi),detail:t,loc:"",travel:false,route:"",nights:0,int:"",legs:[]};go('pjpNew');}
+function planAgainst(kpi,t){PJPD=blankDay();PJPD.blocks=[{kpi,cats:[catForKpi(kpi)].filter(Boolean),int:""}];go('pjpNew');}
 function catForKpi(k){const m={R1:"Inactive agent reactivation (R1)",R2:"New agent F2F training (R2)",R3:"JKQ drive & low-scorer follow-up (R3)",R4:"Certified-agent conversion coaching (R4)",R5:"Training quality audit / follow-up (R5-R6)",R7:"360 field insight capture (R7)"};return m[k]||"";}
 
 /* ---------- PJP ---------- */
-const BLANK_PJPD={date:"",kpi:"",cat:"",detail:"",loc:"",travel:false,route:"",nights:0,int:"",legs:[]};
-let PJPD={...BLANK_PJPD};
+function blankDay(){return {date:"",blocks:[],locs:[],travel:false,route:"",nights:0};}
+let PJPD=blankDay(), PJPB=null, PSELDAY=null;
+function dayCats(p){const s=[];(p.blocks||[]).forEach(b=>(b.cats||[]).forEach(c=>{if(!s.includes(c))s.push(c);}));return s;}
+function dayMeetings(p){
+  const sched=TRAININGS.filter(t=>t.status==="scheduled"&&t.date===p.date);
+  const done=PAST.filter(t=>t.date===p.date);
+  return {sched,done};
+}
+function meetingLine(p){
+  const {sched,done}=dayMeetings(p);
+  if(p.date<iso(TODAY)) return done.length?`🗓 ${done.length} meeting${done.length>1?'s':''} completed`:'';
+  return sched.length?`🗓 ${sched.length} meeting${sched.length>1?'s':''} scheduled`:'';
+}
+function pendLabel(){return TODAY.getDate()<=5?"Pending":"Plan changes";}
 reg("pjp","My plan (PJP)",()=>{
   const future=PJP.filter(p=>p.date>=iso(addDays(-3)));
   const rows=future.map(p=>{
-    const st={approved:['done','Approved'],pending:['pend','Pending'],gap:['canc','Not planned'],rejected:['rej','Rejected']}[p.status];
+    const st={approved:['done','Approved'],pending:['pend','Pending'],gap:['canc','Not planned'],rejected:['canc','Rejected']}[p.status];
+    const cats=dayCats(p), ml=meetingLine(p);
     return `<div class="listrow" style="align-items:flex-start" onclick="openPJP('${p.date}')">
       <div style="flex:0 0 42px;text-align:center">
         <div style="font-size:9.5px;color:var(--ink-3);font-weight:800;text-transform:uppercase">${prettyIso(p.date).split(' ')[0]}</div>
         <div style="font-size:17px;font-weight:800;line-height:1.1">${p.date.slice(8)}</div></div>
       <div class="nm" style="font-weight:${p.status==='gap'?'500':'700'};color:${p.status==='gap'?'var(--ink-3)':'var(--ink)'}">
-        ${p.status==='gap'?'<i>Nothing planned</i>':p.cat}
-        ${p.status!=='gap'?`<div class="meta">${p.detail||''}${p.loc?' · 📍'+p.loc:''}${p.travel?` · ✈️ ${p.nights}n`:''}</div>`:''}
-        ${p.int?`<div style="margin-top:4px"><span class="chip blue" style="font-size:10px">↳ ${p.int}</span></div>`:''}
+        ${p.status==='gap'?'<i>Nothing planned</i>':`<div style="display:flex;flex-wrap:wrap">${cats.map(c=>`<span class="chip" style="font-size:10px">${c}</span>`).join('')}</div>
+          ${p.locs&&p.locs.length?`<div class="meta">📍 ${p.locs.map(l=>l.replace(' AHQ','')).join(', ')}${p.travel?` · ✈️ ${p.nights}n`:''}</div>`:''}
+          ${ml?`<div class="meta">${ml}</div>`:''}`}
       </div>
       <span class="pill ${st[0]}">${st[1]}</span></div>`;
   }).join('');
   const pend=PJP.filter(p=>p.status==="pending").length;
+  const rej=PJP.filter(p=>p.status==="rejected");
   return shell({title:"My plan",sub:"One row per working day · August 2026",showBack:false,tab:"pjp",
-    body:`<div class="banner info"><b>PJP moves into the app.</b> Every working day gets a row, so an unplanned day shows as a gap rather than just being absent. Plans go to your ZTM for approval; delivered records don't need approving.</div>
-      <div class="kpi">
+    body:`<div class="kpi">
         <div class="k"><div class="n">${PJP.filter(p=>p.status==='approved').length}</div><div class="t">Approved</div></div>
-        <div class="k"><div class="n">${pend}</div><div class="t">Pending</div></div>
-        <div class="k"><div class="n">${PJP.filter(p=>p.status==='gap').length}</div><div class="t">Gaps</div></div>
+        <div class="k"><div class="n">${pend}</div><div class="t">${pendLabel()}</div></div>
+        <div class="k"><div class="n">${PJP.filter(p=>p.status==='gap').length}</div><div class="t">Unplanned days</div></div>
       </div>
-      <button class="btn btn-primary" style="margin-bottom:12px" onclick="PJPD={date:'',kpi:'',cat:'',detail:'',loc:'',travel:false,route:'',nights:0,int:'',legs:[]};go('pjpNew')">＋ Plan a day</button>
+      ${rej.length?`<div class="banner warn" style="cursor:pointer" onclick="replanDay('${rej[0].date}')"><b>${rej.length} day${rej.length>1?'s':''} rejected</b> — replan ${rej.length>1?'them':'it'}.</div>`:''}
+      <button class="btn btn-primary" style="margin-bottom:12px" onclick="PJPD=blankDay();go('pjpNew')">＋ Plan a day</button>
       ${rows}`});
 });
+function replanDay(date){
+  const p=PJP.find(x=>x.date===date);
+  PJPD=JSON.parse(JSON.stringify({date:p.date,blocks:p.blocks||[],locs:p.locs||[],travel:!!p.travel,route:p.route||"",nights:p.nights||0}));
+  go('pjpNew');
+}
 function openPJP(date){
   const p=PJP.find(x=>x.date===date);
-  if(p.status==='gap'){PJPD={date,kpi:"",cat:"",detail:"",loc:"",travel:false,route:"",nights:0,int:"",legs:[]};go('pjpNew');return;}
-  modal(`<h3>${longIso(p.date)}</h3>
-    <div class="rev"><span class="k">Status</span><span class="v">${p.status}</span></div>
-    <div class="rev"><span class="k">KPI</span><span class="v">${p.kpi||'—'}</span></div>
-    <div class="rev"><span class="k">Activity</span><span class="v">${p.cat}</span></div>
-    <div class="rev"><span class="k">Detail</span><span class="v">${p.detail||'—'}</span></div>
-    <div class="rev"><span class="k">Location</span><span class="v">${p.loc||'—'}</span></div>
-    <div class="rev"><span class="k">Travel</span><span class="v">${p.travel?`Yes · ${p.route} · ${p.nights} night(s)`:'No'}</span></div>
-    ${p.int?`<div class="rev"><span class="k">Intervention</span><span class="v">${p.int}</span></div>`:''}
-    <div style="height:12px"></div>
-    <button class="btn btn-primary" onclick="closeModal()">Close</button>`);
+  if(p.status==='gap'){PJPD=blankDay();PJPD.date=date;go('pjpNew');return;}
+  PSELDAY=date;go('pjpDay');
 }
+reg("pjpDay","Plan day",()=>{
+  const p=PJP.find(x=>x.date===PSELDAY)||PJP[0];
+  const st={approved:['done','Approved'],pending:['pend','Pending'],gap:['canc','Not planned'],rejected:['canc','Rejected']}[p.status];
+  const {sched,done}=dayMeetings(p);
+  const meets=p.date<iso(TODAY)?done:sched;
+  return shell({title:prettyIso(p.date),sub:longIso(p.date),
+    body:`<div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:14px;font-weight:800">${longIso(p.date)}</div>
+          <span class="pill ${st[0]}">${st[1]}</span></div>
+        <div class="rev" style="margin-top:8px"><span class="k">Location</span><span class="v">${(p.locs&&p.locs.length)?p.locs.join(', '):'—'}</span></div>
+        <div class="rev"><span class="k">Travel</span><span class="v">${p.travel?`${p.route||'—'} · ${p.nights} night(s)`:'No'}</span></div>
+      </div>
+      ${(p.blocks||[]).map((b,i)=>`<div class="card">
+        <div class="sec-head"><h3>KPI ${i+1} · ${b.kpi||'—'}</h3></div>
+        <div style="display:flex;flex-wrap:wrap;margin-top:4px">${(b.cats||[]).map(c=>`<span class="chip">${c}</span>`).join('')||'<span class="hint">No activity selected</span>'}</div>
+        ${b.int?`<div style="margin-top:7px"><span class="chip blue">↳ ${b.int}${intName(b.int)?' · '+intName(b.int):''}</span></div>`:''}
+      </div>`).join('')}
+      <div class="card"><div class="sec-head"><h3>Meetings this day</h3></div>
+        ${meets.length?meets.map(t=>{
+          const ints=(t.ints&&t.ints.length?t.ints:(t.int?[t.int]:[]));
+          return `<div class="listrow" style="align-items:flex-start">
+            <div class="nm">${t.ahq.replace(' AHQ','')} · ${t.time}<div class="meta">📍 ${t.loc}</div>
+            ${ints.length?`<div style="margin-top:5px;display:flex;flex-wrap:wrap">${ints.map(i=>`<span class="chip blue" style="font-size:10px">↳ ${i}</span>`).join('')}</div>`:''}</div></div>`;
+        }).join(''):'<div class="hint">No meetings on this day.</div>'}
+      </div>
+      ${p.status==='rejected'?`<button class="btn btn-primary" onclick="replanDay('${p.date}')">Replan this day</button>`:''}`});
+});
+/* --- plan a day --- */
+function monthEndIso(){const d=new Date(TODAY.getFullYear(),TODAY.getMonth()+1,0);return iso(d);}
+function togPjpLoc(a){const i=PJPD.locs.indexOf(a);i>-1?PJPD.locs.splice(i,1):PJPD.locs.push(a);go('pjpNew',false);}
+function addKpiBlock(){PJPB={kpi:"",cats:[],int:"",idx:-1};go('pjpBlock');}
+function editKpiBlock(i){PJPB={...JSON.parse(JSON.stringify(PJPD.blocks[i])),idx:i};go('pjpBlock');}
+function rmKpiBlock(i){PJPD.blocks.splice(i,1);go('pjpNew',false);}
+function togBlockCat(c){const i=PJPB.cats.indexOf(c);i>-1?PJPB.cats.splice(i,1):PJPB.cats.push(c);go('pjpBlock',false);}
+function saveKpiBlock(){
+  const b={kpi:PJPB.kpi,cats:PJPB.cats,int:PJPB.int};
+  if(PJPB.idx>-1)PJPD.blocks[PJPB.idx]=b; else PJPD.blocks.push(b);
+  PJPB=null;go('pjpNew');
+}
+reg("pjpBlock","KPI block",()=>{
+  const b=PJPB||{kpi:"",cats:[],int:""};
+  return shell({title:"KPI block",sub:"One KPI, its activities and intervention",
+    body:`<div class="card">
+        <label class="label">KPI it serves <span class="req">*</span></label>
+        <select onchange="PJPB.kpi=this.value;go('pjpBlock',false)">
+          <option value="">Select…</option>
+          ${KPI_LIB.map(k=>`<option value="${k.r}" ${b.kpi===k.r?'selected':''}>${k.r} — ${k.n}</option>`).join('')}
+          <option value="Z5a" ${b.kpi==='Z5a'?'selected':''}>Z5a — Data QA / reporting</option>
+          <option value="NT" ${b.kpi==='NT'?'selected':''}>NT — not a KPI day (admin / leave / travel)</option>
+        </select>
+      </div>
+      <div class="card">
+        <label class="label">Activity category <span class="req">*</span></label>
+        ${ACTIVITY_CATS.map(c=>{const on=b.cats.includes(c);
+          return `<div class="listrow" onclick="togBlockCat('${c.replace(/'/g,"\\'")}')">
+            <div class="cbx ${on?'on':''}">${on?'✓':''}</div><div class="nm">${c}</div></div>`;}).join('')}
+      </div>
+      <div class="card">
+        <label class="label">Link to an intervention <span style="font-weight:600;text-transform:none;letter-spacing:0;color:var(--ink-3)">(optional)</span></label>
+        <select onchange="PJPB.int=this.value">
+          <option value="">Not tied to one</option>
+          ${INTS.map(i=>`<option value="${i.id}" ${b.int===i.id?'selected':''}>${i.id} — ${i.t}</option>`).join('')}
+        </select>
+      </div>`,
+    foot:footBtn(`<button class="btn btn-primary" ${b.kpi&&b.cats.length?'':'disabled'} onclick="saveKpiBlock()">Save KPI block</button>`)});
+});
 reg("pjpNew","Plan a day",()=>{
-  if(!PJPD)PJPD={...BLANK_PJPD};
+  if(!PJPD)PJPD=blankDay();
   const d=PJPD;
   return shell({title:"Plan a day",sub:"Goes to your ZTM for approval",
     body:`<div class="card">
         <label class="label">Date <span class="req">*</span></label>
-        <input type="date" value="${d.date}" onchange="PJPD.date=this.value;go('pjpNew',false)">
-        <div class="hint">Working days only. Multi-day trips: add legs below.</div>
+        <input type="date" min="${iso(TODAY)}" max="${monthEndIso()}" value="${d.date}" onchange="PJPD.date=this.value;go('pjpNew',false)">
       </div>
       <div class="card">
-        <label class="label">KPI this day serves <span class="req">*</span></label>
-        <select onchange="PJPD.kpi=this.value;PJPD.cat=catForKpi(this.value);go('pjpNew',false)">
-          <option value="">Select…</option>
-          ${KPI_LIB.map(k=>`<option value="${k.r}" ${d.kpi===k.r?'selected':''}>${k.r} — ${k.n}</option>`).join('')}
-          <option value="Z5a" ${d.kpi==='Z5a'?'selected':''}>Z5a — Data QA / reporting</option>
-          <option value="NT" ${d.kpi==='NT'?'selected':''}>NT — not a KPI day (admin / leave / travel)</option>
-        </select>
-        <div class="hint">One day chases one KPI. In the current sheet <b>8,959 rows are missing this</b> — making it a required picker fixes that at source.</div>
+        <div class="sec-head"><h3>KPI blocks</h3></div>
+        ${d.blocks.map((b,i)=>`<div class="listrow" style="align-items:flex-start">
+          <div class="nm">${b.kpi}<div class="meta">${(b.cats||[]).join(' · ')}${b.int?' · ↳ '+b.int:''}</div></div>
+          <button class="edit" onclick="editKpiBlock(${i})">Edit</button>
+          <button class="edit" style="color:var(--red)" onclick="rmKpiBlock(${i})">Remove</button></div>`).join('')
+          ||'<div class="hint">No KPI added yet.</div>'}
+        <button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="addKpiBlock()">＋ Add another KPI</button>
       </div>
       <div class="card">
-        <label class="label">Activity category <span class="req">*</span></label>
-        <select onchange="PJPD.cat=this.value">
-          <option value="">Select…</option>
-          ${ACTIVITY_CATS.map(c=>`<option ${d.cat===c?'selected':''}>${c}</option>`).join('')}
-        </select>
-        <label class="label" style="margin-top:11px">What exactly will you do?</label>
-        <textarea placeholder="e.g. Meet 4 agents onboarded in July, Kerugoya AHQ" oninput="PJPD.detail=this.value">${d.detail}</textarea>
-      </div>
-      <div class="card">
-        <label class="label">Location</label>
-        <input type="text" placeholder="AHQ / venue" value="${d.loc}" oninput="PJPD.loc=this.value">
+        <label class="label">Location <span class="req">*</span></label>
+        <div style="display:flex;flex-wrap:wrap;margin-bottom:${d.locs.length?'6px':'0'}">${d.locs.map(l=>`<span class="chip blue">${l}</span>`).join('')}</div>
+        ${AHQS.map(a=>{const on=d.locs.includes(a);
+          return `<div class="listrow" onclick="togPjpLoc('${a}')">
+            <div class="cbx ${on?'on':''}">${on?'✓':''}</div><div class="nm">${a}</div></div>`;}).join('')}
         <label class="label" style="margin-top:11px">Travelling?</label>
         <div class="seg" style="margin-bottom:0">
           <button class="${!d.travel?'on':''}" onclick="PJPD.travel=false;go('pjpNew',false)">No</button>
@@ -687,26 +756,19 @@ reg("pjpNew","Plan a day",()=>{
         ${d.travel?`<label class="label" style="margin-top:11px">Route</label>
           <input type="text" placeholder="e.g. Kisumu → Kakamega" value="${d.route}" oninput="PJPD.route=this.value">
           <label class="label" style="margin-top:11px">Nights away</label>
-          <input type="number" min="0" value="${d.nights}" oninput="PJPD.nights=+this.value">
-          <div class="hint">Route is text today, so distance is only a proxy. A maps lookup would give real kilometres — worth telling us if that matters.</div>`:''}
-      </div>
-      <div class="card">
-        <label class="label">Link to an intervention <span style="font-weight:600;text-transform:none;letter-spacing:0;color:var(--ink-3)">(optional)</span></label>
-        <select onchange="PJPD.int=this.value">
-          <option value="">Not tied to one</option>
-          ${INTS.map(i=>`<option value="${i.id}" ${d.int===i.id?'selected':''}>${i.id} — ${i.t}</option>`).join('')}
-        </select>
-        <div class="hint">The day points at the intervention; it doesn't copy its data. Attendance and results live on the intervention.</div>
+          <input type="number" min="0" value="${d.nights}" oninput="PJPD.nights=+this.value">`:''}
       </div>`,
-    foot:footBtn(`<button class="btn btn-primary" ${d.date&&d.kpi?'':'disabled'} onclick="savePJP()">Submit for approval</button>`)});
+    foot:footBtn(`<button class="btn btn-primary" ${d.date&&d.blocks.length?'':'disabled'} onclick="savePJP()">Submit for approval</button>`)});
 });
 function savePJP(){
   const ex=PJP.find(p=>p.date===PJPD.date);
-  const rec={...PJPD,status:"pending"};
+  const rec={...JSON.parse(JSON.stringify(PJPD)),status:"pending"};
   if(ex)Object.assign(ex,rec); else PJP.push(rec);
   PJP.sort((a,b)=>a.date.localeCompare(b.date));
-  APPROVALS.unshift({id:"P0000"+(43+APPROVALS.length),rm:"Pier M.",date:rec.date,kpi:rec.kpi,cat:rec.cat,detail:rec.detail,
-    loc:rec.loc,trav:rec.travel?"Y":"N",route:rec.route,nights:rec.nights,st:"pending"});
+  const b0=rec.blocks[0]||{kpi:"",cats:[]};
+  APPROVALS.unshift({id:"P0000"+(43+APPROVALS.length),rm:"Pier M.",date:rec.date,kpi:b0.kpi,cat:(b0.cats||[]).join(', '),
+    detail:dayCats(rec).join(', '),
+    loc:(rec.locs||[]).join(', '),trav:rec.travel?"Y":"N",route:rec.route,nights:rec.nights,st:"pending"});
   alertBox("📤","Plan day submitted",`${longIso(rec.date)} sent to Lilian Wambui (ZTM) for approval. You'll be notified when it's actioned.`,"Done","hist=[];go('pjp',false)");
 }
 
