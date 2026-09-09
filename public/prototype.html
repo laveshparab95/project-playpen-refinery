@@ -1465,9 +1465,12 @@ reg("dayreport","End-of-day report",()=>shell({
       <textarea style="min-height:170px" placeholder="What you did, who you met, anything that came up outside the plan…" oninput="DR=this.value">${DR}</textarea>
     </div>
     <div class="card"><div class="sec-head"><h3>Today's plan, for reference</h3></div>
-      ${(()=>{const p=PJP.find(x=>x.date===iso(TODAY));return p&&p.status!=='gap'
-        ?`<div style="font-size:12.5px;font-weight:700">${p.cat}</div><div style="font-size:11.5px;color:var(--ink-3);margin-top:3px">${p.detail}</div>`
-        :`<div class="hint">Nothing was planned for today.</div>`;})()}
+      ${(()=>{const p=PJP.find(x=>x.date===iso(TODAY));if(!p||p.status==='gap')return `<div class="hint">Nothing was planned for today.</div>`;
+        const cats=dayCats(p), ml=meetingLine(p);
+        return `<div style="display:flex;flex-wrap:wrap">${cats.map(c=>`<span class="chip" style="font-size:10px">${c}</span>`).join('')}</div>
+          ${p.locs&&p.locs.length?`<div class="meta">📍 ${p.locs.map(l=>l.replace(' AHQ','')).join(', ')}</div>`:''}
+          ${ml?`<div class="meta">${ml}</div>`:''}`;})()}
+
       <div class="hint" style="margin-top:8px">If what you did differs from the plan, just say so here — that's the point of the daily report.</div>
     </div>`,
   foot:footBtn(`<button class="btn btn-primary" onclick="alertBox('📝','Report submitted','Thanks — logged against today. Your ZTM sees it in the dashboard.','Done','hist=[];go(\\'home\\',false)')">Submit report</button>`)
