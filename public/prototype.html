@@ -430,16 +430,25 @@ function seedPJP(){
   for(let i=-3;i<=11;i++){
     const d=addDays(i), wd=d.getDay();
     if(wd===0||wd===6) continue;
-    rows.push({date:iso(d),kpi:"",cat:"",detail:"",loc:"",travel:false,route:"",nights:0,int:"",status:"gap",legs:[]});
+    rows.push({date:iso(d),blocks:[],locs:[],travel:false,route:"",nights:0,status:"gap"});
   }
   const set=(idx,o)=>{if(rows[idx])Object.assign(rows[idx],o);};
-  set(0,{kpi:"R2",cat:"New agent F2F training (R2)",detail:"Meet 4 agents onboarded in July, Kisumu AHQ",loc:"Kisumu AHQ",status:"approved",int:"INT-014"});
-  set(1,{kpi:"R1",cat:"Inactive agent reactivation (R1)",detail:"Cluster leaders + low performers, Sega",loc:"Siaya AHQ",status:"approved"});
-  set(2,{kpi:"Z5a",cat:"Data QA / reporting (Z5a)",detail:"Weekly reporting and PJP review",loc:"Mega Plaza",status:"approved"});
-  set(3,{kpi:"R2",cat:"New agent F2F training (R2)",detail:"HomePlus Max Lite session — Mamboleo",loc:"Kisumu AHQ",status:"approved",int:"INT-014"});
-  set(4,{kpi:"R4",cat:"Certified-agent conversion coaching (R4)",detail:"July-certified agents, 1:1 coaching",loc:"Kakamega AHQ",status:"pending",int:"INT-017",travel:true,route:"Kisumu → Kakamega",nights:1});
-  set(5,{kpi:"R7",cat:"360 field insight capture (R7)",detail:"Retailer visits, Chokaa",loc:"Bungoma AHQ",status:"pending",travel:true,route:"Kakamega → Bungoma",nights:1});
-  set(7,{kpi:"R1",cat:"Inactive agent reactivation (R1)",detail:"Reactivation drive, Busia cluster",loc:"Busia AHQ",status:"pending"});
+  set(0,{status:"approved",locs:["Kisumu AHQ"],blocks:[
+    {kpi:"R2",cats:["New agent F2F training (R2)","Agent coaching / ride-along"],int:"INT-014"},
+    {kpi:"R7",cats:["360 field insight capture (R7)"],int:""}]});
+  set(1,{status:"approved",locs:["Siaya AHQ"],blocks:[
+    {kpi:"R1",cats:["Inactive agent reactivation (R1)"],int:""}]});
+  set(2,{status:"approved",locs:["Kisumu AHQ"],blocks:[
+    {kpi:"Z5a",cats:["Data QA / reporting (Z5a)"],int:""}]});
+  set(3,{status:"approved",locs:["Kisumu AHQ"],blocks:[
+    {kpi:"R2",cats:["New agent F2F training (R2)"],int:"INT-014"},
+    {kpi:"R4",cats:["Certified-agent conversion coaching (R4)"],int:"INT-016"}]});
+  set(4,{status:"pending",locs:["Kakamega AHQ","Bungoma AHQ"],travel:true,route:"Kisumu → Kakamega",nights:1,blocks:[
+    {kpi:"R4",cats:["Certified-agent conversion coaching (R4)","Agent coaching / ride-along"],int:"INT-017"}]});
+  set(5,{status:"rejected",locs:["Bungoma AHQ"],travel:true,route:"Kakamega → Bungoma",nights:1,blocks:[
+    {kpi:"R7",cats:["360 field insight capture (R7)"],int:""}]});
+  set(7,{status:"pending",locs:["Busia AHQ"],blocks:[
+    {kpi:"R1",cats:["Inactive agent reactivation (R1)"],int:""}]});
   return rows;
 }
 
