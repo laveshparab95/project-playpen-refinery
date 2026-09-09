@@ -1328,15 +1328,17 @@ reg("pastDetail","Past training detail",()=>{
       </div>
       <div class="card"><div class="sec-head"><h3>Attendance</h3></div>
         <div class="rev"><span class="k">Submitted</span><span class="v">${p.att} of ${p.inv}</span></div>
-        <div class="rev" style="cursor:pointer" onclick="showApproved('${p.id}')"><span class="k">Approved</span><span class="v">${p.approved?p.approved.length+' of '+p.att:'—'} ›</span></div>
+        <div class="rev" style="cursor:pointer" onclick="showApproved('${p.id}')"><span class="k">Approved</span><span class="v">${p.approved?apprCount(p)+' of '+p.att:'—'} ›</span></div>
       </div>
       <div class="card"><div class="sec-head"><h3>Courses</h3></div>
         ${p.courses.map(c=>`<div style="padding:5px 0"><div style="font-size:12.5px;font-weight:800">${c.c}</div>
         <div style="margin-top:4px">${c.t.map(t=>`<span class="chip">${t}</span>`).join('')}</div></div>`).join('')}</div>
-      <div class="card"><div class="sec-head"><h3>Evidence</h3></div>
+      <div class="card">
+        <div style="font-size:11px;font-weight:800;color:var(--ink-2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Training photo</div>
         <div style="height:120px;border-radius:11px;background:linear-gradient(135deg,#F6D97A,#F0A94B);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#4A3200;font-weight:800">
-          <div style="font-size:27px">🖼️</div><div style="font-size:11.5px;margin-top:5px">Training photo</div></div>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;font-weight:700"><span style="font-size:17px">🎬</span> training-clip.mp4</div></div>
+          <div style="font-size:27px">🖼️</div></div>
+        <div style="font-size:11px;font-weight:800;color:var(--ink-2);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px">Training video</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700"><span style="font-size:17px">🎬</span> training-clip.mp4</div></div>
       <div class="card"><div class="sec-head"><h3>Comments</h3></div>
         <div style="font-size:12.5px;color:var(--ink-2);line-height:1.55">${p.cm||'<span style="color:var(--ink-3)">None</span>'}</div></div>`});
 });
