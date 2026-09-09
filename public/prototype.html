@@ -1184,13 +1184,14 @@ function showApproved(id){
   const rows=p.approved||[];
   modal(`<h3>Attendance approval</h3>
     <div style="max-height:320px;overflow:auto">
-      ${rows.length?rows.map(r=>`<div class="listrow" style="align-items:center">
+      ${rows.length?rows.map(r=>`<div class="listrow" style="align-items:center;background:${r.status==='approved'?'#EAF7EE':'#FDECEC'};border-radius:9px;margin-bottom:5px;padding:8px 10px">
         <div class="nm">${r.n}<div class="meta">Check-in ${r.diff} · ${r.dist} from venue</div></div>
-        <span class="pill ${r.status==='approved'?'done':'warn'}">${r.status}</span>
+        <span class="pill ${r.status==='approved'?'done':'canc'}">${r.status}</span>
       </div>`).join(''):'<div class="hint">No approval data yet.</div>'}
     </div>
     <button class="btn btn-primary" style="margin-top:10px" onclick="closeModal()">Close</button>`);
 }
+function apprCount(p){return (p.approved||[]).filter(r=>r.status==='approved').length;}
 
 /* ---------- AGENTS (worklists) ---------- */
 let AG={key:"all",q:"",sel:[],sort:"lt",filters:[],ahq:[]};
