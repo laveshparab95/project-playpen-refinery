@@ -1,11 +1,11 @@
-# RM App prototype edits — roadmap
+# RM App prototype edits
 
-- [x] Home screen
-- [ ] Schedule a meeting
-- [ ] Start a meeting
-- [ ] End of day report
-- [ ] My interventions
-- [ ] Plan tab
-- [ ] Trainings
-- [ ] Agents
-- [ ] KPI module
+- [x] Home
+- [x] Schedule a meeting
+- [x] Start a meeting
+- [x] End-of-day report
+- [x] My interventions
+- [x] Plan tab
+- [x] Trainings
+- [x] Agents
+- [x] KPI
