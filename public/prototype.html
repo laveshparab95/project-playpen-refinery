@@ -1044,7 +1044,7 @@ function submitSchedule(){
   const ints=S.ints&&S.ints.length?S.ints:(S.int?[S.int]:[]);
   TRAININGS.push({id,date:S.date,time:S.time,ahq:S.ahq,loc:S.loc,int:ints[0]||'',ints,courses:S.courses.map(c=>({c:c.c,t:c.t})),agents:[...S.agents],status:"scheduled"});
   modal(`<div class="ico">✅</div><h3>Training scheduled</h3>
-    <p><b>${id}</b> created. ${S.agents.length} agents notified — the session is now on their Kazi app.${ints.length?`<br><br>Linked to <b>${ints.join(', ')}</b>; attendance will roll up into coverage.`:'}</p>
+    <p><b>${id}</b> created. ${S.agents.length} agents notified — the session is now on their Kazi app.${ints.length?`<br><br>Linked to <b>${ints.join(', ')}</b>; attendance will roll up into coverage.`:''}</p>
     <button class="btn btn-primary" onclick="closeModal();hist=[];go('home',false)">Back to home</button>`);
 }
 
