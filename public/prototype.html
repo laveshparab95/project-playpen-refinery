@@ -390,16 +390,36 @@ const SEED_TRAININGS=[
 ];
 
 const SEED_PAST=[
-  {id:"TRN-2460",date:iso(addDays(-4)),time:"10:00",ahq:"Kisumu AHQ",loc:"Mamboleo Showground",inv:10,att:8,int:"INT-014",
+  {id:"TRN-2460",date:iso(addDays(-4)),time:"10:00",ahq:"Kisumu AHQ",loc:"Mamboleo Showground",inv:10,att:8,int:"INT-014",ints:["INT-014","INT-016"],
+   gps:"-0.0782, 34.7712",
+   approved:[{n:"Brian Otieno",diff:"+2 min",dist:"40 m",status:"approved"},{n:"Mercy Wanjiku",diff:"+6 min",dist:"120 m",status:"approved"},
+             {n:"Kelvin Omondi",diff:"-3 min",dist:"75 m",status:"approved"},{n:"Grace Atieno",diff:"+41 min",dist:"1.8 km",status:"rejected"},
+             {n:"Stephen Ochieng",diff:"+9 min",dist:"210 m",status:"approved"},{n:"Dennis Mutua",diff:"+1 min",dist:"55 m",status:"approved"},
+             {n:"Lydia Chepkoech",diff:"+52 min",dist:"3.2 km",status:"rejected"},{n:"Peter Kiplagat",diff:"+4 min",dist:"90 m",status:"approved"}],
    courses:[{c:"Sales Techniques",t:["Door-to-door pitch","Handling objections"]}],star:"Brian Otieno",
    cm:"Good turnout. Two agents asked for more demo practice.",read:{days:14,sold:5,of:8}},
-  {id:"TRN-2455",date:iso(addDays(-9)),time:"14:00",ahq:"Kakamega AHQ",loc:"Kakamega Social Hall",inv:12,att:11,int:"",
+  {id:"TRN-2455",date:iso(addDays(-9)),time:"14:00",ahq:"Kakamega AHQ",loc:"Kakamega Social Hall",inv:12,att:11,int:"INT-017",ints:["INT-017"],
+   gps:"0.2827, 34.7519",
+   approved:[{n:"Faith Achieng",diff:"+3 min",dist:"30 m",status:"approved"},{n:"Beatrice Nafula",diff:"+7 min",dist:"60 m",status:"approved"},
+             {n:"Moses Kirui",diff:"+2 min",dist:"45 m",status:"approved"},{n:"Samuel Wafula",diff:"+35 min",dist:"2.4 km",status:"rejected"},
+             {n:"Rose Kwamboka",diff:"+5 min",dist:"85 m",status:"approved"},{n:"Joseph Barasa",diff:"+1 min",dist:"25 m",status:"approved"},
+             {n:"Sharon Nekesa",diff:"+8 min",dist:"140 m",status:"approved"},{n:"Grace Atieno",diff:"+4 min",dist:"70 m",status:"approved"},
+             {n:"Dennis Mutua",diff:"+6 min",dist:"95 m",status:"approved"},{n:"Kelvin Omondi",diff:"+2 min",dist:"50 m",status:"approved"}],
    courses:[{c:"Collections & Repayment",t:["Reading the repayment dashboard"]},{c:"Compliance & Ethics",t:["Anti-fraud policy"]}],
    star:"Faith Achieng",cm:"Covered the new defaulter policy.",read:{days:9,sold:7,of:11}},
-  {id:"TRN-2441",date:iso(addDays(-16)),time:"09:00",ahq:"Bungoma AHQ",loc:"Bungoma Town Depot",inv:8,att:5,int:"INT-017",
+  {id:"TRN-2441",date:iso(addDays(-16)),time:"09:00",ahq:"Bungoma AHQ",loc:"Bungoma Town Depot",inv:8,att:5,int:"INT-017",ints:["INT-017","INT-014"],
+   gps:"0.5635, 34.5606",
+   approved:[{n:"Sharon Nekesa",diff:"+4 min",dist:"65 m",status:"approved"},{n:"Samuel Wafula",diff:"+2 min",dist:"40 m",status:"approved"},
+             {n:"Joseph Barasa",diff:"+28 min",dist:"1.1 km",status:"rejected"},{n:"Rose Kwamboka",diff:"+5 min",dist:"80 m",status:"approved"}],
    courses:[{c:"Product Knowledge",t:["Troubleshooting common faults","Warranty terms"]}],star:"",
    cm:"Low attendance — market day clash.",read:{days:30,sold:2,of:5}},
-  {id:"TRN-2433",date:iso(addDays(-23)),time:"11:30",ahq:"Siaya AHQ",loc:"Siaya Community Centre",inv:9,att:9,int:"",
+  {id:"TRN-2433",date:iso(addDays(-23)),time:"11:30",ahq:"Siaya AHQ",loc:"Siaya Community Centre",inv:9,att:9,int:"",ints:[],
+   gps:"0.0607, 34.2881",
+   approved:[{n:"Lydia Chepkoech",diff:"+1 min",dist:"20 m",status:"approved"},{n:"Brian Otieno",diff:"+3 min",dist:"55 m",status:"approved"},
+             {n:"Mercy Wanjiku",diff:"+2 min",dist:"35 m",status:"approved"},{n:"Grace Atieno",diff:"+6 min",dist:"110 m",status:"approved"},
+             {n:"Peter Kiplagat",diff:"+9 min",dist:"150 m",status:"approved"},{n:"Faith Achieng",diff:"+4 min",dist:"70 m",status:"approved"},
+             {n:"Moses Kirui",diff:"+2 min",dist:"45 m",status:"approved"},{n:"Dennis Mutua",diff:"+3 min",dist:"60 m",status:"approved"},
+             {n:"Kelvin Omondi",diff:"+5 min",dist:"90 m",status:"approved"}],
    courses:[{c:"App & Digital Tools",t:["Kazi app navigation","Litmos login & courses"]}],star:"Lydia Chepkoech",
    cm:"Full attendance.",read:{days:30,sold:6,of:9}}
 ];
@@ -410,16 +430,25 @@ function seedPJP(){
   for(let i=-3;i<=11;i++){
     const d=addDays(i), wd=d.getDay();
     if(wd===0||wd===6) continue;
-    rows.push({date:iso(d),kpi:"",cat:"",detail:"",loc:"",travel:false,route:"",nights:0,int:"",status:"gap",legs:[]});
+    rows.push({date:iso(d),blocks:[],locs:[],travel:false,route:"",nights:0,status:"gap"});
   }
   const set=(idx,o)=>{if(rows[idx])Object.assign(rows[idx],o);};
-  set(0,{kpi:"R2",cat:"New agent F2F training (R2)",detail:"Meet 4 agents onboarded in July, Kisumu AHQ",loc:"Kisumu AHQ",status:"approved",int:"INT-014"});
-  set(1,{kpi:"R1",cat:"Inactive agent reactivation (R1)",detail:"Cluster leaders + low performers, Sega",loc:"Siaya AHQ",status:"approved"});
-  set(2,{kpi:"Z5a",cat:"Data QA / reporting (Z5a)",detail:"Weekly reporting and PJP review",loc:"Mega Plaza",status:"approved"});
-  set(3,{kpi:"R2",cat:"New agent F2F training (R2)",detail:"HomePlus Max Lite session — Mamboleo",loc:"Kisumu AHQ",status:"approved",int:"INT-014"});
-  set(4,{kpi:"R4",cat:"Certified-agent conversion coaching (R4)",detail:"July-certified agents, 1:1 coaching",loc:"Kakamega AHQ",status:"pending",int:"INT-017",travel:true,route:"Kisumu → Kakamega",nights:1});
-  set(5,{kpi:"R7",cat:"360 field insight capture (R7)",detail:"Retailer visits, Chokaa",loc:"Bungoma AHQ",status:"pending",travel:true,route:"Kakamega → Bungoma",nights:1});
-  set(7,{kpi:"R1",cat:"Inactive agent reactivation (R1)",detail:"Reactivation drive, Busia cluster",loc:"Busia AHQ",status:"pending"});
+  set(0,{status:"approved",locs:["Kisumu AHQ"],blocks:[
+    {kpi:"R2",cats:["New agent F2F training (R2)","Agent coaching / ride-along"],int:"INT-014"},
+    {kpi:"R7",cats:["360 field insight capture (R7)"],int:""}]});
+  set(1,{status:"approved",locs:["Siaya AHQ"],blocks:[
+    {kpi:"R1",cats:["Inactive agent reactivation (R1)"],int:""}]});
+  set(2,{status:"approved",locs:["Kisumu AHQ"],blocks:[
+    {kpi:"Z5a",cats:["Data QA / reporting (Z5a)"],int:""}]});
+  set(3,{status:"approved",locs:["Kisumu AHQ"],blocks:[
+    {kpi:"R2",cats:["New agent F2F training (R2)"],int:"INT-014"},
+    {kpi:"R4",cats:["Certified-agent conversion coaching (R4)"],int:"INT-016"}]});
+  set(4,{status:"pending",locs:["Kakamega AHQ","Bungoma AHQ"],travel:true,route:"Kisumu → Kakamega",nights:1,blocks:[
+    {kpi:"R4",cats:["Certified-agent conversion coaching (R4)","Agent coaching / ride-along"],int:"INT-017"}]});
+  set(5,{status:"rejected",locs:["Bungoma AHQ"],travel:true,route:"Kakamega → Bungoma",nights:1,blocks:[
+    {kpi:"R7",cats:["360 field insight capture (R7)"],int:""}]});
+  set(7,{status:"pending",locs:["Busia AHQ"],blocks:[
+    {kpi:"R1",cats:["Inactive agent reactivation (R1)"],int:""}]});
   return rows;
 }
 
@@ -574,83 +603,152 @@ function toggleFab(){FAB_OPEN=!FAB_OPEN;render();}
 function intName(id){const i=INTS.find(x=>x.id===id);return i?i.t:'';}
 
 /* (Manager priorities screen removed from the RM App) */
-function planAgainst(kpi,t){PJPD={date:"",kpi,cat:catForKpi(kpi),detail:t,loc:"",travel:false,route:"",nights:0,int:"",legs:[]};go('pjpNew');}
+function planAgainst(kpi,t){PJPD=blankDay();PJPD.blocks=[{kpi,cats:[catForKpi(kpi)].filter(Boolean),int:""}];go('pjpNew');}
 function catForKpi(k){const m={R1:"Inactive agent reactivation (R1)",R2:"New agent F2F training (R2)",R3:"JKQ drive & low-scorer follow-up (R3)",R4:"Certified-agent conversion coaching (R4)",R5:"Training quality audit / follow-up (R5-R6)",R7:"360 field insight capture (R7)"};return m[k]||"";}
 
 /* ---------- PJP ---------- */
-const BLANK_PJPD={date:"",kpi:"",cat:"",detail:"",loc:"",travel:false,route:"",nights:0,int:"",legs:[]};
-let PJPD={...BLANK_PJPD};
+function blankDay(){return {date:"",blocks:[],locs:[],travel:false,route:"",nights:0};}
+let PJPD=blankDay(), PJPB=null, PSELDAY=null;
+function dayCats(p){const s=[];(p.blocks||[]).forEach(b=>(b.cats||[]).forEach(c=>{if(!s.includes(c))s.push(c);}));return s;}
+function dayMeetings(p){
+  const sched=TRAININGS.filter(t=>t.status==="scheduled"&&t.date===p.date);
+  const done=PAST.filter(t=>t.date===p.date);
+  return {sched,done};
+}
+function meetingLine(p){
+  const {sched,done}=dayMeetings(p);
+  if(p.date<iso(TODAY)) return done.length?`🗓 ${done.length} meeting${done.length>1?'s':''} completed`:'';
+  return sched.length?`🗓 ${sched.length} meeting${sched.length>1?'s':''} scheduled`:'';
+}
+function pendLabel(){return TODAY.getDate()<=5?"Pending":"Plan changes";}
 reg("pjp","My plan (PJP)",()=>{
   const future=PJP.filter(p=>p.date>=iso(addDays(-3)));
   const rows=future.map(p=>{
-    const st={approved:['done','Approved'],pending:['pend','Pending'],gap:['canc','Not planned'],rejected:['rej','Rejected']}[p.status];
+    const st={approved:['done','Approved'],pending:['pend','Pending'],gap:['canc','Not planned'],rejected:['canc','Rejected']}[p.status];
+    const cats=dayCats(p), ml=meetingLine(p);
     return `<div class="listrow" style="align-items:flex-start" onclick="openPJP('${p.date}')">
       <div style="flex:0 0 42px;text-align:center">
         <div style="font-size:9.5px;color:var(--ink-3);font-weight:800;text-transform:uppercase">${prettyIso(p.date).split(' ')[0]}</div>
         <div style="font-size:17px;font-weight:800;line-height:1.1">${p.date.slice(8)}</div></div>
       <div class="nm" style="font-weight:${p.status==='gap'?'500':'700'};color:${p.status==='gap'?'var(--ink-3)':'var(--ink)'}">
-        ${p.status==='gap'?'<i>Nothing planned</i>':p.cat}
-        ${p.status!=='gap'?`<div class="meta">${p.detail||''}${p.loc?' · 📍'+p.loc:''}${p.travel?` · ✈️ ${p.nights}n`:''}</div>`:''}
-        ${p.int?`<div style="margin-top:4px"><span class="chip blue" style="font-size:10px">↳ ${p.int}</span></div>`:''}
+        ${p.status==='gap'?'<i>Nothing planned</i>':`<div style="display:flex;flex-wrap:wrap">${cats.map(c=>`<span class="chip" style="font-size:10px">${c}</span>`).join('')}</div>
+          ${p.locs&&p.locs.length?`<div class="meta">📍 ${p.locs.map(l=>l.replace(' AHQ','')).join(', ')}${p.travel?` · ✈️ ${p.nights}n`:''}</div>`:''}
+          ${ml?`<div class="meta">${ml}</div>`:''}`}
       </div>
       <span class="pill ${st[0]}">${st[1]}</span></div>`;
   }).join('');
   const pend=PJP.filter(p=>p.status==="pending").length;
+  const rej=PJP.filter(p=>p.status==="rejected");
   return shell({title:"My plan",sub:"One row per working day · August 2026",showBack:false,tab:"pjp",
-    body:`<div class="banner info"><b>PJP moves into the app.</b> Every working day gets a row, so an unplanned day shows as a gap rather than just being absent. Plans go to your ZTM for approval; delivered records don't need approving.</div>
-      <div class="kpi">
+    body:`<div class="kpi">
         <div class="k"><div class="n">${PJP.filter(p=>p.status==='approved').length}</div><div class="t">Approved</div></div>
-        <div class="k"><div class="n">${pend}</div><div class="t">Pending</div></div>
-        <div class="k"><div class="n">${PJP.filter(p=>p.status==='gap').length}</div><div class="t">Gaps</div></div>
+        <div class="k"><div class="n">${pend}</div><div class="t">${pendLabel()}</div></div>
+        <div class="k"><div class="n">${PJP.filter(p=>p.status==='gap').length}</div><div class="t">Unplanned days</div></div>
       </div>
-      <button class="btn btn-primary" style="margin-bottom:12px" onclick="PJPD={date:'',kpi:'',cat:'',detail:'',loc:'',travel:false,route:'',nights:0,int:'',legs:[]};go('pjpNew')">＋ Plan a day</button>
+      ${rej.length?`<div class="banner warn" style="cursor:pointer" onclick="replanDay('${rej[0].date}')"><b>${rej.length} day${rej.length>1?'s':''} rejected</b> — replan ${rej.length>1?'them':'it'}.</div>`:''}
+      <button class="btn btn-primary" style="margin-bottom:12px" onclick="PJPD=blankDay();go('pjpNew')">＋ Plan a day</button>
       ${rows}`});
 });
+function replanDay(date){
+  const p=PJP.find(x=>x.date===date);
+  PJPD=JSON.parse(JSON.stringify({date:p.date,blocks:p.blocks||[],locs:p.locs||[],travel:!!p.travel,route:p.route||"",nights:p.nights||0}));
+  go('pjpNew');
+}
 function openPJP(date){
   const p=PJP.find(x=>x.date===date);
-  if(p.status==='gap'){PJPD={date,kpi:"",cat:"",detail:"",loc:"",travel:false,route:"",nights:0,int:"",legs:[]};go('pjpNew');return;}
-  modal(`<h3>${longIso(p.date)}</h3>
-    <div class="rev"><span class="k">Status</span><span class="v">${p.status}</span></div>
-    <div class="rev"><span class="k">KPI</span><span class="v">${p.kpi||'—'}</span></div>
-    <div class="rev"><span class="k">Activity</span><span class="v">${p.cat}</span></div>
-    <div class="rev"><span class="k">Detail</span><span class="v">${p.detail||'—'}</span></div>
-    <div class="rev"><span class="k">Location</span><span class="v">${p.loc||'—'}</span></div>
-    <div class="rev"><span class="k">Travel</span><span class="v">${p.travel?`Yes · ${p.route} · ${p.nights} night(s)`:'No'}</span></div>
-    ${p.int?`<div class="rev"><span class="k">Intervention</span><span class="v">${p.int}</span></div>`:''}
-    <div style="height:12px"></div>
-    <button class="btn btn-primary" onclick="closeModal()">Close</button>`);
+  if(p.status==='gap'){PJPD=blankDay();PJPD.date=date;go('pjpNew');return;}
+  PSELDAY=date;go('pjpDay');
 }
+reg("pjpDay","Plan day",()=>{
+  const p=PJP.find(x=>x.date===PSELDAY)||PJP[0];
+  const st={approved:['done','Approved'],pending:['pend','Pending'],gap:['canc','Not planned'],rejected:['canc','Rejected']}[p.status];
+  const {sched,done}=dayMeetings(p);
+  const meets=p.date<iso(TODAY)?done:sched;
+  return shell({title:prettyIso(p.date),sub:longIso(p.date),
+    body:`<div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:14px;font-weight:800">${longIso(p.date)}</div>
+          <span class="pill ${st[0]}">${st[1]}</span></div>
+        <div class="rev" style="margin-top:8px"><span class="k">Location</span><span class="v">${(p.locs&&p.locs.length)?p.locs.join(', '):'—'}</span></div>
+        <div class="rev"><span class="k">Travel</span><span class="v">${p.travel?`${p.route||'—'} · ${p.nights} night(s)`:'No'}</span></div>
+      </div>
+      ${(p.blocks||[]).map((b,i)=>`<div class="card">
+        <div class="sec-head"><h3>KPI ${i+1} · ${b.kpi||'—'}</h3></div>
+        <div style="display:flex;flex-wrap:wrap;margin-top:4px">${(b.cats||[]).map(c=>`<span class="chip">${c}</span>`).join('')||'<span class="hint">No activity selected</span>'}</div>
+        ${b.int?`<div style="margin-top:7px"><span class="chip blue">↳ ${b.int}${intName(b.int)?' · '+intName(b.int):''}</span></div>`:''}
+      </div>`).join('')}
+      <div class="card"><div class="sec-head"><h3>Meetings this day</h3></div>
+        ${meets.length?meets.map(t=>{
+          const ints=(t.ints&&t.ints.length?t.ints:(t.int?[t.int]:[]));
+          return `<div class="listrow" style="align-items:flex-start">
+            <div class="nm">${t.ahq.replace(' AHQ','')} · ${t.time}<div class="meta">📍 ${t.loc}</div>
+            ${ints.length?`<div style="margin-top:5px;display:flex;flex-wrap:wrap">${ints.map(i=>`<span class="chip blue" style="font-size:10px">↳ ${i}</span>`).join('')}</div>`:''}</div></div>`;
+        }).join(''):'<div class="hint">No meetings on this day.</div>'}
+      </div>
+      ${p.status==='rejected'?`<button class="btn btn-primary" onclick="replanDay('${p.date}')">Replan this day</button>`:''}`});
+});
+/* --- plan a day --- */
+function monthEndIso(){const d=new Date(TODAY.getFullYear(),TODAY.getMonth()+1,0);return iso(d);}
+function togPjpLoc(a){const i=PJPD.locs.indexOf(a);i>-1?PJPD.locs.splice(i,1):PJPD.locs.push(a);go('pjpNew',false);}
+function addKpiBlock(){PJPB={kpi:"",cats:[],int:"",idx:-1};go('pjpBlock');}
+function editKpiBlock(i){PJPB={...JSON.parse(JSON.stringify(PJPD.blocks[i])),idx:i};go('pjpBlock');}
+function rmKpiBlock(i){PJPD.blocks.splice(i,1);go('pjpNew',false);}
+function togBlockCat(c){const i=PJPB.cats.indexOf(c);i>-1?PJPB.cats.splice(i,1):PJPB.cats.push(c);go('pjpBlock',false);}
+function saveKpiBlock(){
+  const b={kpi:PJPB.kpi,cats:PJPB.cats,int:PJPB.int};
+  if(PJPB.idx>-1)PJPD.blocks[PJPB.idx]=b; else PJPD.blocks.push(b);
+  PJPB=null;go('pjpNew');
+}
+reg("pjpBlock","KPI block",()=>{
+  const b=PJPB||{kpi:"",cats:[],int:""};
+  return shell({title:"KPI block",sub:"One KPI, its activities and intervention",
+    body:`<div class="card">
+        <label class="label">KPI it serves <span class="req">*</span></label>
+        <select onchange="PJPB.kpi=this.value;go('pjpBlock',false)">
+          <option value="">Select…</option>
+          ${KPI_LIB.map(k=>`<option value="${k.r}" ${b.kpi===k.r?'selected':''}>${k.r} — ${k.n}</option>`).join('')}
+          <option value="Z5a" ${b.kpi==='Z5a'?'selected':''}>Z5a — Data QA / reporting</option>
+          <option value="NT" ${b.kpi==='NT'?'selected':''}>NT — not a KPI day (admin / leave / travel)</option>
+        </select>
+      </div>
+      <div class="card">
+        <label class="label">Activity category <span class="req">*</span></label>
+        ${ACTIVITY_CATS.map(c=>{const on=b.cats.includes(c);
+          return `<div class="listrow" onclick="togBlockCat('${c.replace(/'/g,"\\'")}')">
+            <div class="cbx ${on?'on':''}">${on?'✓':''}</div><div class="nm">${c}</div></div>`;}).join('')}
+      </div>
+      <div class="card">
+        <label class="label">Link to an intervention <span style="font-weight:600;text-transform:none;letter-spacing:0;color:var(--ink-3)">(optional)</span></label>
+        <select onchange="PJPB.int=this.value">
+          <option value="">Not tied to one</option>
+          ${INTS.map(i=>`<option value="${i.id}" ${b.int===i.id?'selected':''}>${i.id} — ${i.t}</option>`).join('')}
+        </select>
+      </div>`,
+    foot:footBtn(`<button class="btn btn-primary" ${b.kpi&&b.cats.length?'':'disabled'} onclick="saveKpiBlock()">Save KPI block</button>`)});
+});
 reg("pjpNew","Plan a day",()=>{
-  if(!PJPD)PJPD={...BLANK_PJPD};
+  if(!PJPD)PJPD=blankDay();
   const d=PJPD;
   return shell({title:"Plan a day",sub:"Goes to your ZTM for approval",
     body:`<div class="card">
         <label class="label">Date <span class="req">*</span></label>
-        <input type="date" value="${d.date}" onchange="PJPD.date=this.value;go('pjpNew',false)">
-        <div class="hint">Working days only. Multi-day trips: add legs below.</div>
+        <input type="date" min="${iso(TODAY)}" max="${monthEndIso()}" value="${d.date}" onchange="PJPD.date=this.value;go('pjpNew',false)">
       </div>
       <div class="card">
-        <label class="label">KPI this day serves <span class="req">*</span></label>
-        <select onchange="PJPD.kpi=this.value;PJPD.cat=catForKpi(this.value);go('pjpNew',false)">
-          <option value="">Select…</option>
-          ${KPI_LIB.map(k=>`<option value="${k.r}" ${d.kpi===k.r?'selected':''}>${k.r} — ${k.n}</option>`).join('')}
-          <option value="Z5a" ${d.kpi==='Z5a'?'selected':''}>Z5a — Data QA / reporting</option>
-          <option value="NT" ${d.kpi==='NT'?'selected':''}>NT — not a KPI day (admin / leave / travel)</option>
-        </select>
-        <div class="hint">One day chases one KPI. In the current sheet <b>8,959 rows are missing this</b> — making it a required picker fixes that at source.</div>
+        <div class="sec-head"><h3>KPI blocks</h3></div>
+        ${d.blocks.map((b,i)=>`<div class="listrow" style="align-items:flex-start">
+          <div class="nm">${b.kpi}<div class="meta">${(b.cats||[]).join(' · ')}${b.int?' · ↳ '+b.int:''}</div></div>
+          <button class="edit" onclick="editKpiBlock(${i})">Edit</button>
+          <button class="edit" style="color:var(--red)" onclick="rmKpiBlock(${i})">Remove</button></div>`).join('')
+          ||'<div class="hint">No KPI added yet.</div>'}
+        <button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="addKpiBlock()">＋ Add another KPI</button>
       </div>
       <div class="card">
-        <label class="label">Activity category <span class="req">*</span></label>
-        <select onchange="PJPD.cat=this.value">
-          <option value="">Select…</option>
-          ${ACTIVITY_CATS.map(c=>`<option ${d.cat===c?'selected':''}>${c}</option>`).join('')}
-        </select>
-        <label class="label" style="margin-top:11px">What exactly will you do?</label>
-        <textarea placeholder="e.g. Meet 4 agents onboarded in July, Kerugoya AHQ" oninput="PJPD.detail=this.value">${d.detail}</textarea>
-      </div>
-      <div class="card">
-        <label class="label">Location</label>
-        <input type="text" placeholder="AHQ / venue" value="${d.loc}" oninput="PJPD.loc=this.value">
+        <label class="label">Location <span class="req">*</span></label>
+        <div style="display:flex;flex-wrap:wrap;margin-bottom:${d.locs.length?'6px':'0'}">${d.locs.map(l=>`<span class="chip blue">${l}</span>`).join('')}</div>
+        ${AHQS.map(a=>{const on=d.locs.includes(a);
+          return `<div class="listrow" onclick="togPjpLoc('${a}')">
+            <div class="cbx ${on?'on':''}">${on?'✓':''}</div><div class="nm">${a}</div></div>`;}).join('')}
         <label class="label" style="margin-top:11px">Travelling?</label>
         <div class="seg" style="margin-bottom:0">
           <button class="${!d.travel?'on':''}" onclick="PJPD.travel=false;go('pjpNew',false)">No</button>
@@ -658,26 +756,19 @@ reg("pjpNew","Plan a day",()=>{
         ${d.travel?`<label class="label" style="margin-top:11px">Route</label>
           <input type="text" placeholder="e.g. Kisumu → Kakamega" value="${d.route}" oninput="PJPD.route=this.value">
           <label class="label" style="margin-top:11px">Nights away</label>
-          <input type="number" min="0" value="${d.nights}" oninput="PJPD.nights=+this.value">
-          <div class="hint">Route is text today, so distance is only a proxy. A maps lookup would give real kilometres — worth telling us if that matters.</div>`:''}
-      </div>
-      <div class="card">
-        <label class="label">Link to an intervention <span style="font-weight:600;text-transform:none;letter-spacing:0;color:var(--ink-3)">(optional)</span></label>
-        <select onchange="PJPD.int=this.value">
-          <option value="">Not tied to one</option>
-          ${INTS.map(i=>`<option value="${i.id}" ${d.int===i.id?'selected':''}>${i.id} — ${i.t}</option>`).join('')}
-        </select>
-        <div class="hint">The day points at the intervention; it doesn't copy its data. Attendance and results live on the intervention.</div>
+          <input type="number" min="0" value="${d.nights}" oninput="PJPD.nights=+this.value">`:''}
       </div>`,
-    foot:footBtn(`<button class="btn btn-primary" ${d.date&&d.kpi?'':'disabled'} onclick="savePJP()">Submit for approval</button>`)});
+    foot:footBtn(`<button class="btn btn-primary" ${d.date&&d.blocks.length?'':'disabled'} onclick="savePJP()">Submit for approval</button>`)});
 });
 function savePJP(){
   const ex=PJP.find(p=>p.date===PJPD.date);
-  const rec={...PJPD,status:"pending"};
+  const rec={...JSON.parse(JSON.stringify(PJPD)),status:"pending"};
   if(ex)Object.assign(ex,rec); else PJP.push(rec);
   PJP.sort((a,b)=>a.date.localeCompare(b.date));
-  APPROVALS.unshift({id:"P0000"+(43+APPROVALS.length),rm:"Pier M.",date:rec.date,kpi:rec.kpi,cat:rec.cat,detail:rec.detail,
-    loc:rec.loc,trav:rec.travel?"Y":"N",route:rec.route,nights:rec.nights,st:"pending"});
+  const b0=rec.blocks[0]||{kpi:"",cats:[]};
+  APPROVALS.unshift({id:"P0000"+(43+APPROVALS.length),rm:"Pier M.",date:rec.date,kpi:b0.kpi,cat:(b0.cats||[]).join(', '),
+    detail:dayCats(rec).join(', '),
+    loc:(rec.locs||[]).join(', '),trav:rec.travel?"Y":"N",route:rec.route,nights:rec.nights,st:"pending"});
   alertBox("📤","Plan day submitted",`${longIso(rec.date)} sent to Lilian Wambui (ZTM) for approval. You'll be notified when it's actioned.`,"Done","hist=[];go('pjp',false)");
 }
 
@@ -1164,13 +1255,14 @@ function showApproved(id){
   const rows=p.approved||[];
   modal(`<h3>Attendance approval</h3>
     <div style="max-height:320px;overflow:auto">
-      ${rows.length?rows.map(r=>`<div class="listrow" style="align-items:center">
+      ${rows.length?rows.map(r=>`<div class="listrow" style="align-items:center;background:${r.status==='approved'?'#EAF7EE':'#FDECEC'};border-radius:9px;margin-bottom:5px;padding:8px 10px">
         <div class="nm">${r.n}<div class="meta">Check-in ${r.diff} · ${r.dist} from venue</div></div>
-        <span class="pill ${r.status==='approved'?'done':'warn'}">${r.status}</span>
+        <span class="pill ${r.status==='approved'?'done':'canc'}">${r.status}</span>
       </div>`).join(''):'<div class="hint">No approval data yet.</div>'}
     </div>
     <button class="btn btn-primary" style="margin-top:10px" onclick="closeModal()">Close</button>`);
 }
+function apprCount(p){return (p.approved||[]).filter(r=>r.status==='approved').length;}
 
 /* ---------- AGENTS (worklists) ---------- */
 let AG={key:"all",q:"",sel:[],sort:"lt",filters:[],ahq:[]};
@@ -1307,15 +1399,17 @@ reg("pastDetail","Past training detail",()=>{
       </div>
       <div class="card"><div class="sec-head"><h3>Attendance</h3></div>
         <div class="rev"><span class="k">Submitted</span><span class="v">${p.att} of ${p.inv}</span></div>
-        <div class="rev" style="cursor:pointer" onclick="showApproved('${p.id}')"><span class="k">Approved</span><span class="v">${p.approved?p.approved.length+' of '+p.att:'—'} ›</span></div>
+        <div class="rev" style="cursor:pointer" onclick="showApproved('${p.id}')"><span class="k">Approved</span><span class="v">${p.approved?apprCount(p)+' of '+p.att:'—'} ›</span></div>
       </div>
       <div class="card"><div class="sec-head"><h3>Courses</h3></div>
         ${p.courses.map(c=>`<div style="padding:5px 0"><div style="font-size:12.5px;font-weight:800">${c.c}</div>
         <div style="margin-top:4px">${c.t.map(t=>`<span class="chip">${t}</span>`).join('')}</div></div>`).join('')}</div>
-      <div class="card"><div class="sec-head"><h3>Evidence</h3></div>
+      <div class="card">
+        <div style="font-size:11px;font-weight:800;color:var(--ink-2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Training photo</div>
         <div style="height:120px;border-radius:11px;background:linear-gradient(135deg,#F6D97A,#F0A94B);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#4A3200;font-weight:800">
-          <div style="font-size:27px">🖼️</div><div style="font-size:11.5px;margin-top:5px">Training photo</div></div>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;font-weight:700"><span style="font-size:17px">🎬</span> training-clip.mp4</div></div>
+          <div style="font-size:27px">🖼️</div></div>
+        <div style="font-size:11px;font-weight:800;color:var(--ink-2);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px">Training video</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700"><span style="font-size:17px">🎬</span> training-clip.mp4</div></div>
       <div class="card"><div class="sec-head"><h3>Comments</h3></div>
         <div style="font-size:12.5px;color:var(--ink-2);line-height:1.55">${p.cm||'<span style="color:var(--ink-3)">None</span>'}</div></div>`});
 });
