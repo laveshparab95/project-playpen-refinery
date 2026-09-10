@@ -1643,6 +1643,18 @@ mreg("m_overview","Overview",()=>{
 });
 
 /* ---------- PLAN APPROVALS ---------- */
+function kpiFull(k){const x=KPI_LIB.find(y=>y.r===k);return x?`${x.r} — ${x.n}`:(k==='Z5a'?'Z5a — Data QA / reporting':k==='NT'?'NT — Non-KPI day':(k||'—'));}
+function kpiBlockTable(blocks){
+  if(!blocks||!blocks.length)return `<div style="color:var(--red);font-size:11.5px;font-weight:700;margin-top:7px">No KPI block submitted</div>`;
+  return `<table class="tt" style="margin-top:8px">
+    <thead><tr><th style="width:22%">KPI</th><th style="width:28%">Activities planned</th><th style="width:16%">Intervention</th><th>What exactly will you do</th></tr></thead>
+    <tbody>${blocks.map(b=>`<tr>
+      <td style="font-weight:700">${kpiFull(b.kpi)}</td>
+      <td>${(b.cats||[]).map(c=>`<span class="chip" style="margin:0 3px 3px 0">${c}</span>`).join('')||'—'}</td>
+      <td>${b.int?`<span class="chip blue" style="margin:0">${b.int}</span>`:'<span style="color:var(--ink-3)">None</span>'}</td>
+      <td style="font-size:11.5px;color:var(--ink-2)">${b.note||'<span style="color:var(--ink-3)">Not specified</span>'}</td></tr>`).join('')}
+    </tbody></table>`;
+}
 let AF={zone:"",region:""};
 function setAF(k,v){AF[k]=v;if(k==='zone')AF.region="";mgo('m_approvals');}
 mreg("m_approvals","Plan Approvals",()=>{
