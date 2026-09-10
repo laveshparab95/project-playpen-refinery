@@ -821,11 +821,7 @@ reg("pjpNew","Plan a day",()=>{
         <button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="addKpiBlock()">＋ Add another KPI</button>
       </div>
       <div class="card">
-        <label class="label">Location <span class="req">*</span></label>
-        <div style="display:flex;flex-wrap:wrap;margin-bottom:${d.locs.length?'6px':'0'}">${d.locs.map(l=>`<span class="chip blue">${l}</span>`).join('')}</div>
-        ${AHQS.map(a=>{const on=d.locs.includes(a);
-          return `<div class="listrow" onclick="togPjpLoc('${a}')">
-            <div class="cbx ${on?'on':''}">${on?'✓':''}</div><div class="nm">${a}</div></div>`;}).join('')}
+        ${ddInner('pjpLoc','pjpNew','Location',d.locs,AHQS,'togPjpLoc',true)}
         <label class="label" style="margin-top:11px">Travelling?</label>
         <div class="seg" style="margin-bottom:0">
           <button class="${!d.travel?'on':''}" onclick="PJPD.travel=false;go('pjpNew',false)">No</button>
