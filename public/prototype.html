@@ -494,19 +494,35 @@ const TEAM=[
 ];
 function rmRec(n){return TEAM.find(t=>t.n===n)||{zone:"—",region:"—"};}
 const SEED_APPROVALS=[
-  {id:"P000031",rm:"Pier M.",date:iso(addDays(4)),kpis:["R4","R2"],cats:["Certified-agent conversion coaching (R4)","Agent coaching / ride-along","New agent F2F training (R2)"],ints:["INT-017","INT-014"],loc:"Kakamega AHQ",trav:"Y",route:"Kisumu → Kakamega",nights:1,st:"pending"},
-  {id:"P000032",rm:"Pier M.",date:iso(addDays(5)),kpis:["R7"],cats:["360 field insight capture (R7)","Retailer / ABM visit"],ints:[],loc:"Bungoma AHQ",trav:"Y",route:"Kakamega → Bungoma",nights:1,st:"pending"},
-  {id:"P000033",rm:"Pier M.",date:iso(addDays(8)),kpis:["R1"],cats:["Inactive agent reactivation (R1)"],ints:["INT-016"],loc:"Busia AHQ",trav:"N",route:"",nights:0,st:"pending"},
-  {id:"P000034",rm:"Leah Amimo",date:iso(addDays(2)),kpis:["R2","R4"],cats:["New agent F2F training (R2)","Certified-agent conversion coaching (R4)"],ints:["INT-014"],loc:"Busia AHQ",trav:"N",route:"",nights:0,st:"pending"},
-  {id:"P000035",rm:"Leah Amimo",date:iso(addDays(3)),kpis:["NT"],cats:["Admin / office day"],ints:[],loc:"Busia",trav:"N",route:"",nights:0,st:"pending"},
-  {id:"P000036",rm:"Leah Amimo",date:iso(addDays(7)),kpis:["R1"],cats:["Inactive agent reactivation (R1)","Cluster leader meeting"],ints:["INT-016"],loc:"Busia AHQ",trav:"Y",route:"Busia → Bungoma",nights:2,st:"pending"},
-  {id:"P000037",rm:"Leah Amimo",date:iso(addDays(9)),kpis:["R4"],cats:["Certified-agent conversion coaching (R4)"],ints:[],loc:"Busia AHQ",trav:"N",route:"",nights:0,st:"pending"},
-  {id:"P000038",rm:"John Lenzi",date:iso(addDays(1)),kpis:["R2","R7"],cats:["New agent F2F training (R2)","360 field insight capture (R7)"],ints:["INT-014"],loc:"Lamu",trav:"Y",route:"Malindi → Garsen → Lamu",nights:2,st:"pending"},
-  {id:"P000039",rm:"John Lenzi",date:iso(addDays(6)),kpis:["R7"],cats:["360 field insight capture (R7)"],ints:[],loc:"Kitui",trav:"N",route:"",nights:0,st:"pending"},
-  {id:"P000040",rm:"John Lenzi",date:iso(addDays(10)),kpis:["R1"],cats:["Inactive agent reactivation (R1)"],ints:["INT-016"],loc:"Machakos",trav:"Y",route:"Kitui → Machakos",nights:1,st:"pending"},
-  {id:"P000041",rm:"Rina Ojiayo",date:iso(addDays(2)),kpis:["R2"],cats:["New agent F2F training (R2)","Onboarding follow-up"],ints:["INT-014"],loc:"Siaya AHQ",trav:"N",route:"",nights:0,st:"pending"},
-  {id:"P000042",rm:"Rina Ojiayo",date:iso(addDays(11)),kpis:["R3","R1"],cats:["JKQ drive & low-scorer follow-up (R3)","Inactive agent reactivation (R1)"],ints:[],loc:"Siaya AHQ",trav:"N",route:"",nights:0,st:"pending"}
-];
+  {id:"P000031",rm:"Pier M.",date:iso(addDays(4)),loc:"Kakamega AHQ",trav:"Y",route:"Kisumu → Kakamega",nights:1,st:"pending",blocks:[
+    {kpi:"R4",cats:["Certified-agent conversion coaching (R4)","Agent coaching / ride-along"],int:"INT-017",note:"Ride along with 4 certified agents in Kakamega town and close 6 pending conversions."},
+    {kpi:"R2",cats:["New agent F2F training (R2)"],int:"INT-014",note:"Run a F2F onboarding class for the 9 agents recruited last week."}]},
+  {id:"P000032",rm:"Pier M.",date:iso(addDays(5)),loc:"Bungoma AHQ",trav:"Y",route:"Kakamega → Bungoma",nights:1,st:"pending",blocks:[
+    {kpi:"R7",cats:["360 field insight capture (R7)","Retailer / ABM visit"],int:"",note:"Visit 8 retailers in Bungoma market to capture pricing and stock feedback."}]},
+  {id:"P000033",rm:"Pier M.",date:iso(addDays(8)),loc:"Busia AHQ",trav:"N",route:"",nights:0,st:"pending",blocks:[
+    {kpi:"R1",cats:["Inactive agent reactivation (R1)"],int:"INT-016",note:"Reactivation clinic with 12 agents inactive for 30+ days."}]},
+  {id:"P000034",rm:"Leah Amimo",date:iso(addDays(2)),loc:"Busia AHQ",trav:"N",route:"",nights:0,st:"pending",blocks:[
+    {kpi:"R2",cats:["New agent F2F training (R2)"],int:"INT-014",note:"Two morning batches of new-agent F2F training at the Busia depot."},
+    {kpi:"R4",cats:["Certified-agent conversion coaching (R4)"],int:"",note:"Afternoon coaching for the 5 lowest-converting certified agents."}]},
+  {id:"P000035",rm:"Leah Amimo",date:iso(addDays(3)),loc:"Busia",trav:"N",route:"",nights:0,st:"pending",blocks:[
+    {kpi:"NT",cats:["Admin / office day"],int:"",note:"Month-end reporting and expense claims."}]},
+  {id:"P000036",rm:"Leah Amimo",date:iso(addDays(7)),loc:"Busia AHQ",trav:"Y",route:"Busia → Bungoma",nights:2,st:"pending",blocks:[
+    {kpi:"R1",cats:["Inactive agent reactivation (R1)","Cluster leader meeting"],int:"INT-016",note:"Work with cluster leaders to trace 20 dormant agents."}]},
+  {id:"P000037",rm:"Leah Amimo",date:iso(addDays(9)),loc:"Busia AHQ",trav:"N",route:"",nights:0,st:"pending",blocks:[
+    {kpi:"R4",cats:["Certified-agent conversion coaching (R4)"],int:"",note:"Conversion coaching clinic for 10 certified agents."}]},
+  {id:"P000038",rm:"John Lenzi",date:iso(addDays(1)),loc:"Lamu",trav:"Y",route:"Malindi → Garsen → Lamu",nights:2,st:"pending",blocks:[
+    {kpi:"R2",cats:["New agent F2F training (R2)"],int:"INT-014",note:"Train the 11 new Lamu agents on the Kazi app end to end."},
+    {kpi:"R7",cats:["360 field insight capture (R7)"],int:"",note:"Capture connectivity complaints from the Lamu island cluster."}]},
+  {id:"P000039",rm:"John Lenzi",date:iso(addDays(6)),loc:"Kitui",trav:"N",route:"",nights:0,st:"pending",blocks:[
+    {kpi:"R7",cats:["360 field insight capture (R7)"],int:"",note:"Retailer pricing survey across Kitui central."}]},
+  {id:"P000040",rm:"John Lenzi",date:iso(addDays(10)),loc:"Machakos",trav:"Y",route:"Kitui → Machakos",nights:1,st:"pending",blocks:[
+    {kpi:"R1",cats:["Inactive agent reactivation (R1)"],int:"INT-016",note:"Door-to-door reactivation for 15 dormant Machakos agents."}]},
+  {id:"P000041",rm:"Rina Ojiayo",date:iso(addDays(2)),loc:"Siaya AHQ",trav:"N",route:"",nights:0,st:"pending",blocks:[
+    {kpi:"R2",cats:["New agent F2F training (R2)","Onboarding follow-up"],int:"INT-014",note:"F2F training then same-day onboarding follow-up calls."}]},
+  {id:"P000042",rm:"Rina Ojiayo",date:iso(addDays(11)),loc:"Siaya AHQ",trav:"N",route:"",nights:0,st:"pending",blocks:[
+    {kpi:"R3",cats:["JKQ drive & low-scorer follow-up (R3)"],int:"",note:"JKQ drive with the 8 lowest scorers in Siaya."},
+    {kpi:"R1",cats:["Inactive agent reactivation (R1)"],int:"",note:"Follow up on 6 agents who went quiet after the last drive."}]}
+].map(a=>({...a,kpis:a.blocks.map(b=>b.kpi),cats:[...new Set(a.blocks.flatMap(b=>b.cats))],ints:a.blocks.map(b=>b.int).filter(Boolean)}));
 let APPROVALS=JSON.parse(JSON.stringify(SEED_APPROVALS));
 
 /* =====================================================================
