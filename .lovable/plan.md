@@ -12,13 +12,13 @@ All changes stay in the prototype file, manager portal side only. The RM app is 
 - Rename the module to "Plan Approvals" (sidebar and page title).
 - Remove the ID column.
 - Each pending day becomes a two-row block inside the same date section: first row shows date, location, travel and the decision buttons; second row lists all KPIs, all activity categories and all linked interventions for that day as chips.
-- Add a filter bar above the list with Zone and Region dropdowns (multi-select) plus Clear all; the list shows only matching RMs.
+- Add a filter bar above the list with Zone and Region dropdowns (multi-select) plus Clear all; the list filters by the submitting RM's assigned zone and region.
 - Sample data gains multi-KPI / multi-activity / multi-intervention days so the new layout is visible, and each RM gets a zone and region.
 
 ## 4. Capacity
 - Remove the blue banner, the AHQ column, the Load column, and the "Try it: can we fit a new programme?" card.
 - Rename "Total days" to "Days planned".
-- Week columns (Wk 1–4) show percentage occupancy instead of day counts, colour-coded (green room, amber tight, red over).
+- Week columns (Wk 1–4) show percentage occupancy instead of day counts, colour-coded (green room, amber tight, red over). The exact target denominator will come from the BI dashboard; for the prototype the percentage is derived from a fixed 5-day working week with a note that the real denominator is BI-provided.
 - Add a Score column, same score value used in the current My team table.
 - Clicking a week percentage opens a new full page for that RM/week (see below).
 
@@ -39,7 +39,7 @@ All changes stay in the prototype file, manager portal side only. The RM app is 
 - Remove the blue message at the bottom of the page.
 
 ## 8. Interventions — New intervention
-- Scope drives the geography fields: choosing National disables the Zone field; Zone, Region, AHQ or Cluster scope reveals the matching dropdown(s) (Zone → Zone; Region → Zone + Region; AHQ → Zone + Region + AHQ; Cluster → Zone + Region + AHQ + Cluster).
+- Scope drives the geography fields: choosing National hides the Zone field; Zone scope shows only the Zone dropdown; Region scope shows Zone then Region; AHQ scope shows Zone, Region and AHQ; Cluster scope shows Zone, Region, AHQ and Cluster. Each dropdown cascades from the previous.
 - Remove the Budget field.
 - Remove the Target headcount field from the main form. After "Create & cascade", a second step asks the ZTM to enter headcount per geography:
   - National scope → one headcount row per zone
@@ -49,6 +49,6 @@ All changes stay in the prototype file, manager portal side only. The RM app is 
 - Remove the "Baseline (metric now)" field from this form, and remove the baseline field from the RM app's raise-intervention form as well.
 
 ## Technical notes
-- Sample Region and Cluster lists are added alongside the existing AHQ and Zone lists, and each RM in the team data gains a region.
+- Sample Region and Cluster lists are added alongside the existing AHQ and Zone lists, and each RM in the team data gains a zone and region.
 - Capacity week percentages are derived from the existing planned-days data.
 - Verified in the preview after building.
