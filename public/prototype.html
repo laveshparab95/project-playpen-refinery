@@ -760,6 +760,21 @@ reg("pjpDay","Plan day",()=>{
 });
 /* --- plan a day --- */
 function monthEndIso(){const d=new Date(TODAY.getFullYear(),TODAY.getMonth()+1,0);return iso(d);}
+/* ---------- Reusable collapsed multi-select dropdown ---------- */
+const DDOPEN={};
+function ddTog(id,scr){DDOPEN[id]=!DDOPEN[id];go(scr,false);}
+function ddInner(id,scr,label,selected,options,togFn,req){
+  const open=!!DDOPEN[id];
+  return `<label class="label">${label}${req?' <span class="req">*</span>':''}</label>
+    <div class="listrow" style="cursor:pointer" onclick="ddTog('${id}','${scr}')">
+      <div class="nm">${selected.length?`${selected.length} selected`:'Tap to select'}</div>
+      <span style="color:var(--tx2);font-size:13px">${open?'▲':'▼'}</span></div>
+    ${selected.length?`<div style="display:flex;flex-wrap:wrap;margin-bottom:6px">${selected.map(v=>`<span class="chip blue">${v}</span>`).join('')}</div>`:''}
+    ${open?(options.length?options.map(o=>{const on=selected.includes(o);
+      return `<div class="listrow" onclick="${togFn}('${o.replace(/'/g,"\\'")}')">
+        <div class="cbx ${on?'on':''}">${on?'✓':''}</div><div class="nm">${o}</div></div>`;}).join('')
+      :'<div class="hint">Pick a department first.</div>'):''}`;
+}
 function togPjpLoc(a){const i=PJPD.locs.indexOf(a);i>-1?PJPD.locs.splice(i,1):PJPD.locs.push(a);go('pjpNew',false);}
 function addKpiBlock(){PJPB={kpi:"",cats:[],int:"",note:"",idx:-1};go('pjpBlock');}
 function editKpiBlock(i){PJPB={...JSON.parse(JSON.stringify(PJPD.blocks[i])),idx:i};go('pjpBlock');}
@@ -821,11 +836,7 @@ reg("pjpNew","Plan a day",()=>{
         <button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="addKpiBlock()">＋ Add another KPI</button>
       </div>
       <div class="card">
-        <label class="label">Location <span class="req">*</span></label>
-        <div style="display:flex;flex-wrap:wrap;margin-bottom:${d.locs.length?'6px':'0'}">${d.locs.map(l=>`<span class="chip blue">${l}</span>`).join('')}</div>
-        ${AHQS.map(a=>{const on=d.locs.includes(a);
-          return `<div class="listrow" onclick="togPjpLoc('${a}')">
-            <div class="cbx ${on?'on':''}">${on?'✓':''}</div><div class="nm">${a}</div></div>`;}).join('')}
+        ${ddInner('pjpLoc','pjpNew','Location',d.locs,AHQS,'togPjpLoc',true)}
         <label class="label" style="margin-top:11px">Travelling?</label>
         <div class="seg" style="margin-bottom:0">
           <button class="${!d.travel?'on':''}" onclick="PJPD.travel=false;go('pjpNew',false)">No</button>
@@ -1565,14 +1576,11 @@ function submitInsight(){
   INS={ahqs:[],depts:[],l2:[],fb:"",teams:[],rec:"",files:[]};
   alertBox('💡','Insight logged','Sent to your CTM and the relevant department. You will see it when it is closed.','Done',"hist=[];go('home',false)");
 }
+function insTogA(v){insTog('ahqs',v)}function insTogD(v){insTog('depts',v)}
+function insTogL(v){insTog('l2',v)}function insTogT(v){insTog('teams',v)}
 function insBox(label,key,opts,req){
   return `<div class="card">
-    <label class="label">${label}${req?' <span class="req">*</span>':''}</label>
-    ${INS[key].length?`<div style="display:flex;flex-wrap:wrap;margin-bottom:6px">${INS[key].map(v=>`<span class="chip blue">${v}</span>`).join('')}</div>`:''}
-    ${opts.length?opts.map(o=>{const on=INS[key].includes(o);
-      return `<div class="listrow" onclick="insTog('${key}','${o.replace(/'/g,"\\'")}')">
-        <div class="cbx ${on?'on':''}">${on?'✓':''}</div><div class="nm">${o}</div></div>`;}).join('')
-      :'<div class="hint">Pick a department first.</div>'}
+    ${ddInner('ins-'+key,'insight',label,INS[key],opts,{ahqs:'insTogA',depts:'insTogD',l2:'insTogL',teams:'insTogT'}[key],req)}
   </div>`;
 }
 reg("insight","360 field insight (R7)",()=>shell({
@@ -2247,7 +2255,7 @@ document.getElementById('clock').textContent=new Date().toLocaleTimeString('en-G
 load();drawNotes();go('home',false);
 document.getElementById('mside').innerHTML=mside();
 document.getElementById('mmain').innerHTML=MSCREENS.m_overview.fn();
-(function(){var s=document.createElement('div');s.textContent='Build 2026-09-10 09:20';
+(function(){var s=document.createElement('div');s.textContent='Build 2026-09-10 09:55';
 s.style.cssText='position:fixed;right:8px;bottom:6px;z-index:9999;font:10px/1.2 system-ui,sans-serif;color:#8A93A5;background:rgba(255,255,255,.85);padding:3px 7px;border-radius:8px;border:1px solid #E4E7EE;pointer-events:none';
 document.body.appendChild(s);})();
 </script>
