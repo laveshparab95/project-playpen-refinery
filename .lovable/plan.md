@@ -1,29 +1,54 @@
-# Field insight — new 7-step form
+# Manager Dashboard (CTM / ZTM) edits
 
-The "Log a field insight" screen is rebuilt around a new workflow. All changes stay in the prototype file; the manager portal is untouched.
+All changes stay in the prototype file, manager portal side only. The RM app is untouched except for the one item noted in section 8.
 
-## What the screen becomes
+## 1. Overview
+- Remove the "Needs attention" card entirely. The capacity card beside it widens to fill the row.
 
-The current Area / Problem statement / Evidence fields are removed, along with the blue explainer at the top. In their place, in order:
+## 2. Priorities
+- Remove the Priorities module: sidebar entry, screen, and the "New priority" popup.
 
-1. **AHQ** — dropdown, multi-select, chosen ones shown as chips.
-2. **Department responsible** — dropdown, multi-select (IT, Operations, Kazi Plan, Data, CC), chips.
-3. **Feedback type (L2)** — dropdown whose options depend on the departments picked in step 2; only shows once at least one department is chosen, and clears choices that no longer apply if the departments change.
-4. **Feedback** — text box, required.
-5. **Teams impacted** — dropdown, multi-select, chips.
-6. **Recommendation** — text box, required.
-7. **Attachments** — one field that accepts photos and files, one or many; each added item is listed with a remove option.
+## 3. Plan Approvals
+- Rename the module to "Plan Approvals" (sidebar and page title).
+- Remove the ID column.
+- Each pending day becomes a two-row block inside the same date section: first row shows date, location, travel and the decision buttons; second row lists all KPIs, all activity categories and all linked interventions for that day as chips.
+- Add a filter bar above the list with Zone and Region dropdowns (multi-select) plus Clear all; the list shows only matching RMs.
+- Sample data gains multi-KPI / multi-activity / multi-intervention days so the new layout is visible, and each RM gets a zone and region.
 
-Submit stays disabled until AHQ, department, feedback type, feedback and recommendation are filled. On submit the existing confirmation box appears.
+## 4. Capacity
+- Remove the blue banner, the AHQ column, the Load column, and the "Try it: can we fit a new programme?" card.
+- Rename "Total days" to "Days planned".
+- Week columns (Wk 1–4) show percentage occupancy instead of day counts, colour-coded (green room, amber tight, red over).
+- Add a Score column, same score value used in the current My team table.
+- Clicking a week percentage opens a new full page for that RM/week (see below).
 
-## Sample lists (placeholders until real config arrives)
+### 4d — Day / week detail page
+- Opens as its own screen with a back link to Capacity.
+- Header: RM name, the week and its occupancy.
+- Body: the planned days for that RM, laid out like the RM app's plan-day detail — date, status, locations, travel, and a stacked card per KPI block with its activity chips and linked intervention.
+- Below each day, a "Meetings scheduled" list with venue, time and intervention chips.
 
-- Departments: IT, Operations, Kazi Plan, Data, CC.
-- L2 feedback per department, e.g. IT — App issue, Device issue, Login/access, System downtime; Operations — Stock & supply, Logistics, Field process, Retailer onboarding; Kazi Plan — Commission, Incentive scheme, Payout delay; Data — Report accuracy, Missing data, Dashboard access; CC — Customer complaint, Escalation handling, Response time.
-- Teams impacted: Agents, Retailers, Customers, RM team, Cluster team, Support/CC, Finance.
+## 5. My team
+- Remove the My team module (sidebar entry and screen).
 
-## Notes
+## 6. Team calendar
+- Each day cell shows all KPIs planned for that RM/day (small stacked chips) rather than one activity label.
+- The grid covers the 1st to the 31st of the month with horizontal scrolling, RM names frozen on the left.
 
-- AHQ options come from the AHQ list already used elsewhere in the prototype.
-- Attachments are simulated (file picker records names/thumbnails); no upload backend.
+## 7. Daily reports
+- Remove the blue message at the bottom of the page.
+
+## 8. Interventions — New intervention
+- Scope drives the geography fields: choosing National disables the Zone field; Zone, Region, AHQ or Cluster scope reveals the matching dropdown(s) (Zone → Zone; Region → Zone + Region; AHQ → Zone + Region + AHQ; Cluster → Zone + Region + AHQ + Cluster).
+- Remove the Budget field.
+- Remove the Target headcount field from the main form. After "Create & cascade", a second step asks the ZTM to enter headcount per geography:
+  - National scope → one headcount row per zone
+  - Zone scope → one row per region
+  - AHQ or Cluster scope → still one row per region
+  - The total is used as the intervention's target headcount.
+- Remove the "Baseline (metric now)" field from this form, and remove the baseline field from the RM app's raise-intervention form as well.
+
+## Technical notes
+- Sample Region and Cluster lists are added alongside the existing AHQ and Zone lists, and each RM in the team data gains a region.
+- Capacity week percentages are derived from the existing planned-days data.
 - Verified in the preview after building.
