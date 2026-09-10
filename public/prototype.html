@@ -752,7 +752,8 @@ reg("pjpDay","Plan day",()=>{
             ${ints.length?`<div style="margin-top:5px;display:flex;flex-wrap:wrap">${ints.map(i=>`<span class="chip blue" style="font-size:10px">↳ ${i}</span>`).join('')}</div>`:''}</div></div>`;
         }).join(''):'<div class="hint">No meetings on this day.</div>'}
       </div>
-      ${p.status==='rejected'?`<button class="btn btn-primary" onclick="replanDay('${p.date}')">Replan this day</button>`:''}`});
+      ${p.status==='rejected'?`<button class="btn btn-primary" onclick="replanDay('${p.date}')">Replan this day</button>`:''}
+      ${(p.status==='approved'||p.status==='changed')?`<button class="btn btn-outline" onclick="changePlan('${p.date}')">Change this plan</button>`:''}`});
 });
 /* --- plan a day --- */
 function monthEndIso(){const d=new Date(TODAY.getFullYear(),TODAY.getMonth()+1,0);return iso(d);}
