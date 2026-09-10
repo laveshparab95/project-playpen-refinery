@@ -733,6 +733,11 @@ reg("pjpDay","Plan day",()=>{
         <div class="rev"><span class="k">Reason</span><span class="v">${p.rejReason||'Three travel days in one week — split this across two weeks'}</span></div>
         <div class="rev"><span class="k">Rejected by</span><span class="v">${p.rejBy||'Lilian Wambui (ZTM)'}</span></div>
       </div>`:''}
+      ${p.status==='changed'?`<div class="card" style="background:#FFF6E6;border:1px solid #F3DFB4">
+        <div class="sec-head"><h3 style="color:#7A4A00">Plan changed</h3></div>
+        <div class="rev"><span class="k">Changed on</span><span class="v">${p.changedOn?longIso(p.changedOn):longIso(iso(TODAY))}</span></div>
+        <div class="rev"><span class="k">Reason</span><span class="v">${p.changeReason||'—'}</span></div>
+      </div>`:''}
       ${(p.blocks||[]).map((b,i)=>`<div class="card">
         <div class="sec-head"><h3>KPI ${i+1} · ${b.kpi||'—'}</h3></div>
         <div style="display:flex;flex-wrap:wrap;margin-top:4px">${(b.cats||[]).map(c=>`<span class="chip">${c}</span>`).join('')||'<span class="hint">No activity selected</span>'}</div>
