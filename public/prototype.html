@@ -2045,24 +2045,55 @@ mreg("m_reports","Daily reports",()=>
     </div>`).join('')}`);
 
 /* ---------- FIELD INSIGHTS ---------- */
+let INS_ID="";
+function openInsight(id){INS_ID=id;mgo('m_insightDetail');}
 mreg("m_insights","Field insights",()=>{
   const open=INSIGHTS.filter(i=>i.status==='Open').length;
   return mh("Field insights",`${INSIGHTS.length} raised · ${open} still open`)+
-  `<div class="card"><table class="tt">
-    <thead><tr><th>ID</th><th>RM</th><th>AHQ</th><th>Department</th><th>Feedback type</th><th>Feedback</th><th>Team impacted</th><th>Recommendation</th><th>Attachments</th><th>Status</th><th></th></tr></thead>
-    <tbody>${INSIGHTS.map(i=>`<tr>
-      <td style="color:var(--ink-3);font-size:11px">${i.id}<div>${prettyIso(i.date)}</div></td>
-      <td style="font-weight:700">${i.by}</td>
-      <td>${i.ahqs.map(a=>a.replace(' AHQ','')).join(', ')}</td>
-      <td>${i.depts.map(d=>`<span class="chip grey" style="margin:0 3px 0 0">${d}</span>`).join('')}</td>
-      <td style="font-size:11.5px">${i.l2.join(', ')}</td>
-      <td style="max-width:230px;font-size:11.5px;color:var(--ink-2)">${i.fb}</td>
-      <td style="font-size:11.5px">${i.teams.join(', ')}</td>
-      <td style="max-width:200px;font-size:11.5px;color:var(--ink-2)">${i.rec}</td>
-      <td style="font-size:11.5px">${i.files.length?i.files.map(f=>`<a href="#" onclick="toast('Opens ${esc(f)}');return false;">${f}</a>`).join('<br>'):'—'}</td>
-      <td><span class="pill ${i.status==='Closed'?'done':'pend'}">${i.status}</span>${i.closeNote?`<div style="font-size:10.5px;color:var(--ink-3);margin-top:3px">${i.closeNote}</div>`:''}</td>
-      <td style="text-align:right">${i.status==='Open'?`<button class="btn btn-primary btn-sm" onclick="closeInsight('${i.id}')">Close</button>`:''}</td></tr>`).join('')}
-    </tbody></table></div>`;
+  INSIGHTS.map(i=>`<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+      <div>
+        <div style="font-size:14px;font-weight:800">${i.by} · ${i.ahqs.map(a=>a.replace(' AHQ','')).join(', ')}</div>
+        <div style="font-size:11.5px;color:var(--ink-3);margin-top:2px">${i.id} · ${prettyIso(i.date)}</div>
+      </div>
+      <div style="text-align:right;white-space:nowrap">
+        <span class="pill ${i.status==='Closed'?'done':'pend'}">${i.status}</span>
+        <div style="margin-top:7px">
+          <button class="btn btn-outline btn-sm" onclick="openInsight('${i.id}')">View more</button>
+          ${i.status==='Open'?`<button class="btn btn-primary btn-sm" onclick="closeInsight('${i.id}')">Close</button>`:''}
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:9px">
+      ${i.depts.map(d=>`<span class="chip grey" style="margin:0">${d}</span>`).join('')}
+      ${i.l2.map(l=>`<span class="chip blue" style="margin:0">${l}</span>`).join('')}
+    </div>
+    <div style="font-size:12.5px;color:var(--ink-2);line-height:1.6;margin-top:9px">${i.fb.length>180?i.fb.slice(0,180)+'…':i.fb}</div>
+    <div style="font-size:11.5px;color:var(--ink-3);margin-top:8px">👥 ${i.teams.join(', ')} · 📎 ${i.files.length} attachment${i.files.length===1?'':'s'}</div>
+  </div>`).join('');
+});
+mreg("m_insightDetail","Insight",()=>{
+  const i=INSIGHTS.find(x=>x.id===INS_ID)||INSIGHTS[0];
+  return mh(`${i.id} · ${i.by}`,`${i.ahqs.join(', ')} · raised ${prettyIso(i.date)}`,
+    `<button class="btn btn-outline btn-sm" onclick="mgo('m_insights')">← Back to insights</button>
+     ${i.status==='Open'?`<button class="btn btn-primary btn-sm" onclick="closeInsight('${i.id}')">Close insight</button>`:''}`)+
+  `<div class="card">
+     <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:13px;font-weight:800">Routing</h3>
+       <span class="pill ${i.status==='Closed'?'done':'pend'}">${i.status}</span></div>
+     <div class="rev" style="margin-top:8px"><span class="k">AHQ</span><span class="v">${i.ahqs.join(', ')}</span></div>
+     <div class="rev"><span class="k">Department</span><span class="v">${i.depts.join(', ')}</span></div>
+     <div class="rev"><span class="k">Feedback type</span><span class="v">${i.l2.join(', ')}</span></div>
+     <div class="rev"><span class="k">Team impacted</span><span class="v">${i.teams.join(', ')}</span></div>
+   </div>
+   <div class="card"><h3 style="font-size:13px;font-weight:800;margin-bottom:7px">Actual feedback</h3>
+     <div style="font-size:13px;color:var(--ink-2);line-height:1.75">${i.fb}</div></div>
+   <div class="card"><h3 style="font-size:13px;font-weight:800;margin-bottom:7px">Recommendation</h3>
+     <div style="font-size:13px;color:var(--ink-2);line-height:1.75">${i.rec}</div></div>
+   <div class="card"><h3 style="font-size:13px;font-weight:800;margin-bottom:7px">Attachments</h3>
+     ${i.files.length?i.files.map(f=>`<div class="listrow"><div class="nm">📎 <a href="#" onclick="toast('Opens ${esc(f)}');return false;">${f}</a></div></div>`).join(''):'<div class="hint">No attachments.</div>'}</div>
+   ${i.closeNote?`<div class="card" style="background:#EAF7EE;border:1px solid #BFE5CB">
+     <h3 style="font-size:13px;font-weight:800;margin-bottom:6px;color:#1B6B37">Closing comment</h3>
+     <div style="font-size:12.5px;color:var(--ink-2);line-height:1.7">${i.closeNote}</div></div>`:''}`;
 });
 function closeInsight(id){
   wmodal(`<h3>Close ${id}</h3><p style="font-size:12.5px;color:var(--ink-2)">The RM who raised it is notified with your final comment.</p>
