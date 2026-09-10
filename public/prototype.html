@@ -670,6 +670,7 @@ function meetingLine(p){
   return sched.length?`🗓 ${sched.length} meeting${sched.length>1?'s':''} scheduled`:'';
 }
 function pendLabel(){return TODAY.getDate()<=5?"Pending":"Plan changes";}
+const PJP_ST={approved:['done','Approved'],pending:['pend','Pending'],gap:['canc','Not planned'],rejected:['canc','Rejected'],changed:['pend','Plan changed']};
 reg("pjp","My plan (PJP)",()=>{
   const future=PJP.filter(p=>p.date>=iso(addDays(-3)));
   const rows=future.map(p=>{
