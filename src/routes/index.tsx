@@ -38,7 +38,7 @@ function Index() {
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <a
-            href="/prototype.html"
+            href="/prototype.html?v=20260910-0920"
             className="inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Open prototype
