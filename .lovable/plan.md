@@ -1,35 +1,29 @@
-# RM App — next round of edits
+# Field insight — new 7-step form
 
-All changes stay in the prototype file; the manager portal is untouched.
+The "Log a field insight" screen is rebuilt around a new workflow. All changes stay in the prototype file; the manager portal is untouched.
 
-## 1. Intervention linking
-Remove the line "Linking it means this session's attendance counts toward those interventions' coverage."
+## What the screen becomes
 
-## 2. Start a meeting — check-in
-- Step 1 shows a "Check in here" button again (no auto check-in on opening the screen).
-- After tapping it: the timestamp is recorded, the warning "You're 640 m from the scheduled location (100 m tolerance). Explain why — you won't be blocked." appears, and the required "Why the location changed" box shows below it.
-- Continue stays blocked until a reason is typed.
+The current Area / Problem statement / Evidence fields are removed, along with the blue explainer at the top. In their place, in order:
 
-## 3. Plan a day — new plan
-- KPI block: activity categories are hidden until a KPI is picked, then only the categories that belong to that KPI are listed. Changing the KPI clears choices that no longer apply.
-- Location becomes a dropdown of AHQs with multi-select (chips for the chosen ones).
-- Each KPI block gains a text box labelled "What exactly will you do?"; that text also shows inside the matching KPI card on the plan detail page.
+1. **AHQ** — dropdown, multi-select, chosen ones shown as chips.
+2. **Department responsible** — dropdown, multi-select (IT, Operations, Kazi Plan, Data, CC), chips.
+3. **Feedback type (L2)** — dropdown whose options depend on the departments picked in step 2; only shows once at least one department is chosen, and clears choices that no longer apply if the departments change.
+4. **Feedback** — text box, required.
+5. **Teams impacted** — dropdown, multi-select, chips.
+6. **Recommendation** — text box, required.
+7. **Attachments** — one field that accepts photos and files, one or many; each added item is listed with a remove option.
 
-## 4. Plan a day — list page
-- The rejected-day alert gets a red background.
-- Saturdays are not shown by default; a Saturday appears in the list only once the RM has planned that day. Planning a Saturday is allowed (date picker no longer excludes it).
-- Remove the "✈️ Nn" nights-away text from the day rows.
+Submit stays disabled until AHQ, department, feedback type, feedback and recommendation are filled. On submit the existing confirmation box appears.
 
-## 5. Plan a day — plan detail page
-- Travel becomes two separate rows: "Travel route" and "Travel nights".
-- For a rejected day, show a rejection block with "Reason" and "Rejected by" (sample data added for the rejected day).
+## Sample lists (placeholders until real config arrives)
 
-## 6. Training detail
-When the check-in location was rejected (too far from the venue), show the distance from the scheduled venue and the reason the RM gave, next to the location row.
-
-## 7. Trainings list card
-Replace "👥 8/10 attended" with the actual approved attendance, e.g. "👥 7 agents attended" — same number as the Approved count on the detail page.
+- Departments: IT, Operations, Kazi Plan, Data, CC.
+- L2 feedback per department, e.g. IT — App issue, Device issue, Login/access, System downtime; Operations — Stock & supply, Logistics, Field process, Retailer onboarding; Kazi Plan — Commission, Incentive scheme, Payout delay; Data — Report accuracy, Missing data, Dashboard access; CC — Customer complaint, Escalation handling, Response time.
+- Teams impacted: Agents, Retailers, Customers, RM team, Cluster team, Support/CC, Finance.
 
 ## Notes
-- Seeded data gains a rejection reason/approver for the rejected plan day and a far-location reason on the relevant past training so the new screens are visible.
+
+- AHQ options come from the AHQ list already used elsewhere in the prototype.
+- Attachments are simulated (file picker records names/thumbnails); no upload backend.
 - Verified in the preview after building.
