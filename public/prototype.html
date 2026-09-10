@@ -1744,23 +1744,41 @@ mreg("m_weekDetail","Week detail",()=>{
   const m=TEAM.find(t=>t.n===MWEEK.rm)||TEAM[0],w=MWEEK.w;
   const y=TODAY.getFullYear(),mo=TODAY.getMonth();
   const days=[];for(let d=(w-1)*7+1;d<=Math.min(w*7,new Date(y,mo+1,0).getDate());d++)days.push(new Date(y,mo,d));
-  const acts=["R2 New-agent F2F","R1 Reactivation","R4 Conversion","Admin / office day","R7 Field insight","JKQ drive",""];
+  const lib=[
+    [{kpi:"R2",cats:["New agent F2F training (R2)","Onboarding follow-up"],int:"INT-014",note:"Two F2F batches for agents recruited in the last fortnight."},
+     {kpi:"R7",cats:["360 field insight capture (R7)"],int:"",note:"Capture retailer stock-out feedback while in the market."}],
+    [{kpi:"R1",cats:["Inactive agent reactivation (R1)"],int:"INT-016",note:"Reactivation clinic for agents dormant 30+ days."}],
+    [{kpi:"R4",cats:["Certified-agent conversion coaching (R4)","Agent coaching / ride-along"],int:"INT-017",note:"Ride-along with the 5 lowest-converting certified agents."},
+     {kpi:"R3",cats:["JKQ drive & low-scorer follow-up (R3)"],int:"",note:"JKQ drive with the low scorers from last month's list."}],
+    [{kpi:"NT",cats:["Admin / office day"],int:"",note:"Reporting, expense claims and next-week planning."}],
+    []
+  ];
   return mh(`${m.n} · Week ${w}`,`${m.ahq.replace(' AHQ','')} · ${m.zone} / ${m.region} · occupancy ${occPct(m,w)}%`,
     `<button class="btn btn-outline btn-sm" onclick="mgo('m_capacity')">← Back to capacity</button>`)+
     days.map((d,i)=>{
       const wd=d.getDay()===0||d.getDay()===6;
-      const a=wd?"":acts[(i*3+m.n.length)%7];
-      const meets=wd||!a?0:(i%3===0?2:1);
-      return `<div class="card">
+      const seed=(d.getDate()*3+m.n.length)%5;
+      const blocks=wd?((d.getDate()+m.n.length)%7===0?lib[1]:null):lib[seed];
+      if(!blocks||!blocks.length)return wd?'':`<div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div style="font-size:13px;font-weight:800">${d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'})}</div>
-          ${wd?'<span class="chip grey">Weekend</span>':a?'<span class="pill done">Approved</span>':'<span class="pill pend">Not planned</span>'}
+          <span class="pill pend">Not planned</span></div>
+        <div class="hint" style="margin-top:6px">No plan submitted for this day.</div></div>`;
+      const changed=!wd&&(d.getDate()+m.n.length)%6===0;
+      const meets=(d.getDate()%3===0)?2:1;
+      return `<div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <div style="font-size:13px;font-weight:800">${d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'})}
+            ${wd?'<span class="chip grey" style="margin-left:6px">Weekend</span>':''}</div>
+          ${changed?'<span class="pill pend">Plan changed</span>':'<span class="pill done">Approved</span>'}
         </div>
-        ${a?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px"><span class="chip grey" style="margin:0">${a.split(' ')[0]}</span><span class="chip" style="margin:0">${a}</span></div>
-          <div style="font-size:11.5px;color:var(--ink-3);margin-top:7px">📍 ${m.ahq} · 🎓 ${meets} meeting${meets===1?'':'s'} scheduled</div>
-          ${meets?`<table class="tt" style="margin-top:8px"><thead><tr><th>Time</th><th>Venue</th><th>Agents invited</th><th>Intervention</th></tr></thead>
-            <tbody>${Array.from({length:meets}).map((_,k)=>`<tr><td>${k?'14:00':'09:30'}</td><td>${m.ahq.replace(' AHQ','')} Depot</td><td>${8+k*3}</td><td><span class="chip blue" style="margin:0">${k?'INT-016':'INT-014'}</span></td></tr>`).join('')}</tbody></table>`:''}`
-        :`<div class="hint" style="margin-top:6px">${wd?'Non-working day.':'No plan submitted for this day.'}</div>`}
+        ${changed?`<div style="background:#FFF6E6;border:1px solid #F3DFB4;border-radius:8px;padding:8px 10px;margin-top:8px">
+          <div style="font-size:11.5px;font-weight:800">Changed on ${prettyIso(iso(addDays(-((d.getDate()%3)+1))))}</div>
+          <div style="font-size:11.5px;color:var(--ink-2);margin-top:3px">Reason: agent turnout was moved a day after the cluster leader rescheduled the venue.</div></div>`:''}
+        <div style="font-size:11.5px;color:var(--ink-3);margin-top:7px">📍 ${m.ahq} · 🎓 ${meets} meeting${meets===1?'':'s'} scheduled</div>
+        ${kpiBlockTable(blocks)}
+        <table class="tt" style="margin-top:8px"><thead><tr><th>Time</th><th>Venue</th><th>Agents invited</th><th>Intervention</th></tr></thead>
+          <tbody>${Array.from({length:meets}).map((_,k)=>`<tr><td>${k?'14:00':'09:30'}</td><td>${m.ahq.replace(' AHQ','')} Depot</td><td>${8+k*3}</td><td><span class="chip blue" style="margin:0">${k?'INT-016':'INT-014'}</span></td></tr>`).join('')}</tbody></table>
       </div>`;}).join('');
 });
 
