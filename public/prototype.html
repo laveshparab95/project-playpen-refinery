@@ -673,7 +673,7 @@ function pendLabel(){return TODAY.getDate()<=5?"Pending":"Plan changes";}
 reg("pjp","My plan (PJP)",()=>{
   const future=PJP.filter(p=>p.date>=iso(addDays(-3)));
   const rows=future.map(p=>{
-    const st={approved:['done','Approved'],pending:['pend','Pending'],gap:['canc','Not planned'],rejected:['canc','Rejected']}[p.status];
+    const st=PJP_ST[p.status];
     const cats=dayCats(p), ml=meetingLine(p);
     return `<div class="listrow" style="align-items:flex-start" onclick="openPJP('${p.date}')">
       <div style="flex:0 0 42px;text-align:center">
