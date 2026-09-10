@@ -704,6 +704,11 @@ function replanDay(date){
   PJPD=JSON.parse(JSON.stringify({date:p.date,blocks:p.blocks||[],locs:p.locs||[],travel:!!p.travel,route:p.route||"",nights:p.nights||0}));
   go('pjpNew');
 }
+function changePlan(date){
+  const p=PJP.find(x=>x.date===date);
+  PJPD=JSON.parse(JSON.stringify({date:p.date,blocks:p.blocks||[],locs:p.locs||[],travel:!!p.travel,route:p.route||"",nights:p.nights||0,changing:true,changeReason:""}));
+  go('pjpNew');
+}
 function openPJP(date){
   const p=PJP.find(x=>x.date===date);
   if(p.status==='gap'){PJPD=blankDay();PJPD.date=date;go('pjpNew');return;}
@@ -711,7 +716,7 @@ function openPJP(date){
 }
 reg("pjpDay","Plan day",()=>{
   const p=PJP.find(x=>x.date===PSELDAY)||PJP[0];
-  const st={approved:['done','Approved'],pending:['pend','Pending'],gap:['canc','Not planned'],rejected:['canc','Rejected']}[p.status];
+  const st=PJP_ST[p.status];
   const {sched,done}=dayMeetings(p);
   const meets=p.date<iso(TODAY)?done:sched;
   return shell({title:prettyIso(p.date),sub:longIso(p.date),
