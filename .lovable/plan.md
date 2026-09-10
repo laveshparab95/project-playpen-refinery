@@ -48,7 +48,29 @@ All changes stay in the prototype file, manager portal side only. The RM app is 
   - The total is used as the intervention's target headcount.
 - Remove the "Baseline (metric now)" field from this form, and remove the baseline field from the RM app's raise-intervention form as well.
 
+## 9. Interventions — review queue
+- Interventions listed as "Planned" now read **Approval pending** (list, detail and seeded data).
+- Each Approval pending row gets a **Review** button opening a detail view of everything the RM entered (title, audience, KPI, scope/geography, mode, root cause, raised by, date).
+- The review view offers three decisions:
+  - **Approve** — a follow-up form for the manager-only fields not captured by the RM (scope + cascading geography, target headcount per geography as in section 8, dates, owner). On save the intervention becomes Active.
+  - **Reject** — a required rejection reason; the intervention becomes Rejected and the reason shows on its card.
+  - **Merge with another intervention** — the manager picks an existing intervention from a list; the merged record's details are pre-filled and fully editable using the same form as "New intervention". On save the RM's intervention is marked Merged into the chosen ID.
+
+## 10. New module — View trainings
+- New sidebar entry showing every training conducted across the zone, one row per meeting.
+- Columns: RM name, AHQ, date & time, agents attended, interventions covered, and a **View more** button.
+- View more opens a full detail page mirroring the RM app's training detail: venue and GPS check-in, attendance submitted / approved (with the per-agent popup), intervention chips, training photo and video.
+- Filter bar above the table: Zone, Region and Area (multi-select) plus Clear all.
+
+## 11. New module — Field insights
+- New sidebar entry listing every insight raised by RMs, one row each.
+- Row shows: RM who raised it, AHQ, Department, L2 feedback type, the feedback text (truncated with full text on the detail), teams impacted, recommendation, and attachment links.
+- Layout: a table with the short fields plus an expandable detail panel for the long feedback/recommendation text, so rows stay readable.
+- Each open insight has a **Close** button; it opens a small form where the manager writes a final comment (required) and confirms. The insight then shows as Closed with the closing comment and who closed it.
+- Sample insights are seeded, including ones raised from the RM app's new field-insight form so the fields line up.
+
 ## Technical notes
-- Sample Region and Cluster lists are added alongside the existing AHQ and Zone lists, and each RM in the team data gains a zone and region.
+- Sample Region, Area and Cluster lists are added alongside the existing AHQ and Zone lists, and each RM in the team data gains a zone and region.
 - Capacity week percentages are derived from the existing planned-days data.
+- Intervention records gain status values Approval pending / Active / Rejected / Merged plus reason, merge target and manager fields; insights gain status, closing comment and closer.
 - Verified in the preview after building.
