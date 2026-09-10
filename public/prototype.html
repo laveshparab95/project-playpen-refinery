@@ -277,6 +277,23 @@
    ===================================================================== */
 const AHQS=["Kisumu AHQ","Kakamega AHQ","Bungoma AHQ","Siaya AHQ","Busia AHQ"];
 const ZONES=["North","South","Central","West","Coast","Clean Cook"];
+/* geography cascade: zone → region → AHQ → cluster */
+const REGIONS_BY_ZONE={
+  "North":["Turkana","Marsabit"],"South":["Kajiado","Narok"],"Central":["Nyeri","Muranga"],
+  "West":["Nyanza","Western"],"Coast":["Mombasa","Lamu"],"Clean Cook":["CC Nairobi","CC Rift"]
+};
+const AHQS_BY_REGION={
+  "Nyanza":["Kisumu AHQ","Siaya AHQ"],"Western":["Kakamega AHQ","Bungoma AHQ","Busia AHQ"],
+  "Mombasa":["Kisumu AHQ"],"Lamu":["Siaya AHQ"],"Turkana":["Bungoma AHQ"],"Marsabit":["Busia AHQ"],
+  "Kajiado":["Kisumu AHQ"],"Narok":["Kakamega AHQ"],"Nyeri":["Siaya AHQ"],"Muranga":["Busia AHQ"],
+  "CC Nairobi":["Kisumu AHQ"],"CC Rift":["Kakamega AHQ"]
+};
+const CLUSTERS_BY_AHQ={
+  "Kisumu AHQ":["Mamboleo","Nyalenda","Kondele"],"Kakamega AHQ":["Shinyalu","Mumias"],
+  "Bungoma AHQ":["Webuye","Kimilili"],"Siaya AHQ":["Sega","Bondo"],"Busia AHQ":["Nambale","Malaba"]
+};
+const AREAS=["Lakeside","Highlands","Border","Town"];
+const REGIONS=Object.values(REGIONS_BY_ZONE).flat();
 
 const KPI_LIB=[
   {r:"R1",n:"Reactivate inactive agents",tgt:"≥50% of agents met sell within 30 days",act:55,target:50,unit:"%",w:15},
@@ -409,6 +426,7 @@ const SEED_PAST=[
    star:"Faith Achieng",cm:"Covered the new defaulter policy.",read:{days:9,sold:7,of:11}},
   {id:"TRN-2441",date:iso(addDays(-16)),time:"09:00",ahq:"Bungoma AHQ",loc:"Bungoma Town Depot",inv:8,att:5,int:"INT-017",ints:["INT-017","INT-014"],
    gps:"0.5635, 34.5606",
+   far:{dist:"640 m from the scheduled venue (100 m tolerance)",reason:"Depot hall was locked — moved to the chief's camp next door."},
    approved:[{n:"Sharon Nekesa",diff:"+4 min",dist:"65 m",status:"approved"},{n:"Samuel Wafula",diff:"+2 min",dist:"40 m",status:"approved"},
              {n:"Joseph Barasa",diff:"+28 min",dist:"1.1 km",status:"rejected"},{n:"Rose Kwamboka",diff:"+5 min",dist:"80 m",status:"approved"}],
    courses:[{c:"Product Knowledge",t:["Troubleshooting common faults","Warranty terms"]}],star:"",
@@ -445,8 +463,9 @@ function seedPJP(){
     {kpi:"R4",cats:["Certified-agent conversion coaching (R4)"],int:"INT-016"}]});
   set(4,{status:"pending",locs:["Kakamega AHQ","Bungoma AHQ"],travel:true,route:"Kisumu → Kakamega",nights:1,blocks:[
     {kpi:"R4",cats:["Certified-agent conversion coaching (R4)","Agent coaching / ride-along"],int:"INT-017"}]});
-  set(5,{status:"rejected",locs:["Bungoma AHQ"],travel:true,route:"Kakamega → Bungoma",nights:1,blocks:[
-    {kpi:"R7",cats:["360 field insight capture (R7)"],int:""}]});
+  set(5,{status:"rejected",locs:["Bungoma AHQ"],travel:true,route:"Kakamega → Bungoma",nights:1,
+    rejReason:"Three travel days in one week — split this across two weeks.",rejBy:"Lilian Wambui (ZTM)",blocks:[
+    {kpi:"R7",cats:["360 field insight capture (R7)"],int:"",note:"Retailer visits in Chokaa to capture pricing feedback"}]});
   set(7,{status:"pending",locs:["Busia AHQ"],blocks:[
     {kpi:"R1",cats:["Inactive agent reactivation (R1)"],int:""}]});
   return rows;
@@ -465,27 +484,28 @@ seedAll();
 
 /* team, for the manager dashboard */
 const TEAM=[
-  {n:"Rina Ojiayo",     ahq:"Siaya AHQ",   zone:"West",  days:21,trav:7, field:38,plans:{p:2,a:19},score:3.4},
-  {n:"Barbara Ngina",   ahq:"Kakamega AHQ",zone:"West",  days:22,trav:6, field:27,plans:{p:0,a:22},score:3.1},
-  {n:"Leah Amimo",      ahq:"Busia AHQ",   zone:"West",  days:21,trav:3, field:14,plans:{p:4,a:17},score:2.6},
-  {n:"Clinton Matonda", ahq:"Kisumu AHQ",  zone:"Nairobi",days:22,trav:8,field:41,plans:{p:1,a:21},score:3.6},
-  {n:"Agnes Kanyi",     ahq:"Bungoma AHQ", zone:"Coast", days:21,trav:3, field:29,plans:{p:0,a:21},score:3.1},
-  {n:"John Lenzi",      ahq:"Kisumu AHQ",  zone:"Eastern",days:24,trav:11,field:50,plans:{p:3,a:21},score:3.1},
-  {n:"Pier M.",         ahq:"Kisumu AHQ",  zone:"West",  days:21,trav:4, field:33,plans:{p:3,a:18},score:3.2}
+  {n:"Rina Ojiayo",     ahq:"Siaya AHQ",   zone:"West",  region:"Nyanza", days:21,trav:7, field:38,plans:{p:2,a:19},score:3.4},
+  {n:"Barbara Ngina",   ahq:"Kakamega AHQ",zone:"West",  region:"Western",days:22,trav:6, field:27,plans:{p:0,a:22},score:3.1},
+  {n:"Leah Amimo",      ahq:"Busia AHQ",   zone:"West",  region:"Western",days:21,trav:3, field:14,plans:{p:4,a:17},score:2.6},
+  {n:"Clinton Matonda", ahq:"Kisumu AHQ",  zone:"Nairobi",region:"CC Nairobi",days:22,trav:8,field:41,plans:{p:1,a:21},score:3.6},
+  {n:"Agnes Kanyi",     ahq:"Bungoma AHQ", zone:"Coast", region:"Mombasa",days:21,trav:3, field:29,plans:{p:0,a:21},score:3.1},
+  {n:"John Lenzi",      ahq:"Kisumu AHQ",  zone:"Eastern",region:"Lamu",  days:24,trav:11,field:50,plans:{p:3,a:21},score:3.1},
+  {n:"Pier M.",         ahq:"Kisumu AHQ",  zone:"West",  region:"Nyanza", days:21,trav:4, field:33,plans:{p:3,a:18},score:3.2}
 ];
+function rmRec(n){return TEAM.find(t=>t.n===n)||{zone:"—",region:"—"};}
 const SEED_APPROVALS=[
-  {id:"P000031",rm:"Pier M.",      date:iso(addDays(4)), kpi:"R4",cat:"Certified-agent conversion coaching (R4)",detail:"July-certified agents, 1:1 coaching",loc:"Kakamega AHQ",trav:"Y",route:"Kisumu → Kakamega",nights:1,st:"pending"},
-  {id:"P000032",rm:"Pier M.",      date:iso(addDays(5)), kpi:"R7",cat:"360 field insight capture (R7)",detail:"Retailer visits, Chokaa",loc:"Bungoma AHQ",trav:"Y",route:"Kakamega → Bungoma",nights:1,st:"pending"},
-  {id:"P000033",rm:"Pier M.",      date:iso(addDays(8)), kpi:"R1",cat:"Inactive agent reactivation (R1)",detail:"Reactivation drive, Busia cluster",loc:"Busia AHQ",trav:"N",route:"",nights:0,st:"pending"},
-  {id:"P000034",rm:"Leah Amimo",   date:iso(addDays(2)), kpi:"R2",cat:"New agent F2F training (R2)",detail:"New agents onboarded in July",loc:"Busia AHQ",trav:"N",route:"",nights:0,st:"pending"},
-  {id:"P000035",rm:"Leah Amimo",   date:iso(addDays(3)), kpi:"",  cat:"Admin / office day",detail:"Reporting",loc:"Busia",trav:"N",route:"",nights:0,st:"pending"},
-  {id:"P000036",rm:"Leah Amimo",   date:iso(addDays(7)), kpi:"R1",cat:"Inactive agent reactivation (R1)",detail:"Cluster visits",loc:"Busia AHQ",trav:"Y",route:"Busia → Bungoma",nights:2,st:"pending"},
-  {id:"P000037",rm:"Leah Amimo",   date:iso(addDays(9)), kpi:"R4",cat:"Certified-agent conversion coaching (R4)",detail:"Coaching",loc:"Busia AHQ",trav:"N",route:"",nights:0,st:"pending"},
-  {id:"P000038",rm:"John Lenzi",   date:iso(addDays(1)), kpi:"R2",cat:"New agent F2F training (R2)",detail:"VPP + new agent F2F, Lamu",loc:"Lamu",trav:"Y",route:"Malindi → Garsen → Lamu",nights:2,st:"pending"},
-  {id:"P000039",rm:"John Lenzi",   date:iso(addDays(6)), kpi:"R7",cat:"360 field insight capture (R7)",detail:"ABM feedback round",loc:"Kitui",trav:"N",route:"",nights:0,st:"pending"},
-  {id:"P000040",rm:"John Lenzi",   date:iso(addDays(10)),kpi:"R1",cat:"Inactive agent reactivation (R1)",detail:"Bottom quartile agents",loc:"Machakos",trav:"Y",route:"Kitui → Machakos",nights:1,st:"pending"},
-  {id:"P000041",rm:"Rina Ojiayo",  date:iso(addDays(2)), kpi:"R2",cat:"New agent F2F training (R2)",detail:"Sega cluster new agents",loc:"Siaya AHQ",trav:"N",route:"",nights:0,st:"pending"},
-  {id:"P000042",rm:"Rina Ojiayo",  date:iso(addDays(11)),kpi:"R3",cat:"JKQ drive & low-scorer follow-up (R3)",detail:"JKQ push, low scorers",loc:"Siaya AHQ",trav:"N",route:"",nights:0,st:"pending"}
+  {id:"P000031",rm:"Pier M.",date:iso(addDays(4)),kpis:["R4","R2"],cats:["Certified-agent conversion coaching (R4)","Agent coaching / ride-along","New agent F2F training (R2)"],ints:["INT-017","INT-014"],loc:"Kakamega AHQ",trav:"Y",route:"Kisumu → Kakamega",nights:1,st:"pending"},
+  {id:"P000032",rm:"Pier M.",date:iso(addDays(5)),kpis:["R7"],cats:["360 field insight capture (R7)","Retailer / ABM visit"],ints:[],loc:"Bungoma AHQ",trav:"Y",route:"Kakamega → Bungoma",nights:1,st:"pending"},
+  {id:"P000033",rm:"Pier M.",date:iso(addDays(8)),kpis:["R1"],cats:["Inactive agent reactivation (R1)"],ints:["INT-016"],loc:"Busia AHQ",trav:"N",route:"",nights:0,st:"pending"},
+  {id:"P000034",rm:"Leah Amimo",date:iso(addDays(2)),kpis:["R2","R4"],cats:["New agent F2F training (R2)","Certified-agent conversion coaching (R4)"],ints:["INT-014"],loc:"Busia AHQ",trav:"N",route:"",nights:0,st:"pending"},
+  {id:"P000035",rm:"Leah Amimo",date:iso(addDays(3)),kpis:["NT"],cats:["Admin / office day"],ints:[],loc:"Busia",trav:"N",route:"",nights:0,st:"pending"},
+  {id:"P000036",rm:"Leah Amimo",date:iso(addDays(7)),kpis:["R1"],cats:["Inactive agent reactivation (R1)","Cluster leader meeting"],ints:["INT-016"],loc:"Busia AHQ",trav:"Y",route:"Busia → Bungoma",nights:2,st:"pending"},
+  {id:"P000037",rm:"Leah Amimo",date:iso(addDays(9)),kpis:["R4"],cats:["Certified-agent conversion coaching (R4)"],ints:[],loc:"Busia AHQ",trav:"N",route:"",nights:0,st:"pending"},
+  {id:"P000038",rm:"John Lenzi",date:iso(addDays(1)),kpis:["R2","R7"],cats:["New agent F2F training (R2)","360 field insight capture (R7)"],ints:["INT-014"],loc:"Lamu",trav:"Y",route:"Malindi → Garsen → Lamu",nights:2,st:"pending"},
+  {id:"P000039",rm:"John Lenzi",date:iso(addDays(6)),kpis:["R7"],cats:["360 field insight capture (R7)"],ints:[],loc:"Kitui",trav:"N",route:"",nights:0,st:"pending"},
+  {id:"P000040",rm:"John Lenzi",date:iso(addDays(10)),kpis:["R1"],cats:["Inactive agent reactivation (R1)"],ints:["INT-016"],loc:"Machakos",trav:"Y",route:"Kitui → Machakos",nights:1,st:"pending"},
+  {id:"P000041",rm:"Rina Ojiayo",date:iso(addDays(2)),kpis:["R2"],cats:["New agent F2F training (R2)","Onboarding follow-up"],ints:["INT-014"],loc:"Siaya AHQ",trav:"N",route:"",nights:0,st:"pending"},
+  {id:"P000042",rm:"Rina Ojiayo",date:iso(addDays(11)),kpis:["R3","R1"],cats:["JKQ drive & low-scorer follow-up (R3)","Inactive agent reactivation (R1)"],ints:[],loc:"Siaya AHQ",trav:"N",route:"",nights:0,st:"pending"}
 ];
 let APPROVALS=JSON.parse(JSON.stringify(SEED_APPROVALS));
 
@@ -609,6 +629,19 @@ function catForKpi(k){const m={R1:"Inactive agent reactivation (R1)",R2:"New age
 /* ---------- PJP ---------- */
 function blankDay(){return {date:"",blocks:[],locs:[],travel:false,route:"",nights:0};}
 let PJPD=blankDay(), PJPB=null, PSELDAY=null;
+function isWeekendIso(s){const[y,m,d]=s.split('-').map(Number);const w=new Date(y,m-1,d).getDay();return w===0||w===6;}
+const CATS_BY_KPI={
+  R1:["Inactive agent reactivation (R1)","Agent coaching / ride-along","Cluster leader meeting"],
+  R2:["New agent F2F training (R2)","Agent coaching / ride-along","Onboarding follow-up"],
+  R3:["JKQ drive & low-scorer follow-up (R3)","Agent coaching / ride-along"],
+  R4:["Certified-agent conversion coaching (R4)","Agent coaching / ride-along","Cluster leader meeting"],
+  R5:["Training quality audit / follow-up (R5-R6)","Session observation"],
+  R6:["Training quality audit / follow-up (R5-R6)","Video evidence review"],
+  R7:["360 field insight capture (R7)","Retailer / ABM visit"],
+  Z5a:["Data QA / reporting (Z5a)","Admin / office day"],
+  NT:["Admin / office day","Leave / off","Travel day"]
+};
+function catsFor(k){return CATS_BY_KPI[k]||ACTIVITY_CATS;}
 function dayCats(p){const s=[];(p.blocks||[]).forEach(b=>(b.cats||[]).forEach(c=>{if(!s.includes(c))s.push(c);}));return s;}
 function dayMeetings(p){
   const sched=TRAININGS.filter(t=>t.status==="scheduled"&&t.date===p.date);
@@ -631,8 +664,8 @@ reg("pjp","My plan (PJP)",()=>{
         <div style="font-size:9.5px;color:var(--ink-3);font-weight:800;text-transform:uppercase">${prettyIso(p.date).split(' ')[0]}</div>
         <div style="font-size:17px;font-weight:800;line-height:1.1">${p.date.slice(8)}</div></div>
       <div class="nm" style="font-weight:${p.status==='gap'?'500':'700'};color:${p.status==='gap'?'var(--ink-3)':'var(--ink)'}">
-        ${p.status==='gap'?'<i>Nothing planned</i>':`<div style="display:flex;flex-wrap:wrap">${cats.map(c=>`<span class="chip" style="font-size:10px">${c}</span>`).join('')}</div>
-          ${p.locs&&p.locs.length?`<div class="meta">📍 ${p.locs.map(l=>l.replace(' AHQ','')).join(', ')}${p.travel?` · ✈️ ${p.nights}n`:''}</div>`:''}
+        ${p.status==='gap'?'<i>Nothing planned</i>':`<div style="display:flex;flex-wrap:wrap">${isWeekendIso(p.date)?'<span class="chip" style="font-size:10px;background:#FFF1D6;color:#7A4A00">Holiday — planned</span>':''}${cats.map(c=>`<span class="chip" style="font-size:10px">${c}</span>`).join('')}</div>
+          ${p.locs&&p.locs.length?`<div class="meta">📍 ${p.locs.map(l=>l.replace(' AHQ','')).join(', ')}</div>`:''}
           ${ml?`<div class="meta">${ml}</div>`:''}`}
       </div>
       <span class="pill ${st[0]}">${st[1]}</span></div>`;
@@ -645,7 +678,7 @@ reg("pjp","My plan (PJP)",()=>{
         <div class="k"><div class="n">${pend}</div><div class="t">${pendLabel()}</div></div>
         <div class="k"><div class="n">${PJP.filter(p=>p.status==='gap').length}</div><div class="t">Unplanned days</div></div>
       </div>
-      ${rej.length?`<div class="banner warn" style="cursor:pointer" onclick="replanDay('${rej[0].date}')"><b>${rej.length} day${rej.length>1?'s':''} rejected</b> — replan ${rej.length>1?'them':'it'}.</div>`:''}
+      ${rej.length?`<div class="banner" style="cursor:pointer;background:#FDECEC;border:1px solid #F5C2C2;color:#8A1C1C" onclick="replanDay('${rej[0].date}')"><b>${rej.length} day${rej.length>1?'s':''} rejected</b> — replan ${rej.length>1?'them':'it'}.</div>`:''}
       <button class="btn btn-primary" style="margin-bottom:12px" onclick="PJPD=blankDay();go('pjpNew')">＋ Plan a day</button>
       ${rows}`});
 });
@@ -670,11 +703,18 @@ reg("pjpDay","Plan day",()=>{
           <div style="font-size:14px;font-weight:800">${longIso(p.date)}</div>
           <span class="pill ${st[0]}">${st[1]}</span></div>
         <div class="rev" style="margin-top:8px"><span class="k">Location</span><span class="v">${(p.locs&&p.locs.length)?p.locs.join(', '):'—'}</span></div>
-        <div class="rev"><span class="k">Travel</span><span class="v">${p.travel?`${p.route||'—'} · ${p.nights} night(s)`:'No'}</span></div>
+        <div class="rev"><span class="k">Travel route</span><span class="v">${p.travel?(p.route||'—'):'No travel'}</span></div>
+        <div class="rev"><span class="k">Travel nights</span><span class="v">${p.travel?`${p.nights} night(s)`:'—'}</span></div>
       </div>
+      ${p.status==='rejected'?`<div class="card" style="background:#FDECEC;border:1px solid #F5C2C2">
+        <div class="sec-head"><h3 style="color:#8A1C1C">Rejected</h3></div>
+        <div class="rev"><span class="k">Reason</span><span class="v">${p.rejReason||'Three travel days in one week — split this across two weeks'}</span></div>
+        <div class="rev"><span class="k">Rejected by</span><span class="v">${p.rejBy||'Lilian Wambui (ZTM)'}</span></div>
+      </div>`:''}
       ${(p.blocks||[]).map((b,i)=>`<div class="card">
         <div class="sec-head"><h3>KPI ${i+1} · ${b.kpi||'—'}</h3></div>
         <div style="display:flex;flex-wrap:wrap;margin-top:4px">${(b.cats||[]).map(c=>`<span class="chip">${c}</span>`).join('')||'<span class="hint">No activity selected</span>'}</div>
+        ${b.note?`<div class="rev" style="margin-top:7px"><span class="k">What exactly</span><span class="v">${b.note}</span></div>`:''}
         ${b.int?`<div style="margin-top:7px"><span class="chip blue">↳ ${b.int}${intName(b.int)?' · '+intName(b.int):''}</span></div>`:''}
       </div>`).join('')}
       <div class="card"><div class="sec-head"><h3>Meetings this day</h3></div>
@@ -690,21 +730,22 @@ reg("pjpDay","Plan day",()=>{
 /* --- plan a day --- */
 function monthEndIso(){const d=new Date(TODAY.getFullYear(),TODAY.getMonth()+1,0);return iso(d);}
 function togPjpLoc(a){const i=PJPD.locs.indexOf(a);i>-1?PJPD.locs.splice(i,1):PJPD.locs.push(a);go('pjpNew',false);}
-function addKpiBlock(){PJPB={kpi:"",cats:[],int:"",idx:-1};go('pjpBlock');}
+function addKpiBlock(){PJPB={kpi:"",cats:[],int:"",note:"",idx:-1};go('pjpBlock');}
 function editKpiBlock(i){PJPB={...JSON.parse(JSON.stringify(PJPD.blocks[i])),idx:i};go('pjpBlock');}
 function rmKpiBlock(i){PJPD.blocks.splice(i,1);go('pjpNew',false);}
 function togBlockCat(c){const i=PJPB.cats.indexOf(c);i>-1?PJPB.cats.splice(i,1):PJPB.cats.push(c);go('pjpBlock',false);}
+function setBlockKpi(v){PJPB.kpi=v;PJPB.cats=(PJPB.cats||[]).filter(c=>catsFor(v).includes(c));go('pjpBlock',false);}
 function saveKpiBlock(){
-  const b={kpi:PJPB.kpi,cats:PJPB.cats,int:PJPB.int};
+  const b={kpi:PJPB.kpi,cats:PJPB.cats,int:PJPB.int,note:PJPB.note||""};
   if(PJPB.idx>-1)PJPD.blocks[PJPB.idx]=b; else PJPD.blocks.push(b);
   PJPB=null;go('pjpNew');
 }
 reg("pjpBlock","KPI block",()=>{
-  const b=PJPB||{kpi:"",cats:[],int:""};
+  const b=PJPB||{kpi:"",cats:[],int:"",note:""};
   return shell({title:"KPI block",sub:"One KPI, its activities and intervention",
     body:`<div class="card">
         <label class="label">KPI it serves <span class="req">*</span></label>
-        <select onchange="PJPB.kpi=this.value;go('pjpBlock',false)">
+        <select onchange="setBlockKpi(this.value)">
           <option value="">Select…</option>
           ${KPI_LIB.map(k=>`<option value="${k.r}" ${b.kpi===k.r?'selected':''}>${k.r} — ${k.n}</option>`).join('')}
           <option value="Z5a" ${b.kpi==='Z5a'?'selected':''}>Z5a — Data QA / reporting</option>
@@ -713,9 +754,14 @@ reg("pjpBlock","KPI block",()=>{
       </div>
       <div class="card">
         <label class="label">Activity category <span class="req">*</span></label>
-        ${ACTIVITY_CATS.map(c=>{const on=b.cats.includes(c);
+        ${b.kpi?catsFor(b.kpi).map(c=>{const on=b.cats.includes(c);
           return `<div class="listrow" onclick="togBlockCat('${c.replace(/'/g,"\\'")}')">
-            <div class="cbx ${on?'on':''}">${on?'✓':''}</div><div class="nm">${c}</div></div>`;}).join('')}
+            <div class="cbx ${on?'on':''}">${on?'✓':''}</div><div class="nm">${c}</div></div>`;}).join('')
+          :'<div class="hint">Pick the KPI first — the activities shown depend on it.</div>'}
+      </div>
+      <div class="card">
+        <label class="label">What exactly will you do?</label>
+        <textarea placeholder="e.g. Meet 6 inactive agents in Sega and run a reactivation clinic" oninput="PJPB.note=this.value">${b.note||''}</textarea>
       </div>
       <div class="card">
         <label class="label">Link to an intervention <span style="font-weight:600;text-transform:none;letter-spacing:0;color:var(--ink-3)">(optional)</span></label>
@@ -765,9 +811,10 @@ function savePJP(){
   const rec={...JSON.parse(JSON.stringify(PJPD)),status:"pending"};
   if(ex)Object.assign(ex,rec); else PJP.push(rec);
   PJP.sort((a,b)=>a.date.localeCompare(b.date));
-  const b0=rec.blocks[0]||{kpi:"",cats:[]};
-  APPROVALS.unshift({id:"P0000"+(43+APPROVALS.length),rm:"Pier M.",date:rec.date,kpi:b0.kpi,cat:(b0.cats||[]).join(', '),
-    detail:dayCats(rec).join(', '),
+  APPROVALS.unshift({id:"P0000"+(43+APPROVALS.length),rm:"Pier M.",date:rec.date,
+    kpis:(rec.blocks||[]).map(b=>b.kpi).filter(Boolean),
+    cats:dayCats(rec),
+    ints:(rec.blocks||[]).map(b=>b.int).filter(Boolean),
     loc:(rec.locs||[]).join(', '),trav:rec.travel?"Y":"N",route:rec.route,nights:rec.nights,st:"pending"});
   alertBox("📤","Plan day submitted",`${longIso(rec.date)} sent to Lilian Wambui (ZTM) for approval. You'll be notified when it's actioned.`,"Done","hist=[];go('pjp',false)");
 }
@@ -844,9 +891,6 @@ reg("intNew","Raise an intervention",()=>{if(!ID)ID={...BLANK_ID};return shell({
       </select>
       <label class="label" style="margin-top:11px">How many agents should it reach?</label>
       <input type="number" placeholder="Target headcount" value="${ID.tgtHead}" oninput="ID.tgtHead=this.value">
-      <label class="label" style="margin-top:11px">Where is the metric now? (baseline)</label>
-      <input type="text" placeholder="e.g. 32% reactivation" value="${ID.baseline}" oninput="ID.baseline=this.value">
-      <div class="hint">Baseline plus a 30-day read is what proves the intervention worked.</div>
     </div>
     <div class="card">
       <label class="label">Mode</label>
@@ -898,7 +942,7 @@ reg("s1","Schedule · 1 — When & where",()=>shell({
       <label class="label">Part of an intervention? <span class="new">NEW</span></label>
       ${S.ints&&S.ints.length?`<div style="margin-bottom:8px">${S.ints.map(i=>`<span class="chip blue">↳ ${i}</span>`).join('')}</div>`:''}
       <button class="btn btn-outline btn-sm" style="width:100%" onclick="go('intPick')">Select interventions</button>
-      <div class="hint">Linking it means this session's attendance counts toward those interventions' coverage.</div>
+      
     </div>`,
   foot:footBtn(`<button class="btn btn-primary" ${S.date&&S.time&&S.ahq&&S.loc.trim().length>2?'':'disabled'} onclick="s1next()">Continue</button>`)
 }));
@@ -1097,24 +1141,26 @@ function tryStart(id){
 }
 function T(){return TRAININGS.find(x=>x.id===R.tid)||TRAININGS[0];}
 reg("r1","Start · 1 — Check-in",()=>{
-  const t=T(),now=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-  if(!R.checkedIn)doCheckIn();
+  const t=T();
   return shell({title:"Start training",sub:`${t.id} · Step 1 of 6 — Check in`,
     body:`${steps(1,6)}
       <div class="card">
         <div class="rev"><span class="k">Date</span><span class="v">${prettyIso(t.date)}</span></div>
-        <div class="rev"><span class="k">Start timestamp</span><span class="v">${R.stamp} <span style="color:var(--ink-3);font-weight:600">(actual)</span></span></div>
+        ${R.checkedIn?`<div class="rev"><span class="k">Start timestamp</span><span class="v">${R.stamp} <span style="color:var(--ink-3);font-weight:600">(actual)</span></span></div>`:''}
         <div class="rev"><span class="k">Location</span><span class="v">${t.loc}</span></div>
         <div class="rev"><span class="k">GPS</span><span class="v">${t.gps||'-0.0912, 34.7683'}</span></div>
       </div>
       <div class="map"><div class="rad"></div><div class="pin">📍</div></div>
-      <div class="banner warn">⚠️ You're <b>${R.drift} m</b> from the scheduled location (100 m tolerance). Explain why — you won't be blocked.</div>
-      <div class="card"><label class="label">Why the location changed <span class="req">*</span></label>
-        <textarea placeholder="e.g. Hall was locked, moved to the chief's camp" oninput="R.feedback=this.value">${R.feedback}</textarea></div>`,
-    foot:footBtn(`<button class="btn btn-primary" onclick="r1next()">Continue</button>`)});
+      ${R.checkedIn?`
+        <div class="banner warn">⚠️ You're <b>${R.drift} m</b> from the scheduled location (100 m tolerance). Explain why — you won't be blocked.</div>
+        <div class="card"><label class="label">Why the location changed <span class="req">*</span></label>
+          <textarea placeholder="e.g. Hall was locked, moved to the chief's camp" oninput="R.feedback=this.value">${R.feedback}</textarea></div>`
+      :`<button class="btn btn-primary" style="margin-top:10px" onclick="doCheckIn()">Check in here</button>`}`,
+    foot:footBtn(`<button class="btn btn-primary" ${R.checkedIn?'':'disabled'} onclick="r1next()">Continue</button>`)});
 });
 function doCheckIn(){
   R.checkedIn=true;R.drift=640;R.stamp=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  go('r1',false);
 }
 function r1next(){if(R.drift>100&&!R.feedback.trim()){toast("Explain the location change first");return;}go('r2');}
 
@@ -1364,7 +1410,7 @@ reg("past","Past trainings",()=>{
           <div><div style="font-size:13px;font-weight:800">${p.ahq.replace(' AHQ','')} · ${p.time}</div>
           <div style="font-size:10.5px;color:var(--ink-3);margin-top:2px">${prettyIso(p.date)} · ${p.id}</div></div>
         </div>
-        <div style="font-size:11.5px;color:var(--ink-2);margin-top:7px">👥 ${p.att}/${p.inv} attended${p.star?` · ⭐ ${p.star}`:''}</div>
+        <div style="font-size:11.5px;color:var(--ink-2);margin-top:7px">👥 ${p.approved?apprCount(p):p.att} agents attended${p.star?` · ⭐ ${p.star}`:''}</div>
         ${p.ints&&p.ints.length?`<div style="margin-top:6px;display:flex;flex-wrap:wrap">${p.ints.map(i=>`<span class="chip blue">↳ ${i}</span>`).join('')}</div>`:''}
       </div>`).join('')||`<div class="card" style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:20px">No trainings match these filters.</div>`}`});
 });
@@ -1397,6 +1443,11 @@ reg("pastDetail","Past training detail",()=>{
         ${p.star?`<div class="rev"><span class="k">⭐ Star of training</span><span class="v">${p.star}</span></div>`:''}
         ${p.ints&&p.ints.length?`<div class="rev"><span class="k">Intervention${p.ints.length>1?'s':''}</span><span class="v">${p.ints.map(i=>`<span class="chip blue">${i}</span>`).join('')}</span></div>`:''}
       </div>
+      ${p.far?`<div class="card" style="background:#FDECEC;border:1px solid #F5C2C2">
+        <div class="sec-head"><h3 style="color:#8A1C1C">Location rejected</h3></div>
+        <div class="rev"><span class="k">Distance from venue</span><span class="v">${p.far.dist}</span></div>
+        <div class="rev"><span class="k">Reason given</span><span class="v">${p.far.reason}</span></div>
+      </div>`:''}
       <div class="card"><div class="sec-head"><h3>Attendance</h3></div>
         <div class="rev"><span class="k">Submitted</span><span class="v">${p.att} of ${p.inv}</span></div>
         <div class="rev" style="cursor:pointer" onclick="showApproved('${p.id}')"><span class="k">Approved</span><span class="v">${p.approved?apprCount(p)+' of '+p.att:'—'} ›</span></div>
@@ -1436,24 +1487,75 @@ reg("kpi","My KPIs",()=>{
 });
 
 /* ---------- 360 FIELD INSIGHT (R7) ---------- */
-let INS={p:"",e:"",r:"",cat:""};
+const DEPTS=["IT","Operations","Kazi Plan","Data","CC"];
+const L2_BY_DEPT={
+  "IT":["App crash / bug","Login & access","Device / hardware","Network & connectivity"],
+  "Operations":["Stock & supply","Logistics / delivery","Installation quality","Aftersales service"],
+  "Kazi Plan":["Commission structure","Agent onboarding","Pricing group missing","Incentive clarity"],
+  "Data":["Dashboard mismatch","Missing report","Data quality / duplicates","Access to Looker"],
+  "CC":["Call handling delay","Customer complaint routing","Escalation not closed","Script / messaging gap"]
+};
+const TEAMS_IMPACTED=["Agents","Retailers","Customers","RM team","ABM team","Collections","Service centre"];
+const SEED_INSIGHTS=[
+  {id:"INS-021",by:"Pier M.",ahqs:["Kisumu AHQ"],depts:["Kazi Plan"],l2:["Pricing group missing"],
+   fb:"ATD retailers can't sell Spark 50 — no pricing group exists for them.",teams:["Retailers","Agents"],
+   rec:"Create an ATD pricing group for Spark 50 and notify retailers.",files:["chokaa-retailers.jpg"],
+   date:iso(addDays(-3)),status:"Open",closeNote:""},
+  {id:"INS-020",by:"John Lenzi",ahqs:["Bungoma AHQ","Busia AHQ"],depts:["Operations","CC"],l2:["Aftersales service","Escalation not closed"],
+   fb:"Agents stopped pitching phones because QOS complaints from last month are still open.",teams:["Agents","Customers"],
+   rec:"Close the open QOS tickets and share a weekly status with RMs.",files:["qos-log.pdf","photo-abm.jpg"],
+   date:iso(addDays(-8)),status:"Open",closeNote:""},
+  {id:"INS-019",by:"Leah Amimo",ahqs:["Kakamega AHQ"],depts:["Data"],l2:["Dashboard mismatch"],
+   fb:"Litmos completion in the dashboard does not match what agents see in the app.",teams:["RM team"],
+   rec:"Reconcile the Litmos feed before the monthly review.",files:[],
+   date:iso(addDays(-15)),status:"Closed",closeNote:"Feed reconciled with Data team on 12 Aug; dashboards now match."}
+];
+let INSIGHTS=JSON.parse(JSON.stringify(SEED_INSIGHTS));
+let INS={ahqs:[],depts:[],l2:[],fb:"",teams:[],rec:"",files:[]};
+function insTog(k,v){const a=INS[k];const i=a.indexOf(v);i>-1?a.splice(i,1):a.push(v);
+  if(k==='depts'){const allow=[];INS.depts.forEach(d=>(L2_BY_DEPT[d]||[]).forEach(x=>allow.push(x)));INS.l2=INS.l2.filter(x=>allow.includes(x));}
+  go('insight',false);}
+function insL2Options(){const o=[];INS.depts.forEach(d=>(L2_BY_DEPT[d]||[]).forEach(x=>{if(!o.includes(x))o.push(x);}));return o;}
+function insAddFiles(el){[...el.files].forEach(f=>INS.files.push(f.name));go('insight',false);}
+function insRmFile(i){INS.files.splice(i,1);go('insight',false);}
+function insValid(){return INS.ahqs.length&&INS.depts.length&&INS.l2.length&&INS.fb.trim()&&INS.teams.length&&INS.rec.trim();}
+function submitInsight(){
+  INSIGHTS.unshift({id:"INS-0"+(22+INSIGHTS.length),by:"Pier M.",ahqs:[...INS.ahqs],depts:[...INS.depts],l2:[...INS.l2],
+    fb:INS.fb,teams:[...INS.teams],rec:INS.rec,files:[...INS.files],date:iso(TODAY),status:"Open",closeNote:""});
+  INS={ahqs:[],depts:[],l2:[],fb:"",teams:[],rec:"",files:[]};
+  alertBox('💡','Insight logged','Sent to your CTM and the relevant department. You will see it when it is closed.','Done',"hist=[];go('home',false)");
+}
+function insBox(label,key,opts,req){
+  return `<div class="card">
+    <label class="label">${label}${req?' <span class="req">*</span>':''}</label>
+    ${INS[key].length?`<div style="display:flex;flex-wrap:wrap;margin-bottom:6px">${INS[key].map(v=>`<span class="chip blue">${v}</span>`).join('')}</div>`:''}
+    ${opts.length?opts.map(o=>{const on=INS[key].includes(o);
+      return `<div class="listrow" onclick="insTog('${key}','${o.replace(/'/g,"\\'")}')">
+        <div class="cbx ${on?'on':''}">${on?'✓':''}</div><div class="nm">${o}</div></div>`;}).join('')
+      :'<div class="hint">Pick a department first.</div>'}
+  </div>`;
+}
 reg("insight","360 field insight (R7)",()=>shell({
   title:"Log a field insight",sub:"R7 · 3 of 4 logged this month",
-  body:`<div class="banner info">R7 asks for four actionable insights a month, each with a problem, the evidence, and what you recommend. Structuring it means it can actually be routed and actioned.</div>
+  body:`${insBox("AHQ","ahqs",AHQS,true)}
+    ${insBox("Department responsible","depts",DEPTS,true)}
+    ${insBox("Feedback type (L2)","l2",insL2Options(),true)}
     <div class="card">
-      <label class="label">Area</label>
-      <select onchange="INS.cat=this.value">
-        <option value="">Select…</option>
-        ${["Product","Pricing","Competition","Agent experience","Customer experience","Process / systems","Stock & supply"].map(c=>`<option ${INS.cat===c?'selected':''}>${c}</option>`).join('')}</select>
-      <label class="label" style="margin-top:11px">Problem statement <span class="req">*</span></label>
-      <textarea placeholder="e.g. ATD retailers can't sell Spark 50 — no pricing group exists for them" oninput="INS.p=this.value">${INS.p}</textarea>
-      <label class="label" style="margin-top:11px">Evidence <span class="req">*</span></label>
-      <textarea placeholder="e.g. 3 retailers in Chokaa raised this; none have sold a Spark 50 this month" oninput="INS.e=this.value">${INS.e}</textarea>
-      <label class="label" style="margin-top:11px">Recommendation <span class="req">*</span></label>
-      <textarea placeholder="e.g. Create an ATD pricing group for Spark 50 and notify retailers" oninput="INS.r=this.value">${INS.r}</textarea>
+      <label class="label">Actual feedback <span class="req">*</span></label>
+      <textarea placeholder="What exactly did you see or hear in the field?" oninput="INS.fb=this.value">${INS.fb}</textarea>
     </div>
-    <div class="hint">Insights route to the CTM and the relevant department, and you'll see when yours is actioned.</div>`,
-  foot:footBtn(`<button class="btn btn-primary" ${INS.p&&INS.e&&INS.r?'':'disabled'} onclick="alertBox('💡','Insight logged','Sent to your CTM and the relevant department. That\\'s 4 of 4 for August — R7 complete.','Done','hist=[];go(\\'home\\',false)')">Submit insight</button>`)
+    ${insBox("Team impacted","teams",TEAMS_IMPACTED,true)}
+    <div class="card">
+      <label class="label">Recommendation <span class="req">*</span></label>
+      <textarea placeholder="What should be done about it?" oninput="INS.rec=this.value">${INS.rec}</textarea>
+    </div>
+    <div class="card">
+      <label class="label">Attachments</label>
+      ${INS.files.map((f,i)=>`<div class="listrow"><div class="nm">📎 ${f}</div><button class="edit" style="color:var(--red)" onclick="insRmFile(${i})">Remove</button></div>`).join('')}
+      <input type="file" multiple accept="image/*,application/pdf" onchange="insAddFiles(this)">
+      <div class="hint">Photos or files — add as many as you need.</div>
+    </div>`,
+  foot:footBtn(`<button class="btn btn-primary" ${insValid()?'':'disabled'} onclick="submitInsight()">Submit insight</button>`)
 }));
 
 /* ---------- END-OF-DAY REPORT ---------- */
@@ -1481,11 +1583,12 @@ reg("dayreport","End-of-day report",()=>shell({
    ===================================================================== */
 function mside(){
   const pend=APPROVALS.filter(a=>a.st==="pending").length;
+  const rev=INTS.filter(i=>i.status==='Approval pending').length;
   const items=[
     ["OVERVIEW",[["m_overview","▦","Overview",0]]],
-    ["PLANNING",[["m_approvals","✓","Approvals",pend],["m_capacity","▤","Capacity",0],["m_directives","⚑","Priorities",0]]],
-    ["DELIVERY",[["m_ints","🎯","Interventions",0],["m_calendar","🗓","Team calendar",0],["m_reports","📝","Daily reports",0]]],
-    ["PERFORMANCE",[["m_kpi","📊","Team KPIs",0],["m_team","👥","My team",0]]]
+    ["PLANNING",[["m_approvals","✓","Plan Approvals",pend],["m_capacity","▤","Capacity",0]]],
+    ["DELIVERY",[["m_ints","🎯","Interventions",rev],["m_trainings","🎓","View trainings",0],["m_calendar","🗓","Team calendar",0],["m_reports","📝","Daily reports",0],["m_insights","💡","Field insights",INSIGHTS.filter(i=>i.status==='Open').length]]],
+    ["PERFORMANCE",[["m_kpi","📊","Team KPIs",0]]]
   ];
   return `<div class="brand"><div class="lg">SK</div><div>Training Command<span>Lilian Wambui · ZTM Coast</span></div></div>
     ${items.map(([g,rows])=>`<div class="grp">${g}</div>${rows.map(([k,i,l,c])=>
@@ -1510,64 +1613,72 @@ mreg("m_overview","Overview",()=>{
         <div style="font-size:30px;font-weight:800;letter-spacing:-1.5px;margin-top:5px">3.2</div>
         <div style="font-size:11px;color:var(--ink-3);margin-top:4px">from the data platform</div></div>
     </div>
-    <div class="grid2" style="margin-top:14px">
-      <div class="card">
-        <div class="sec-head"><h3>Needs attention</h3></div>
-        <div class="listrow" style="cursor:pointer" onclick="mgo('m_approvals')"><div class="nm">${pend} plan days pending approval<div class="meta">Oldest submitted 3 days ago</div></div><div style="color:var(--ink-3)">›</div></div>
-        <div class="listrow" style="cursor:pointer" onclick="mgo('m_capacity')"><div class="nm">Leah Amimo is at 14% field time<div class="meta">Well under the 60% target</div></div><div style="color:var(--ink-3)">›</div></div>
-        <div class="listrow" style="cursor:pointer" onclick="mgo('m_ints')"><div class="nm">INT-014 is at 30% coverage<div class="meta">Target date in 9 days</div></div><div style="color:var(--ink-3)">›</div></div>
-        <div class="listrow" style="cursor:pointer" onclick="mgo('m_capacity')"><div class="nm">3 unplanned working days across the team<div class="meta">Gaps, not absences</div></div><div style="color:var(--ink-3)">›</div></div>
-      </div>
-      <div class="card">
-        <div class="sec-head"><h3>Can we absorb more this month? <span class="new">NEW</span></h3></div>
-        <p style="font-size:12px;color:var(--ink-2);line-height:1.55;margin:0 0 11px">This is the question the training calendar spreadsheet gets used for today. Capacity is planned days minus committed days, per RM per week.</p>
-        ${TEAM.slice(0,4).map(m=>{
-          const load=Math.round(m.days/22*100),cls=load>100?'over':load>92?'tight':'ok';
-          return `<div style="display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid #F0F2F7">
-            <div style="flex:1;font-size:12.5px;font-weight:700">${m.n}</div>
-            <div style="flex:0 0 120px"><div class="bar"><i class="${load>100?'red':load>92?'amber':''}" style="width:${Math.min(load,100)}%"></i></div></div>
-            <span class="load ${cls}">${load}%</span></div>`;}).join('')}
-        <button class="btn btn-outline btn-sm" style="width:100%;margin-top:10px" onclick="mgo('m_capacity')">Open capacity view</button>
-      </div>
+    <div class="card" style="margin-top:14px">
+      <div class="sec-head"><h3>Can we absorb more this month?</h3></div>
+      <p style="font-size:12px;color:var(--ink-2);line-height:1.55;margin:0 0 11px">Capacity is planned days against available days, per RM per week.</p>
+      ${TEAM.map(m=>{
+        const load=Math.round(m.days/22*100),cls=load>100?'over':load>92?'tight':'ok';
+        return `<div style="display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid #F0F2F7">
+          <div style="flex:1;font-size:12.5px;font-weight:700">${m.n}</div>
+          <div style="flex:0 0 220px"><div class="bar"><i class="${load>100?'red':load>92?'amber':''}" style="width:${Math.min(load,100)}%"></i></div></div>
+          <span class="load ${cls}">${load}%</span></div>`;}).join('')}
+      <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="mgo('m_capacity')">Open capacity view</button>
     </div>`;
 });
 
-mreg("m_approvals","Approvals",()=>{
-  const pend=APPROVALS.filter(a=>a.st==="pending");
+/* ---------- PLAN APPROVALS ---------- */
+let AF={zone:"",region:""};
+function setAF(k,v){AF[k]=v;if(k==='zone')AF.region="";mgo('m_approvals');}
+mreg("m_approvals","Plan Approvals",()=>{
+  const zones=[...new Set(TEAM.map(t=>t.zone))];
+  const regions=[...new Set(TEAM.filter(t=>!AF.zone||t.zone===AF.zone).map(t=>t.region))];
+  const pend=APPROVALS.filter(a=>a.st==="pending").filter(a=>{
+    const r=rmRec(a.rm);
+    return (!AF.zone||r.zone===AF.zone)&&(!AF.region||r.region===AF.region);});
   const byRM={};pend.forEach(a=>{(byRM[a.rm]=byRM[a.rm]||[]).push(a);});
-  return mh("Plan approvals",`${pend.length} day${pend.length===1?'':'s'} awaiting your decision · plans are gated, delivered records are not`,
+  return mh("Plan Approvals",`${pend.length} day${pend.length===1?'':'s'} awaiting your decision`,
     pend.length?`<button class="btn btn-green btn-sm" onclick="approveAll()">Approve all ${pend.length}</button>`:"")+
-    (pend.length?Object.keys(byRM).map(rm=>`
+    `<div class="card" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+      <div><label class="label">Zone</label><select onchange="setAF('zone',this.value)">
+        <option value="">All zones</option>${zones.map(z=>`<option ${AF.zone===z?'selected':''}>${z}</option>`).join('')}</select></div>
+      <div><label class="label">Region</label><select onchange="setAF('region',this.value)">
+        <option value="">All regions</option>${regions.map(r=>`<option ${AF.region===r?'selected':''}>${r}</option>`).join('')}</select></div>
+      ${(AF.zone||AF.region)?`<button class="btn btn-outline btn-sm" onclick="AF={zone:'',region:''};mgo('m_approvals')">Clear</button>`:''}
+    </div>`+
+    (pend.length?Object.keys(byRM).map(rm=>{const r=rmRec(rm);return `
       <div class="card">
-        <div class="sec-head"><h3>${rm} · ${byRM[rm].length} day${byRM[rm].length>1?'s':''}</h3>
+        <div class="sec-head"><h3>${rm} · ${r.zone} / ${r.region} · ${byRM[rm].length} day${byRM[rm].length>1?'s':''}</h3>
           <button class="edit" onclick="approveRM('${esc(rm)}')">Approve all for ${rm.split(' ')[0]}</button></div>
-        <table class="tt">
-          <thead><tr><th>ID</th><th>Date</th><th>KPI</th><th>Activity</th><th>Location</th><th>Travel</th><th style="text-align:right">Decision</th></tr></thead>
-          <tbody>${byRM[rm].map(a=>`<tr>
-            <td style="color:var(--ink-3);font-size:11px">${a.id}</td>
-            <td style="white-space:nowrap">${prettyIso(a.date)}</td>
-            <td>${a.kpi?`<span class="chip grey" style="margin:0">${a.kpi}</span>`:'<span style="color:var(--red);font-size:11px;font-weight:700">missing</span>'}</td>
-            <td><div style="font-weight:600">${a.cat}</div><div style="font-size:10.5px;color:var(--ink-3)">${a.detail}</div></td>
-            <td>${a.loc}</td>
-            <td>${a.trav==='Y'?`<div style="font-size:11px">${a.route}<div style="color:var(--ink-3)">${a.nights}n away</div></div>`:'—'}</td>
-            <td style="text-align:right;white-space:nowrap">
-              <button class="btn btn-green btn-sm" onclick="decide('${a.id}','approved')">Approve</button>
-              <button class="btn btn-danger btn-sm" onclick="rejectPrompt('${a.id}')">Reject</button></td></tr>`).join('')}
-          </tbody></table>
-      </div>`).join('')
+        ${byRM[rm].map(a=>`
+          <div style="border-top:1px solid #F0F2F7;padding:10px 0">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+              <div style="font-size:13px;font-weight:800">${prettyIso(a.date)}
+                <span style="font-weight:600;color:var(--ink-3);font-size:11.5px">· 📍 ${a.loc}${a.trav==='Y'?` · 🚗 ${a.route} (${a.nights}n)`:''}</span></div>
+              <div style="white-space:nowrap">
+                <button class="btn btn-green btn-sm" onclick="decide('${a.id}','approved')">Approve</button>
+                <button class="btn btn-danger btn-sm" onclick="rejectPrompt('${a.id}')">Reject</button></div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:7px;align-items:center">
+              ${(a.kpis||[]).length?(a.kpis).map(k=>`<span class="chip grey" style="margin:0">${k}</span>`).join(''):'<span style="color:var(--red);font-size:11px;font-weight:700">KPI missing</span>'}
+              ${(a.cats||[]).map(c=>`<span class="chip" style="margin:0">${c}</span>`).join('')}
+              ${(a.ints||[]).map(i=>`<span class="chip blue" style="margin:0">${i}</span>`).join('')}
+            </div>
+          </div>`).join('')}
+      </div>`;}).join('')
       :`<div class="card" style="text-align:center;padding:40px;color:var(--ink-3)">
          <div style="font-size:34px">✓</div><div style="font-size:14px;font-weight:700;margin-top:8px;color:var(--ink)">Queue is clear</div>
          <p style="font-size:12.5px">Approvals can also be actioned in one tap from the notification email.</p></div>`);
 });
 function decide(id,st,reason){
   const a=APPROVALS.find(x=>x.id===id);a.st=st;a.reason=reason||"";
-  const p=PJP.find(x=>x.date===a.date);if(p&&a.rm==="Pier M.")p.status=st==="approved"?"approved":"rejected";
+  const p=PJP.find(x=>x.date===a.date);if(p&&a.rm==="Pier M."){p.status=st==="approved"?"approved":"rejected";
+    if(st==='rejected'){p.rejReason=reason||"";p.rejBy="Lilian Wambui (ZTM)";}}
   mgo('m_approvals');toast(`${id} ${st}`);
 }
 function approveAll(){APPROVALS.filter(a=>a.st==="pending").forEach(a=>decide(a.id,'approved'));toast("All plans approved — RMs notified");}
 function approveRM(rm){APPROVALS.filter(a=>a.st==="pending"&&a.rm===rm).forEach(a=>decide(a.id,'approved'));toast(rm+"'s plan approved");}
 function rejectPrompt(id){
-  wmodal(`<h3>Reject ${id}</h3><p style="font-size:12.5px;color:var(--ink-2)">The RM is notified with your reason and can resubmit.</p>
+  wmodal(`<h3>Reject this plan day</h3><p style="font-size:12.5px;color:var(--ink-2)">The RM is notified with your reason and can resubmit.</p>
     <label class="label">Reason <span class="req">*</span></label><textarea id="wr" placeholder="e.g. Three travel days in one week — split this across two weeks"></textarea>
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="btn btn-danger" onclick="doReject('${id}')">Reject</button>
@@ -1579,156 +1690,302 @@ function doReject(id){
   closeW();decide(id,'rejected',r);
 }
 
+/* ---------- CAPACITY ---------- */
+function occPct(m,w){return Math.max(20,Math.min(120,Math.round(m.days/22*100)+((w*13+m.n.length*7)%25)-12));}
 mreg("m_capacity","Capacity",()=>{
-  return mh("Capacity utilisation","Can the zone absorb another programme this month? Planned days against available days, per RM per week.")+`
+  return mh("Capacity utilisation","Weekly occupancy per RM. Click a percentage to see that week's plan and meetings.")+`
     <div class="card">
-      <div class="banner info">This replaces the training-calendar spreadsheet. Green means room, amber means tight, red means the RM is over-committed — so a new intervention should wait or go to someone else.</div>
       <table class="tt">
-        <thead><tr><th>RM</th><th>AHQ</th><th>Wk 1</th><th>Wk 2</th><th>Wk 3</th><th>Wk 4</th><th>Total days</th><th>Travel</th><th>Field %</th><th>Load</th></tr></thead>
-        <tbody>${TEAM.map(m=>{
-          const wk=[5,5,Math.round(m.days/4),Math.max(m.days-15,1)],load=Math.round(m.days/22*100);
-          const cls=load>100?'over':load>92?'tight':'ok';
-          return `<tr>
-            <td style="font-weight:700">${m.n}</td><td style="color:var(--ink-3)">${m.ahq.replace(' AHQ','')}</td>
-            ${wk.map(w=>`<td>${w}</td>`).join('')}
+        <thead><tr><th>RM</th><th>Wk 1</th><th>Wk 2</th><th>Wk 3</th><th>Wk 4</th><th>Days planned</th><th>Travel</th><th>Field %</th><th>Score</th></tr></thead>
+        <tbody>${TEAM.map(m=>`<tr>
+            <td style="font-weight:700">${m.n}</td>
+            ${[1,2,3,4].map(w=>{const o=occPct(m,w);const c=o>100?'over':o>92?'tight':'ok';
+              return `<td><span class="load ${c}" style="cursor:pointer" onclick="openWeek('${esc(m.n)}',${w})">${o}%</span></td>`;}).join('')}
             <td style="font-weight:800">${m.days}</td><td>${m.trav}</td>
             <td style="color:${m.field>=60?'var(--green)':m.field>=40?'var(--sk-orange)':'var(--red)'};font-weight:800">${m.field}%</td>
-            <td><span class="load ${cls}">${load}%</span></td></tr>`;}).join('')}
+            <td style="font-weight:800">${m.score}</td></tr>`).join('')}
         </tbody></table>
     </div>
-    <div class="grid2">
-      <div class="card"><div class="sec-head"><h3>Try it: can we fit a new programme?</h3></div>
-        <label class="label">How many agent-sessions?</label><input type="number" id="capH" value="40" oninput="calcCap()">
-        <label class="label" style="margin-top:10px">By when?</label>
-        <select id="capW" onchange="calcCap()"><option value="2">Within 2 weeks</option><option value="4" selected>Within 4 weeks</option><option value="8">Within 8 weeks</option></select>
-        <div id="capOut" style="margin-top:13px"></div>
-      </div>
-      <div class="card"><div class="sec-head"><h3>Where the days are going</h3></div>
-        ${[["R1 Reactivation",28],["R2 New-agent F2F",51],["R4 Conversion",14],["R7 Field insight",12],["Admin / reporting",31],["Travel",16]].map(([l,v])=>`
-          <div style="display:flex;align-items:center;gap:9px;padding:5px 0">
-            <div style="flex:0 0 132px;font-size:12px;font-weight:600">${l}</div>
-            <div style="flex:1"><div class="bar"><i style="width:${v/51*100}%;background:var(--blue)"></i></div></div>
-            <div style="flex:0 0 34px;text-align:right;font-size:12px;font-weight:800">${v}</div></div>`).join('')}
-        <div class="hint">Effort against the scorecard — if R5/R6 carry 30% of the weight but get 1% of the days, that shows up here.</div>
-      </div>
+    <div class="card"><div class="sec-head"><h3>Where the days are going</h3></div>
+      ${[["R1 Reactivation",28],["R2 New-agent F2F",51],["R4 Conversion",14],["R7 Field insight",12],["Admin / reporting",31],["Travel",16]].map(([l,v])=>`
+        <div style="display:flex;align-items:center;gap:9px;padding:5px 0">
+          <div style="flex:0 0 132px;font-size:12px;font-weight:600">${l}</div>
+          <div style="flex:1"><div class="bar"><i style="width:${v/51*100}%;background:var(--blue)"></i></div></div>
+          <div style="flex:0 0 34px;text-align:right;font-size:12px;font-weight:800">${v}</div></div>`).join('')}
     </div>`;
 });
-function calcCap(){
-  const h=+document.getElementById('capH').value||0,w=+document.getElementById('capW').value;
-  const perDay=8,free=TEAM.reduce((s,m)=>s+Math.max(0,22-m.days),0)+w*3;
-  const need=Math.ceil(h/perDay),ok=need<=free;
-  document.getElementById('capOut').innerHTML=
-    `<div class="banner ${ok?'ok':'warn'}" style="margin:0">${ok?'✓':'⚠️'} <b>${need} RM-days</b> needed (at ~${perDay} agents a session).
-     The zone has roughly <b>${free} free days</b> in that window — ${ok?'this fits.':'this does not fit. Extend the window or split across zones.'}</div>`;
-}
+let MWEEK={rm:"",w:1};
+function openWeek(rm,w){MWEEK={rm,w};mgo('m_weekDetail');}
+mreg("m_weekDetail","Week detail",()=>{
+  const m=TEAM.find(t=>t.n===MWEEK.rm)||TEAM[0],w=MWEEK.w;
+  const y=TODAY.getFullYear(),mo=TODAY.getMonth();
+  const days=[];for(let d=(w-1)*7+1;d<=Math.min(w*7,new Date(y,mo+1,0).getDate());d++)days.push(new Date(y,mo,d));
+  const acts=["R2 New-agent F2F","R1 Reactivation","R4 Conversion","Admin / office day","R7 Field insight","JKQ drive",""];
+  return mh(`${m.n} · Week ${w}`,`${m.ahq.replace(' AHQ','')} · ${m.zone} / ${m.region} · occupancy ${occPct(m,w)}%`,
+    `<button class="btn btn-outline btn-sm" onclick="mgo('m_capacity')">← Back to capacity</button>`)+
+    days.map((d,i)=>{
+      const wd=d.getDay()===0||d.getDay()===6;
+      const a=wd?"":acts[(i*3+m.n.length)%7];
+      const meets=wd||!a?0:(i%3===0?2:1);
+      return `<div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:13px;font-weight:800">${d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'})}</div>
+          ${wd?'<span class="chip grey">Weekend</span>':a?'<span class="pill done">Approved</span>':'<span class="pill pend">Not planned</span>'}
+        </div>
+        ${a?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px"><span class="chip grey" style="margin:0">${a.split(' ')[0]}</span><span class="chip" style="margin:0">${a}</span></div>
+          <div style="font-size:11.5px;color:var(--ink-3);margin-top:7px">📍 ${m.ahq} · 🎓 ${meets} meeting${meets===1?'':'s'} scheduled</div>
+          ${meets?`<table class="tt" style="margin-top:8px"><thead><tr><th>Time</th><th>Venue</th><th>Agents invited</th><th>Intervention</th></tr></thead>
+            <tbody>${Array.from({length:meets}).map((_,k)=>`<tr><td>${k?'14:00':'09:30'}</td><td>${m.ahq.replace(' AHQ','')} Depot</td><td>${8+k*3}</td><td><span class="chip blue" style="margin:0">${k?'INT-016':'INT-014'}</span></td></tr>`).join('')}</tbody></table>`:''}`
+        :`<div class="hint" style="margin-top:6px">${wd?'Non-working day.':'No plan submitted for this day.'}</div>`}
+      </div>`;}).join('');
+});
 
-mreg("m_directives","Priorities",()=>
-  mh("Monthly priorities","What you cascade down to your RMs. These appear on their home screen and pre-fill their plan.",
-    `<button class="btn btn-primary btn-sm" onclick="newDirective()">＋ New priority</button>`)+
-  `<div class="banner info">PJPs are defined top-down: the training manager agrees priorities with the business, you cascade them, and RMs plan against them. This is where that cascade lives.</div>
-   ${DIRECTIVES.map(d=>`<div class="card">
-      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
-        <div style="flex:1"><div style="font-size:14px;font-weight:800">${d.t}</div>
-        <div style="font-size:12px;color:var(--ink-2);margin-top:5px;line-height:1.55">${d.d}</div>
-        <div style="font-size:11px;color:var(--ink-3);margin-top:8px">${d.id} · from ${d.by} · target ${prettyIso(d.due)}</div></div>
-        <span class="chip grey">${d.kpi}</span></div>
-      <div style="margin-top:10px;padding-top:10px;border-top:1px solid #F0F2F7;font-size:11.5px;color:var(--ink-3)">
-        Cascaded to <b>7 RMs</b> · ${Math.floor(Math.random()*4)+2} have planned days against it</div>
-    </div>`).join('')}`);
-function newDirective(){
-  wmodal(`<h3>New monthly priority</h3><p style="font-size:12.5px;color:var(--ink-2)">This lands on every RM's home screen and pre-fills a plan day.</p>
-    <label class="label">Title</label><input type="text" id="dT" placeholder="e.g. HomePlus Max Lite rollout">
-    <label class="label" style="margin-top:10px">What should they do?</label><textarea id="dD" placeholder="Be specific about the expectation"></textarea>
-    <label class="label" style="margin-top:10px">KPI it serves</label>
-    <select id="dK">${KPI_LIB.map(k=>`<option value="${k.r}">${k.r} — ${k.n}</option>`).join('')}</select>
-    <label class="label" style="margin-top:10px">Cascade to</label>
-    <select id="dS"><option>All RMs in Coast Zone (7)</option><option>Selected RMs…</option><option>All zones (National)</option></select>
-    <div style="display:flex;gap:8px;margin-top:14px">
-      <button class="btn btn-primary" onclick="saveDirective()">Cascade to team</button>
-      <button class="btn btn-outline" onclick="closeW()">Cancel</button></div>`);
-}
-function saveDirective(){
-  const t=document.getElementById('dT').value.trim();
-  if(!t){toast("Give it a title");return;}
-  DIRECTIVES.unshift({id:"DIR-0"+(DIRECTIVES.length+1),m:"August 2026",by:"Lilian Wambui (ZTM)",t,
-    d:document.getElementById('dD').value||"—",kpi:document.getElementById('dK').value,due:iso(addDays(14))});
-  closeW();mgo('m_directives');toast("Cascaded to 7 RMs — they're notified now");
-}
-
+/* ---------- INTERVENTIONS ---------- */
 mreg("m_ints","Interventions",()=>
-  mh("Interventions register","Programmes with a target, a baseline and a coverage number — not a list of sessions.",
+  mh("Interventions register","Programmes with a target and a coverage number — not a list of sessions.",
     `<button class="btn btn-primary btn-sm" onclick="newInt()">＋ New intervention</button>`)+
   `<div class="grid3" style="margin-bottom:14px">
     <div class="card"><div style="font-size:10px;color:var(--ink-3);font-weight:800;text-transform:uppercase">Live this month</div>
       <div style="font-size:26px;font-weight:800;margin-top:4px">${INTS.filter(i=>i.status!=='Complete').length}</div></div>
-    <div class="card"><div style="font-size:10px;color:var(--ink-3);font-weight:800;text-transform:uppercase">Strategic share</div>
-      <div style="font-size:26px;font-weight:800;margin-top:4px">${Math.round(INTS.filter(i=>i.type==='Strategic').length/INTS.length*100)}%</div>
-      <div style="font-size:11px;color:var(--ink-3)">target ≥40%</div></div>
+    <div class="card"><div style="font-size:10px;color:var(--ink-3);font-weight:800;text-transform:uppercase">Awaiting review</div>
+      <div style="font-size:26px;font-weight:800;margin-top:4px;color:var(--sk-orange)">${INTS.filter(i=>i.status==='Approval pending').length}</div></div>
     <div class="card"><div style="font-size:10px;color:var(--ink-3);font-weight:800;text-transform:uppercase">Average coverage</div>
       <div style="font-size:26px;font-weight:800;margin-top:4px">${Math.round(INTS.reduce((s,i)=>s+i.attended/i.tgtHead,0)/INTS.length*100)}%</div></div>
   </div>
   <div class="card"><table class="tt">
-    <thead><tr><th>ID</th><th>Intervention</th><th>Scope</th><th>KPI</th><th>Type</th><th>Raised by</th><th>Coverage</th><th>30-day read</th><th>Status</th></tr></thead>
+    <thead><tr><th>ID</th><th>Intervention</th><th>Scope</th><th>KPI</th><th>Type</th><th>Raised by</th><th>Coverage</th><th>Status</th><th></th></tr></thead>
     <tbody>${INTS.map(i=>{const pct=Math.round(i.attended/i.tgtHead*100);
       return `<tr>
         <td style="color:var(--ink-3);font-size:11px">${i.id}</td>
         <td><div style="font-weight:700">${i.t}</div><div style="font-size:10.5px;color:var(--ink-3)">${i.aud}</div></td>
-        <td>${i.scope}${i.zone!=='All'?`<div style="font-size:10.5px;color:var(--ink-3)">${i.zone}</div>`:''}</td>
+        <td>${i.scope}${i.zone&&i.zone!=='All'?`<div style="font-size:10.5px;color:var(--ink-3)">${i.zone}</div>`:''}</td>
         <td><span class="chip grey" style="margin:0">${i.kpi}</span></td>
         <td>${i.type}</td><td style="font-size:11.5px">${i.byName}<div style="color:var(--ink-3);font-size:10.5px">${i.by}</div></td>
         <td style="min-width:110px"><div style="font-size:11.5px;font-weight:700">${i.attended}/${i.tgtHead} · ${pct}%</div>
           <div class="bar"><i class="${pct>=90?'':pct>=50?'amber':'red'}" style="width:${Math.min(pct,100)}%"></i></div></td>
-        <td style="color:${i.metric?'var(--green)':'var(--ink-3)'};font-weight:700">${i.metric||'—'}</td>
-        <td><span class="pill ${i.status==='Complete'?'done':i.status==='In progress'?'today':'sched'}">${i.status}</span></td></tr>`;}).join('')}
+        <td><span class="pill ${i.status==='Complete'?'done':i.status==='In progress'?'today':'pend'}">${i.status}</span></td>
+        <td style="text-align:right">${i.status==='Approval pending'?`<button class="btn btn-primary btn-sm" onclick="reviewInt('${i.id}')">Review</button>`:''}</td></tr>`;}).join('')}
     </tbody></table></div>`);
-function newInt(){
-  wmodal(`<h3>New intervention</h3><p style="font-size:12.5px;color:var(--ink-2)">Cascade decides who it lands on: National reaches every zone of the line; Zone / AHQ / Cluster reaches the named zone's RMs.</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
-      <div style="grid-column:1/-1"><label class="label">Activity / module</label><input type="text" id="iT" placeholder="e.g. HomePlus Max Lite rollout"></div>
-      <div style="grid-column:1/-1"><label class="label">Audience</label><input type="text" id="iA" placeholder="e.g. All active agents"></div>
-      <div><label class="label">Target scope</label><select id="iS">${["National","Zone","Line","AHQ","Cluster"].map(x=>`<option>${x}</option>`).join('')}</select></div>
-      <div><label class="label">Target zone</label><select id="iZ"><option>All</option>${ZONES.map(z=>`<option>${z}</option>`).join('')}</select></div>
-      <div><label class="label">KPI being moved</label><select id="iK">${KPI_LIB.map(k=>`<option value="${k.r}">${k.r} — ${k.n}</option>`).join('')}</select></div>
-      <div><label class="label">Type</label><select id="iTy"><option>Strategic</option><option>Reactive</option></select></div>
-      <div><label class="label">Target headcount</label><input type="number" id="iH" value="30"></div>
-      <div><label class="label">Baseline (metric now)</label><input type="text" id="iB" placeholder="e.g. 32% reactivation"></div>
-      <div><label class="label">Mode</label><select id="iM"><option>Field</option><option>Classroom</option><option>Virtual</option><option>Litmos</option></select></div>
-      <div><label class="label">Budget (USD)</label><input type="number" id="iBu" value="0"></div>
+
+/* review an RM-raised intervention */
+function reviewInt(id){
+  const i=INTS.find(x=>x.id===id);
+  wmodal(`<h3>Review ${i.id}</h3>
+    <p style="font-size:12.5px;color:var(--ink-2)">Raised by ${i.byName} (${i.by}) — everything below is what the RM entered.</p>
+    <div class="card" style="margin:0 0 12px">
+      <div class="rev"><span class="k">Activity</span><span class="v">${i.t}</span></div>
+      <div class="rev"><span class="k">Audience</span><span class="v">${i.aud}</span></div>
+      <div class="rev"><span class="k">Scope</span><span class="v">${i.scope}${i.zone&&i.zone!=='All'?' · '+i.zone:''}</span></div>
+      <div class="rev"><span class="k">KPI</span><span class="v">${i.kpi}</span></div>
+      <div class="rev"><span class="k">Mode</span><span class="v">${i.mode}</span></div>
+      <div class="rev"><span class="k">Why now</span><span class="v">${i.root||'—'}</span></div>
     </div>
-    <div class="banner info" style="margin-top:13px">Google Forms can't show an RM only their own interventions — a shared picklist is the workaround today. In the app, cascade puts it straight on the right RMs' home screens.</div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-primary" onclick="saveMInt()">Create & cascade</button>
-      <button class="btn btn-outline" onclick="closeW()">Cancel</button></div>`);
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-green" onclick="revStep('${id}','approve')">Approve</button>
+      <button class="btn btn-danger" onclick="revStep('${id}','reject')">Reject</button>
+      <button class="btn btn-outline" onclick="revStep('${id}','merge')">Merge with another</button>
+      <button class="btn btn-outline" onclick="closeW()">Cancel</button>
+    </div>`);
 }
+function revStep(id,mode){
+  const i=INTS.find(x=>x.id===id);
+  if(mode==='reject'){
+    wmodal(`<h3>Reject ${id}</h3><label class="label">Rejection reason <span class="req">*</span></label>
+      <textarea id="rvR" placeholder="e.g. Already covered by INT-014 this quarter"></textarea>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn btn-danger" onclick="doIntReject('${id}')">Reject intervention</button>
+        <button class="btn btn-outline" onclick="closeW()">Cancel</button></div>`);
+  } else if(mode==='merge'){
+    const others=INTS.filter(x=>x.id!==id);
+    wmodal(`<h3>Merge ${id}</h3><p style="font-size:12.5px;color:var(--ink-2)">Pick the intervention it should roll into, then adjust its details if needed.</p>
+      <label class="label">Merge into</label>
+      <select id="rvM">${others.map(o=>`<option value="${o.id}">${o.id} — ${o.t}</option>`).join('')}</select>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn btn-primary" onclick="doIntMerge('${id}')">Continue to details</button>
+        <button class="btn btn-outline" onclick="closeW()">Cancel</button></div>`);
+  } else {
+    MI={mode:'approve',id,scope:i.scope,zone:i.zone==='All'?'':i.zone,region:"",ahq:"",cluster:"",
+        t:i.t,aud:i.aud,kpi:i.kpi,type:i.type,mode2:i.mode,heads:{},title:`Approve ${id}`};
+    closeW();mgo('m_intForm');
+  }
+}
+function doIntReject(id){
+  const r=document.getElementById('rvR').value.trim();
+  if(!r){toast("A reason is required");return;}
+  const i=INTS.find(x=>x.id===id);i.status="Rejected";i.rejReason=r;
+  closeW();mgo('m_ints');toast(id+" rejected — RM notified");
+}
+function doIntMerge(id){
+  const into=document.getElementById('rvM').value;const t=INTS.find(x=>x.id===into);
+  MI={mode:'merge',id,into,scope:t.scope,zone:t.zone==='All'?'':t.zone,region:"",ahq:"",cluster:"",
+      t:t.t,aud:t.aud,kpi:t.kpi,type:t.type,mode2:t.mode,heads:{},title:`Merge ${id} into ${into}`};
+  closeW();mgo('m_intForm');
+}
+let MI=null;
+function newInt(){
+  MI={mode:'new',id:"",scope:"National",zone:"",region:"",ahq:"",cluster:"",t:"",aud:"",kpi:KPI_LIB[0].r,type:"Strategic",mode2:"Field",heads:{},title:"New intervention"};
+  mgo('m_intForm');
+}
+function miSet(k,v){MI[k]=v;
+  if(k==='scope'){MI.zone="";MI.region="";MI.ahq="";MI.cluster="";}
+  if(k==='zone'){MI.region="";MI.ahq="";MI.cluster="";}
+  if(k==='region'){MI.ahq="";MI.cluster="";}
+  if(k==='ahq'){MI.cluster="";}
+  MI.heads={};mgo('m_intForm');
+}
+function headKeys(){
+  if(MI.scope==='National')return ZONES;
+  if(MI.scope==='Zone')return REGIONS_BY_ZONE[MI.zone]||[];
+  return REGIONS_BY_ZONE[MI.zone]||[];
+}
+function miValid(){
+  if(!MI.t.trim())return false;
+  if(MI.scope!=='National'&&!MI.zone)return false;
+  if(['Region','AHQ','Cluster'].includes(MI.scope)&&!MI.region)return false;
+  if(['AHQ','Cluster'].includes(MI.scope)&&!MI.ahq)return false;
+  if(MI.scope==='Cluster'&&!MI.cluster)return false;
+  return true;
+}
+mreg("m_intForm","Intervention details",()=>{
+  const m=MI||{};
+  return mh(m.title||"New intervention","Scope decides who it lands on. Headcount is entered on the next page.",
+    `<button class="btn btn-outline btn-sm" onclick="mgo('m_ints')">Cancel</button>`)+
+  `<div class="card">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div style="grid-column:1/-1"><label class="label">Activity / module <span class="req">*</span></label>
+        <input type="text" value="${esc(m.t||'')}" oninput="MI.t=this.value" placeholder="e.g. HomePlus Max Lite rollout"></div>
+      <div style="grid-column:1/-1"><label class="label">Audience</label>
+        <input type="text" value="${esc(m.aud||'')}" oninput="MI.aud=this.value" placeholder="e.g. All active agents"></div>
+      <div><label class="label">Target scope</label>
+        <select onchange="miSet('scope',this.value)">${["National","Zone","Region","AHQ","Cluster"].map(x=>`<option ${m.scope===x?'selected':''}>${x}</option>`).join('')}</select></div>
+      ${m.scope!=='National'?`<div><label class="label">Zone <span class="req">*</span></label>
+        <select onchange="miSet('zone',this.value)"><option value="">Select…</option>${ZONES.map(z=>`<option ${m.zone===z?'selected':''}>${z}</option>`).join('')}</select></div>`:''}
+      ${['Region','AHQ','Cluster'].includes(m.scope)?`<div><label class="label">Region <span class="req">*</span></label>
+        <select onchange="miSet('region',this.value)"><option value="">Select…</option>${(REGIONS_BY_ZONE[m.zone]||[]).map(r=>`<option ${m.region===r?'selected':''}>${r}</option>`).join('')}</select></div>`:''}
+      ${['AHQ','Cluster'].includes(m.scope)?`<div><label class="label">AHQ <span class="req">*</span></label>
+        <select onchange="miSet('ahq',this.value)"><option value="">Select…</option>${(AHQS_BY_REGION[m.region]||[]).map(a=>`<option ${m.ahq===a?'selected':''}>${a}</option>`).join('')}</select></div>`:''}
+      ${m.scope==='Cluster'?`<div><label class="label">Cluster <span class="req">*</span></label>
+        <select onchange="miSet('cluster',this.value)"><option value="">Select…</option>${(CLUSTERS_BY_AHQ[m.ahq]||[]).map(c=>`<option ${m.cluster===c?'selected':''}>${c}</option>`).join('')}</select></div>`:''}
+      <div><label class="label">KPI being moved</label>
+        <select onchange="MI.kpi=this.value">${KPI_LIB.map(k=>`<option value="${k.r}" ${m.kpi===k.r?'selected':''}>${k.r} — ${k.n}</option>`).join('')}</select></div>
+      <div><label class="label">Type</label>
+        <select onchange="MI.type=this.value">${["Strategic","Reactive"].map(x=>`<option ${m.type===x?'selected':''}>${x}</option>`).join('')}</select></div>
+      <div><label class="label">Mode</label>
+        <select onchange="MI.mode2=this.value">${["Field","Classroom","Virtual","Litmos"].map(x=>`<option ${m.mode2===x?'selected':''}>${x}</option>`).join('')}</select></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-primary" ${miValid()?'':'disabled'} onclick="mgo('m_intHeads')">Next: headcount</button>
+    </div>
+  </div>`;
+});
+mreg("m_intHeads","Headcount",()=>{
+  const keys=headKeys(),lbl=MI.scope==='National'?'zone':'region';
+  const total=keys.reduce((s,k)=>s+(+MI.heads[k]||0),0);
+  return mh("Target headcount",`Enter the headcount ${lbl} by ${lbl} for ${MI.t}`,
+    `<button class="btn btn-outline btn-sm" onclick="mgo('m_intForm')">← Back</button>`)+
+  `<div class="card">
+    <table class="tt"><thead><tr><th>${lbl==='zone'?'Zone':'Region'}</th><th style="width:180px">Target headcount</th></tr></thead>
+      <tbody>${keys.map(k=>`<tr><td style="font-weight:700">${k}</td>
+        <td><input type="number" min="0" value="${MI.heads[k]||''}" placeholder="0" oninput="MI.heads['${esc(k)}']=this.value;document.getElementById('mhTot').textContent=Object.values(MI.heads).reduce((s,v)=>s+(+v||0),0)"></td></tr>`).join('')}
+      </tbody></table>
+    <div style="margin-top:12px;font-size:13px;font-weight:800">Total: <span id="mhTot">${total}</span> agents</div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-primary" onclick="saveMInt()">${MI.mode==='new'?'Create & cascade':MI.mode==='merge'?'Merge & save':'Approve & cascade'}</button>
+      <button class="btn btn-outline" onclick="mgo('m_ints')">Cancel</button>
+    </div>
+  </div>`;
+});
 function saveMInt(){
-  const t=document.getElementById('iT').value.trim();
-  if(!t){toast("Give it a name");return;}
-  const g=id=>document.getElementById(id).value;
-  INTS.unshift({id:"INT-0"+(20+INTS.length),t,aud:g('iA')||"All agents",scope:g('iS'),zone:g('iZ'),kpi:g('iK'),
-    type:g('iTy'),by:"ZTM",byName:"Lilian Wambui",mode:g('iM'),tgtHead:+g('iH')||30,attended:0,baseline:g('iB'),
-    metric:"",budget:+g('iBu')||0,date:iso(addDays(21)),status:"Planned",cascaded:true,root:"",sessions:[]});
-  closeW();mgo('m_ints');toast("Intervention created and cascaded to the zone");
+  const total=Object.values(MI.heads).reduce((s,v)=>s+(+v||0),0);
+  if(!total){toast("Enter the headcount first");return;}
+  const geo=MI.scope==='National'?'All':(MI.cluster||MI.ahq||MI.region||MI.zone);
+  if(MI.mode==='new'){
+    INTS.unshift({id:"INT-0"+(20+INTS.length),t:MI.t,aud:MI.aud||"All agents",scope:MI.scope,zone:geo,kpi:MI.kpi,
+      type:MI.type,by:"ZTM",byName:"Lilian Wambui",mode:MI.mode2,tgtHead:total,attended:0,
+      metric:"",date:iso(addDays(21)),status:"In progress",cascaded:true,root:"",sessions:[]});
+    toast("Intervention created and cascaded");
+  } else if(MI.mode==='merge'){
+    const t=INTS.find(x=>x.id===MI.into),src=INTS.find(x=>x.id===MI.id);
+    Object.assign(t,{t:MI.t,aud:MI.aud,scope:MI.scope,zone:geo,kpi:MI.kpi,type:MI.type,mode:MI.mode2,tgtHead:total});
+    src.status="Merged";src.mergedInto=MI.into;
+    toast(`${MI.id} merged into ${MI.into}`);
+  } else {
+    const i=INTS.find(x=>x.id===MI.id);
+    Object.assign(i,{t:MI.t,aud:MI.aud,scope:MI.scope,zone:geo,kpi:MI.kpi,type:MI.type,mode:MI.mode2,tgtHead:total,status:"In progress"});
+    toast(`${MI.id} approved and cascaded`);
+  }
+  MI=null;mgo('m_ints');
 }
 
+/* ---------- VIEW TRAININGS ---------- */
+let TF={zone:"",region:"",area:""};
+function setTF(k,v){TF[k]=v;mgo('m_trainings');}
+function mtRows(){
+  return PAST.map((p,i)=>{const rm=TEAM[i%TEAM.length];
+    return {...p,rm:rm.n,zone:rm.zone,region:rm.region,area:AREAS[i%AREAS.length]};})
+    .filter(r=>(!TF.zone||r.zone===TF.zone)&&(!TF.region||r.region===TF.region)&&(!TF.area||r.area===TF.area));
+}
+mreg("m_trainings","View trainings",()=>{
+  const rows=mtRows();
+  const zones=[...new Set(TEAM.map(t=>t.zone))],regions=[...new Set(TEAM.map(t=>t.region))];
+  return mh("Trainings conducted",`${rows.length} session${rows.length===1?'':'s'} delivered by your team`)+
+  `<div class="card" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+    <div><label class="label">Zone</label><select onchange="setTF('zone',this.value)"><option value="">All zones</option>${zones.map(z=>`<option ${TF.zone===z?'selected':''}>${z}</option>`).join('')}</select></div>
+    <div><label class="label">Region</label><select onchange="setTF('region',this.value)"><option value="">All regions</option>${regions.map(r=>`<option ${TF.region===r?'selected':''}>${r}</option>`).join('')}</select></div>
+    <div><label class="label">Area</label><select onchange="setTF('area',this.value)"><option value="">All areas</option>${AREAS.map(a=>`<option ${TF.area===a?'selected':''}>${a}</option>`).join('')}</select></div>
+    ${(TF.zone||TF.region||TF.area)?`<button class="btn btn-outline btn-sm" onclick="TF={zone:'',region:'',area:''};mgo('m_trainings')">Clear</button>`:''}
+  </div>
+  <div class="card"><table class="tt">
+    <thead><tr><th>RM</th><th>AHQ</th><th>Date & time</th><th>Agents attended</th><th>Interventions</th><th></th></tr></thead>
+    <tbody>${rows.map(r=>`<tr>
+      <td style="font-weight:700">${r.rm}<div style="font-size:10.5px;color:var(--ink-3)">${r.zone} / ${r.region}</div></td>
+      <td>${r.ahq.replace(' AHQ','')}</td>
+      <td style="white-space:nowrap">${prettyIso(r.date)}<div style="font-size:10.5px;color:var(--ink-3)">${r.time}</div></td>
+      <td style="font-weight:800">${r.approved?apprCount(r):r.att}</td>
+      <td>${(r.ints&&r.ints.length?r.ints:['—']).map(x=>x==='—'?'—':`<span class="chip blue" style="margin:0 3px 0 0">${x}</span>`).join('')}</td>
+      <td style="text-align:right"><button class="btn btn-outline btn-sm" onclick="mViewTraining('${r.id}')">View more</button></td></tr>`).join('')}
+    </tbody></table></div>`;
+});
+function mViewTraining(id){
+  const p=PAST.find(x=>x.id===id);
+  wmodal(`<h3>${p.id}</h3><p style="font-size:12.5px;color:var(--ink-2)">${prettyIso(p.date)} · ${p.ahq}</p>
+    <div class="card" style="margin:0 0 12px">
+      <div class="rev"><span class="k">Started</span><span class="v">${p.time}</span></div>
+      <div class="rev"><span class="k">Location</span><span class="v">${p.loc} · GPS ${p.gps||'—'}</span></div>
+      <div class="rev"><span class="k">Attendance submitted</span><span class="v">${p.att} of ${p.inv}</span></div>
+      <div class="rev"><span class="k">Attendance approved</span><span class="v">${p.approved?apprCount(p):'—'}</span></div>
+      ${p.star?`<div class="rev"><span class="k">⭐ Star of training</span><span class="v">${p.star}</span></div>`:''}
+      <div class="rev"><span class="k">Interventions</span><span class="v">${(p.ints||[]).map(x=>`<span class="chip blue">${x}</span>`).join('')||'—'}</span></div>
+      <div class="rev"><span class="k">Courses</span><span class="v">${(p.courses||[]).map(c=>c.c).join(', ')||'—'}</span></div>
+      <div class="rev"><span class="k">RM comment</span><span class="v">${p.cm||'—'}</span></div>
+    </div>
+    ${p.far?`<div class="banner warn" style="margin:0 0 12px">Location rejected — ${p.far.dist}. Reason: ${p.far.reason}</div>`:''}
+    ${p.approved?`<table class="tt"><thead><tr><th>Agent</th><th>Check-in difference</th><th>Distance</th><th>Status</th></tr></thead>
+      <tbody>${p.approved.map(a=>`<tr style="background:${a.status==='approved'?'#E4F5EC':'#FDECEC'}">
+        <td style="font-weight:700">${a.n}</td><td>${a.diff}</td><td>${a.dist}</td><td>${a.status}</td></tr>`).join('')}</tbody></table>`:''}
+    <div style="display:flex;gap:8px;margin-top:14px"><button class="btn btn-outline" onclick="closeW()">Close</button></div>`);
+}
+
+/* ---------- TEAM CALENDAR ---------- */
 mreg("m_calendar","Team calendar",()=>{
-  const days=[];for(let i=-1;i<=12;i++){const d=addDays(i);if(d.getDay()!==0&&d.getDay()!==6)days.push(d);}
-  const acts=["R2 New-agent F2F","R1 Reactivation","R4 Conversion","Admin","R7 Insight","JKQ drive",""];
-  return mh("Team calendar","Where everyone is, day by day. Click a cell to see the plan.")+`
+  const y=TODAY.getFullYear(),mo=TODAY.getMonth(),last=new Date(y,mo+1,0).getDate();
+  const days=[];for(let d=1;d<=last;d++)days.push(new Date(y,mo,d));
+  const kpiSets=[["R2","R4"],["R1"],["R4","R7"],["NT"],["R7","R1"],["R3"],[]];
+  return mh("Team calendar","Every day of the month, KPI by KPI. Scroll sideways for the full month.")+`
     <div class="card" style="overflow-x:auto">
-      <table class="tt" style="min-width:900px">
-        <thead><tr><th style="position:sticky;left:0;background:#fff">RM</th>
-          ${days.map(d=>`<th style="text-align:center">${d.toLocaleDateString('en-GB',{weekday:'narrow'})}<div style="font-weight:700;color:var(--ink)">${d.getDate()}</div></th>`).join('')}</tr></thead>
-        <tbody>${TEAM.map((m,mi)=>`<tr><td style="font-weight:700;position:sticky;left:0;background:#fff;white-space:nowrap">${m.n}</td>
+      <table class="tt" style="min-width:1800px">
+        <thead><tr><th style="position:sticky;left:0;background:#fff;z-index:2">RM</th>
+          ${days.map(d=>`<th style="text-align:center;min-width:46px">${d.toLocaleDateString('en-GB',{weekday:'narrow'})}<div style="font-weight:700;color:var(--ink)">${d.getDate()}</div></th>`).join('')}</tr></thead>
+        <tbody>${TEAM.map((m,mi)=>`<tr><td style="font-weight:700;position:sticky;left:0;background:#fff;white-space:nowrap;z-index:1">${m.n}</td>
           ${days.map((d,di)=>{
-            const seed=(mi*7+di*3)%7,a=acts[seed],trav=(mi+di)%9===0;
-            const bg=a===""?'#F7F8FB':trav?'#FFF1D6':a.startsWith('R2')?'#E7EFFD':a.startsWith('R1')?'#E4F5EC':a.startsWith('R4')?'#F3EFFE':'#F0F2F7';
-            return `<td style="text-align:center;padding:3px" title="${a||'Not planned'}">
-              <div style="background:${bg};border-radius:5px;height:26px;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;color:var(--ink-2)">${a?a.split(' ')[0]:'—'}</div></td>`;}).join('')}
+            const wd=d.getDay()===0||d.getDay()===6;
+            const ks=wd?[]:kpiSets[(mi*5+di*3)%kpiSets.length];
+            const bg=wd?'#FAFBFD':ks.length?'#F4F7FF':'#F7F8FB';
+            return `<td style="text-align:center;padding:3px" title="${ks.join(', ')||(wd?'Weekend':'Not planned')}">
+              <div style="background:${bg};border-radius:5px;min-height:26px;padding:3px;display:flex;flex-wrap:wrap;gap:2px;align-items:center;justify-content:center">
+                ${ks.length?ks.map(k=>`<span style="font-size:9px;font-weight:800;background:${k==='NT'?'#F0F2F7':'#E7EFFD'};color:${k==='NT'?'var(--ink-3)':'var(--blue)'};border-radius:4px;padding:1px 4px">${k}</span>`).join(''):`<span style="font-size:9.5px;color:var(--ink-3)">—</span>`}
+              </div></td>`;}).join('')}
         </tr>`).join('')}</tbody></table>
-      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:11px;color:var(--ink-3)">
-        ${[["#E7EFFD","R2 New-agent F2F"],["#E4F5EC","R1 Reactivation"],["#F3EFFE","R4 Conversion"],["#FFF1D6","Travel"],["#F7F8FB","Not planned"]].map(([c,l])=>
-          `<span><i style="display:inline-block;width:11px;height:11px;border-radius:3px;background:${c};vertical-align:middle;margin-right:5px"></i>${l}</span>`).join('')}
-      </div>
     </div>`;
 });
 
@@ -1743,12 +2000,45 @@ mreg("m_reports","Daily reports",()=>
         <div style="font-size:13px;font-weight:800">${n}</div>
         <div style="font-size:11px;color:var(--ink-3)">${prettyIso(iso(addDays(-d)))}</div></div>
       <div style="font-size:12.5px;color:var(--ink-2);line-height:1.6">${t}</div>
-    </div>`).join('')}
-  <div class="banner info">Reports like the second one are where field insights come from — the app's R7 capture turns those paragraphs into routed, actionable items instead of prose someone has to read.</div>`);
+    </div>`).join('')}`);
+
+/* ---------- FIELD INSIGHTS ---------- */
+mreg("m_insights","Field insights",()=>{
+  const open=INSIGHTS.filter(i=>i.status==='Open').length;
+  return mh("Field insights",`${INSIGHTS.length} raised · ${open} still open`)+
+  `<div class="card"><table class="tt">
+    <thead><tr><th>ID</th><th>RM</th><th>AHQ</th><th>Department</th><th>Feedback type</th><th>Feedback</th><th>Team impacted</th><th>Recommendation</th><th>Attachments</th><th>Status</th><th></th></tr></thead>
+    <tbody>${INSIGHTS.map(i=>`<tr>
+      <td style="color:var(--ink-3);font-size:11px">${i.id}<div>${prettyIso(i.date)}</div></td>
+      <td style="font-weight:700">${i.by}</td>
+      <td>${i.ahqs.map(a=>a.replace(' AHQ','')).join(', ')}</td>
+      <td>${i.depts.map(d=>`<span class="chip grey" style="margin:0 3px 0 0">${d}</span>`).join('')}</td>
+      <td style="font-size:11.5px">${i.l2.join(', ')}</td>
+      <td style="max-width:230px;font-size:11.5px;color:var(--ink-2)">${i.fb}</td>
+      <td style="font-size:11.5px">${i.teams.join(', ')}</td>
+      <td style="max-width:200px;font-size:11.5px;color:var(--ink-2)">${i.rec}</td>
+      <td style="font-size:11.5px">${i.files.length?i.files.map(f=>`<a href="#" onclick="toast('Opens ${esc(f)}');return false;">${f}</a>`).join('<br>'):'—'}</td>
+      <td><span class="pill ${i.status==='Closed'?'done':'pend'}">${i.status}</span>${i.closeNote?`<div style="font-size:10.5px;color:var(--ink-3);margin-top:3px">${i.closeNote}</div>`:''}</td>
+      <td style="text-align:right">${i.status==='Open'?`<button class="btn btn-primary btn-sm" onclick="closeInsight('${i.id}')">Close</button>`:''}</td></tr>`).join('')}
+    </tbody></table></div>`;
+});
+function closeInsight(id){
+  wmodal(`<h3>Close ${id}</h3><p style="font-size:12.5px;color:var(--ink-2)">The RM who raised it is notified with your final comment.</p>
+    <label class="label">Final comment <span class="req">*</span></label>
+    <textarea id="ciN" placeholder="e.g. Pricing group created on 14 Aug; retailers notified."></textarea>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-primary" onclick="doCloseInsight('${id}')">Close insight</button>
+      <button class="btn btn-outline" onclick="closeW()">Cancel</button></div>`);
+}
+function doCloseInsight(id){
+  const n=document.getElementById('ciN').value.trim();
+  if(!n){toast("A closing comment is required");return;}
+  const i=INSIGHTS.find(x=>x.id===id);i.status="Closed";i.closeNote=n;
+  closeW();mgo('m_insights');toast(id+" closed");
+}
 
 mreg("m_kpi","Team KPIs",()=>
   mh("Team KPIs","Read-only. Sourced from the data platform — nobody types these in.")+`
-  <div class="banner info">📊 KPI entry is deliberately out of scope. Actuals come from Looker, Litmos and sales data; the app shows them so RMs and managers see the same numbers.</div>
   <div class="card"><table class="tt">
     <thead><tr><th>RM</th><th>AHQ</th>${KPI_LIB.map(k=>`<th style="text-align:center">${k.r}</th>`).join('')}<th style="text-align:center">Score /5</th></tr></thead>
     <tbody>${TEAM.map((m,i)=>`<tr><td style="font-weight:700">${m.n}</td><td style="color:var(--ink-3)">${m.ahq.replace(' AHQ','')}</td>
@@ -1758,20 +2048,6 @@ mreg("m_kpi","Team KPIs",()=>
     </tbody></table>
     <div class="hint" style="margin-top:10px">Weightings: R1 15 · R2 15 · R3 10 · R4 20 · R5 20 · R6 10 · R7 10</div>
   </div>`);
-
-mreg("m_team","My team",()=>
-  mh("My team","7 Regional Mentors · Coast Zone")+`
-  <div class="card"><table class="tt">
-    <thead><tr><th>RM</th><th>AHQ</th><th>Zone</th><th>Planned days</th><th>Travel days</th><th>Field %</th><th>Plans pending</th><th>Score</th><th></th></tr></thead>
-    <tbody>${TEAM.map(m=>`<tr>
-      <td style="font-weight:700">${m.n}</td><td>${m.ahq.replace(' AHQ','')}</td><td style="color:var(--ink-3)">${m.zone}</td>
-      <td>${m.days}</td><td>${m.trav}</td>
-      <td style="font-weight:800;color:${m.field>=60?'var(--green)':m.field>=40?'var(--sk-orange)':'var(--red)'}">${m.field}%</td>
-      <td>${m.plans.p?`<span class="pill pend">${m.plans.p} pending</span>`:'—'}</td>
-      <td style="font-weight:800">${m.score}</td>
-      <td style="text-align:right"><button class="btn btn-outline btn-sm" onclick="toast('Opens the RM\\'s profile, plan history and coaching log (C4)')">View</button></td></tr>`).join('')}
-    </tbody></table></div>
-  <div class="banner info">A 1:1 coaching log (KPI C4) would live here — monthly 1:1 with every direct report, dated, plus a development plan per bottom performer. Tell us if that belongs in this build.</div>`);
 
 /* =====================================================================
    FEEDBACK
@@ -1805,12 +2081,15 @@ const QTAGS={
   m_overview:["Wrong tiles","Missing alerts"],
   m_approvals:["Approval flow","Bulk actions","Not needed"],
   m_capacity:["Capacity logic","Wrong assumptions","Very useful"],
-  m_directives:["Cascade model","Too top-down"],
-  m_ints:["Register fields","Cascade rules"],
+  m_weekDetail:["Day view","Meeting detail"],
+  m_ints:["Register fields","Review flow","Headcount entry"],
+  m_intForm:["Scope cascade","Fields needed"],
+  m_intHeads:["Headcount split","Too granular"],
+  m_trainings:["Filters","Detail shown"],
   m_calendar:["Calendar view","Granularity"],
   m_reports:["Daily reports","Volume concern"],
-  m_kpi:["Read-only is right","Need more"],
-  m_team:["Coaching log","Team view"]
+  m_insights:["Insight routing","Closure flow"],
+  m_kpi:["Read-only is right","Need more"]
 };
 function renderQTags(id){
   const t=QTAGS[id]||["General"];tagsSel=[];
