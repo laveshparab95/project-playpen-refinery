@@ -760,6 +760,21 @@ reg("pjpDay","Plan day",()=>{
 });
 /* --- plan a day --- */
 function monthEndIso(){const d=new Date(TODAY.getFullYear(),TODAY.getMonth()+1,0);return iso(d);}
+/* ---------- Reusable collapsed multi-select dropdown ---------- */
+const DDOPEN={};
+function ddTog(id,scr){DDOPEN[id]=!DDOPEN[id];go(scr,false);}
+function ddInner(id,scr,label,selected,options,togFn,req){
+  const open=!!DDOPEN[id];
+  return `<label class="label">${label}${req?' <span class="req">*</span>':''}</label>
+    <div class="listrow" style="cursor:pointer" onclick="ddTog('${id}','${scr}')">
+      <div class="nm">${selected.length?`${selected.length} selected`:'Tap to select'}</div>
+      <span style="color:var(--tx2);font-size:13px">${open?'▲':'▼'}</span></div>
+    ${selected.length?`<div style="display:flex;flex-wrap:wrap;margin-bottom:6px">${selected.map(v=>`<span class="chip blue">${v}</span>`).join('')}</div>`:''}
+    ${open?(options.length?options.map(o=>{const on=selected.includes(o);
+      return `<div class="listrow" onclick="${togFn}('${o.replace(/'/g,"\\'")}')">
+        <div class="cbx ${on?'on':''}">${on?'✓':''}</div><div class="nm">${o}</div></div>`;}).join('')
+      :'<div class="hint">Pick a department first.</div>'):''}`;
+}
 function togPjpLoc(a){const i=PJPD.locs.indexOf(a);i>-1?PJPD.locs.splice(i,1):PJPD.locs.push(a);go('pjpNew',false);}
 function addKpiBlock(){PJPB={kpi:"",cats:[],int:"",note:"",idx:-1};go('pjpBlock');}
 function editKpiBlock(i){PJPB={...JSON.parse(JSON.stringify(PJPD.blocks[i])),idx:i};go('pjpBlock');}
