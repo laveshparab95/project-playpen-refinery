@@ -1576,14 +1576,11 @@ function submitInsight(){
   INS={ahqs:[],depts:[],l2:[],fb:"",teams:[],rec:"",files:[]};
   alertBox('💡','Insight logged','Sent to your CTM and the relevant department. You will see it when it is closed.','Done',"hist=[];go('home',false)");
 }
+function insTogA(v){insTog('ahqs',v)}function insTogD(v){insTog('depts',v)}
+function insTogL(v){insTog('l2',v)}function insTogT(v){insTog('teams',v)}
 function insBox(label,key,opts,req){
   return `<div class="card">
-    <label class="label">${label}${req?' <span class="req">*</span>':''}</label>
-    ${INS[key].length?`<div style="display:flex;flex-wrap:wrap;margin-bottom:6px">${INS[key].map(v=>`<span class="chip blue">${v}</span>`).join('')}</div>`:''}
-    ${opts.length?opts.map(o=>{const on=INS[key].includes(o);
-      return `<div class="listrow" onclick="insTog('${key}','${o.replace(/'/g,"\\'")}')">
-        <div class="cbx ${on?'on':''}">${on?'✓':''}</div><div class="nm">${o}</div></div>`;}).join('')
-      :'<div class="hint">Pick a department first.</div>'}
+    ${ddInner('ins-'+key,'insight',label,INS[key],opts,{ahqs:'insTogA',depts:'insTogD',l2:'insTogL',teams:'insTogT'}[key],req)}
   </div>`;
 }
 reg("insight","360 field insight (R7)",()=>shell({
