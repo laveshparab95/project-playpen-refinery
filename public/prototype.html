@@ -803,7 +803,7 @@ reg("pjpBlock","KPI block",()=>{
 reg("pjpNew","Plan a day",()=>{
   if(!PJPD)PJPD=blankDay();
   const d=PJPD;
-  return shell({title:"Plan a day",sub:"Goes to your ZTM for approval",
+  return shell({title:d.changing?"Change this plan":"Plan a day",sub:"Goes to your ZTM for approval",
     body:`<div class="card">
         <label class="label">Date <span class="req">*</span></label>
         <input type="date" min="${iso(TODAY)}" max="${monthEndIso()}" value="${d.date}" onchange="PJPD.date=this.value;go('pjpNew',false)">
@@ -831,20 +831,29 @@ reg("pjpNew","Plan a day",()=>{
           <input type="text" placeholder="e.g. Kisumu → Kakamega" value="${d.route}" oninput="PJPD.route=this.value">
           <label class="label" style="margin-top:11px">Nights away</label>
           <input type="number" min="0" value="${d.nights}" oninput="PJPD.nights=+this.value">`:''}
-      </div>`,
-    foot:footBtn(`<button class="btn btn-primary" ${d.date&&d.blocks.length?'':'disabled'} onclick="savePJP()">Submit for approval</button>`)});
+      </div>
+      ${d.changing?`<div class="card">
+        <label class="label">Reason for change <span class="req">*</span></label>
+        <textarea placeholder="e.g. Cluster leader moved the venue, so the training shifted to the depot" oninput="PJPD.changeReason=this.value">${d.changeReason||''}</textarea>
+      </div>`:''}`,
+    foot:footBtn(`<button class="btn btn-primary" ${d.date&&d.blocks.length&&(!d.changing||(d.changeReason||'').trim())?'':'disabled'} onclick="savePJP()">${d.changing?'Submit change':'Submit for approval'}</button>`)});
 });
 function savePJP(){
   const ex=PJP.find(p=>p.date===PJPD.date);
-  const rec={...JSON.parse(JSON.stringify(PJPD)),status:"pending"};
+  const changing=!!PJPD.changing;
+  const rec={...JSON.parse(JSON.stringify(PJPD)),status:changing?"changed":"pending"};
+  if(changing){rec.changedOn=iso(TODAY);}
+  delete rec.changing;
   if(ex)Object.assign(ex,rec); else PJP.push(rec);
   PJP.sort((a,b)=>a.date.localeCompare(b.date));
   APPROVALS.unshift({id:"P0000"+(43+APPROVALS.length),rm:"Pier M.",date:rec.date,
+    blocks:JSON.parse(JSON.stringify(rec.blocks||[])),
     kpis:(rec.blocks||[]).map(b=>b.kpi).filter(Boolean),
     cats:dayCats(rec),
     ints:(rec.blocks||[]).map(b=>b.int).filter(Boolean),
+    changedOn:rec.changedOn,changeReason:rec.changeReason,
     loc:(rec.locs||[]).join(', '),trav:rec.travel?"Y":"N",route:rec.route,nights:rec.nights,st:"pending"});
-  alertBox("📤","Plan day submitted",`${longIso(rec.date)} sent to Lilian Wambui (ZTM) for approval. You'll be notified when it's actioned.`,"Done","hist=[];go('pjp',false)");
+  alertBox("📤",changing?"Plan change submitted":"Plan day submitted",`${longIso(rec.date)} sent to Lilian Wambui (ZTM) for approval. You'll be notified when it's actioned.`,"Done","hist=[];go('pjp',false)");
 }
 
 /* ---------- INTERVENTIONS ---------- */
