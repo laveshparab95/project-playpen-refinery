@@ -1993,7 +1993,7 @@ function mViewTraining(id){
   wmodal(`<h3>${p.id}</h3><p style="font-size:12.5px;color:var(--ink-2)">${prettyIso(p.date)} · ${p.ahq}</p>
     <div class="card" style="margin:0 0 12px">
       <div class="rev"><span class="k">Started</span><span class="v">${p.time}</span></div>
-      <div class="rev"><span class="k">Location</span><span class="v">${p.loc} · GPS ${p.gps||'—'}</span></div>
+      <div class="rev"><span class="k">Location</span><span class="v">${p.loc} <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.gps||p.loc)}" target="_blank" rel="noopener" title="Open in Google Maps" style="text-decoration:none">📍</a></span></div>
       <div class="rev"><span class="k">Attendance submitted</span><span class="v">${p.att} of ${p.inv}</span></div>
       <div class="rev"><span class="k">Attendance approved</span><span class="v">${p.approved?apprCount(p):'—'}</span></div>
       ${p.star?`<div class="rev"><span class="k">⭐ Star of training</span><span class="v">${p.star}</span></div>`:''}
