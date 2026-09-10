@@ -1674,11 +1674,7 @@ mreg("m_approvals","Plan Approvals",()=>{
                 <button class="btn btn-green btn-sm" onclick="decide('${a.id}','approved')">Approve</button>
                 <button class="btn btn-danger btn-sm" onclick="rejectPrompt('${a.id}')">Reject</button></div>
             </div>
-            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:7px;align-items:center">
-              ${(a.kpis||[]).length?(a.kpis).map(k=>`<span class="chip grey" style="margin:0">${k}</span>`).join(''):'<span style="color:var(--red);font-size:11px;font-weight:700">KPI missing</span>'}
-              ${(a.cats||[]).map(c=>`<span class="chip" style="margin:0">${c}</span>`).join('')}
-              ${(a.ints||[]).map(i=>`<span class="chip blue" style="margin:0">${i}</span>`).join('')}
-            </div>
+            ${kpiBlockTable(a.blocks)}
           </div>`).join('')}
       </div>`;}).join('')
       :`<div class="card" style="text-align:center;padding:40px;color:var(--ink-3)">
